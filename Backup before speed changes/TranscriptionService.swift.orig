@@ -1,0 +1,90 @@
+import Foundation
+
+/// Keeps the selected model loaded between dictations and unloads it after a period of inactivity.
+@MainActor
+final class TranscriptionService {
+    private var engine: TranscriptionEngine?
+    private var loadedModelID: String?
+    private var loadingTask: Task<TranscriptionEngine, Error>?
+    private var loadingModelID: String?
+    private var idleTask: Task<Void, Never>?
+
+    /// Which chip runs Whisper. Changing it takes effect on the next load (AppState unloads when it changes).
+    var useNeuralEngine = false
+
+    /// Unload after this long without a dictation, to free memory.
+    var idleUnloadInterval: TimeInterval = 10 * 60
+
+    func prepare(model: SpeechModel, modelManager: ModelManager) async throws {
+        _ = try await engine(for: model, modelManager: modelManager)
+    }
+
+    func transcribe(_ samples: [Float], model: SpeechModel, language: String?, modelManager: ModelManager) async throws -> String {
+        let engine = try await engine(for: model, modelManager: modelManager)
+        let text = try await engine.transcribe(samples, language: language)
+        scheduleIdleUnload()
+        return text
+    }
+
+    func unload() {
+        engine = nil
+        loadedModelID = nil
+        loadingTask?.cancel()
+        loadingTask = nil
+        loadingModelID = nil
+        idleTask?.cancel()
+    }
+
+    // MARK: - Private
+
+    private func engine(for model: SpeechModel, modelManager: ModelManager) async throws -> TranscriptionEngine {
+        if let engine, loadedModelID == model.id {
+            return engine
+        }
+        // Reuse an in-flight load (the recorder starts loading while you talk).
+        if let loadingTask, loadingModelID == model.id {
+            return try await loadingTask.value
+        }
+
+        guard modelManager.isDownloaded(model) else {
+            throw TranscriptionError.modelNotDownloaded(model.name)
+        }
+
+        let folder = modelManager.localFolder(for: model)
+        let useNeuralEngine = useNeuralEngine
+        let task = Task<TranscriptionEngine, Error> {
+            switch model.engine {
+            case .whisperKit:
+                guard let folder else { throw TranscriptionError.modelNotDownloaded(model.name) }
+                return try await WhisperKitEngine(modelFolder: folder, useNeuralEngine: useNeuralEngine)
+            case .parakeet:
+                return try await ParakeetEngine()
+            }
+        }
+        loadingTask = task
+        loadingModelID = model.id
+
+        do {
+            let loaded = try await task.value
+            engine = loaded
+            loadedModelID = model.id
+            loadingTask = nil
+            loadingModelID = nil
+            scheduleIdleUnload()
+            return loaded
+        } catch {
+            loadingTask = nil
+            loadingModelID = nil
+            throw error
+        }
+    }
+
+    private func scheduleIdleUnload() {
+        idleTask?.cancel()
+        idleTask = Task { [weak self, idleUnloadInterval] in
+            try? await Task.sleep(for: .seconds(idleUnloadInterval))
+            guard !Task.isCancelled else { return }
+            self?.unload()
+        }
+    }
+}

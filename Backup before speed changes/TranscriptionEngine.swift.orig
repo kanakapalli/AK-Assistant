@@ -1,0 +1,91 @@
+import Foundation
+import CoreML
+import os
+import WhisperKit
+import FluidAudio
+
+/// Anything that turns 16 kHz mono samples into text. New backends (or an LLM cleanup step) plug in here.
+protocol TranscriptionEngine: AnyObject {
+    func transcribe(_ samples: [Float], language: String?) async throws -> String
+}
+
+enum TranscriptionError: LocalizedError {
+    case modelNotDownloaded(String)
+
+    var errorDescription: String? {
+        switch self {
+        case .modelNotDownloaded(let name): return "\(name) is not downloaded"
+        }
+    }
+}
+
+// MARK: - WhisperKit (Whisper models)
+
+final class WhisperKitEngine: TranscriptionEngine {
+    private let pipe: WhisperKit
+
+    /// - Parameter useNeuralEngine: false runs on the GPU, which loads in seconds and is fast on Apple Silicon.
+    ///   true uses the Neural Engine: lower power, but the first load compiles ("specializes") the model for this
+    ///   Mac, which can take many minutes for the large models. macOS caches that result, so later loads are quick.
+    init(modelFolder: URL, useNeuralEngine: Bool) async throws {
+        let units: MLComputeUnits = useNeuralEngine ? .cpuAndNeuralEngine : .cpuAndGPU
+        let compute = ModelComputeOptions(
+            melCompute: .cpuAndGPU,
+            audioEncoderCompute: units,
+            textDecoderCompute: units
+        )
+        // prewarm is off: it runs the compile as a separate pass before loading, which adds time on first run.
+        let config = WhisperKitConfig(
+            modelFolder: modelFolder.path,
+            computeOptions: compute,
+            verbose: true,
+            logLevel: .debug,       // progress shows in Xcode's console while you run from Xcode
+            prewarm: false,
+            load: true,
+            download: false
+        )
+        let log = Logger(subsystem: "com.natfirst.akassistant", category: "Transcription")
+        log.info("WhisperKit: loading model on \(useNeuralEngine ? "Neural Engine" : "GPU", privacy: .public) from \(modelFolder.path, privacy: .public)")
+        let started = Date()
+        pipe = try await WhisperKit(config)
+        log.info("WhisperKit: model ready in \(Date().timeIntervalSince(started), format: .fixed(precision: 1))s")
+    }
+
+    func transcribe(_ samples: [Float], language: String?) async throws -> String {
+        let options = DecodingOptions(
+            task: .transcribe,
+            language: language,
+            temperature: 0,
+            usePrefillPrompt: language != nil,
+            detectLanguage: language == nil,
+            skipSpecialTokens: true,
+            withoutTimestamps: true
+        )
+        let results = try await pipe.transcribe(audioArray: samples, decodeOptions: options)
+        return results.map(\.text).joined(separator: " ")
+    }
+}
+
+// MARK: - Parakeet via FluidAudio
+
+final class ParakeetEngine: TranscriptionEngine {
+    private let manager: AsrManager
+
+    init() async throws {
+        let models = try await AsrModels.downloadAndLoad(version: .v3)
+        manager = AsrManager(config: .default)
+        try await manager.loadModels(models)
+    }
+
+    func transcribe(_ samples: [Float], language: String?) async throws -> String {
+        // Parakeet wants at least ~1 s of audio; pad short clips with silence.
+        var audio = samples
+        let minimum = Int(AudioRecorder.sampleRate)
+        if audio.count < minimum {
+            audio.append(contentsOf: [Float](repeating: 0, count: minimum - audio.count))
+        }
+        var decoderState = try TdtDecoderState()
+        let result = try await manager.transcribe(audio, decoderState: &decoderState)
+        return result.text
+    }
+}

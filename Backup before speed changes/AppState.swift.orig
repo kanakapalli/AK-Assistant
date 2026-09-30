@@ -1,0 +1,401 @@
+import AppKit
+import SwiftData
+import Observation
+
+enum DictationStatus: Equatable {
+    case idle
+    case recording
+    case transcribing      // dictation: turning speech into text; assistant: understanding + thinking
+    case done(String)      // short message, e.g. "Pasted" or "Copied"
+    case error(String)
+}
+
+/// The question you asked the AI and its (possibly still streaming) answer, shown in the answer panel.
+struct AssistantReply: Equatable {
+    var question: String
+    var answer: String = ""
+    var isStreaming = true
+    var error: String?
+}
+
+/// Owns both pipelines:
+/// - Dictation: hotkey -> recorder -> speech-to-text -> post-process -> paste -> history.
+/// - Assistant: hotkey -> recorder -> speech-to-text -> local AI -> answer panel / voice -> history.
+/// Views read `status`, `level`, `reply` and `isSpeaking`; with `@Observable` only the views that read them redraw.
+@MainActor
+@Observable
+final class AppState {
+    static let shared = AppState()
+
+    let preferences = Preferences()
+    let modelManager = ModelManager()
+    let container: ModelContainer
+
+    private(set) var status: DictationStatus = .idle
+    private(set) var level: Float = 0
+    /// Which hotkey started the current recording.
+    private(set) var currentAction: HotkeyAction = .dictate
+    /// The latest AI question and answer.
+    private(set) var reply: AssistantReply?
+    private(set) var isSpeaking = false
+
+    // Internal plumbing: not UI state, so SwiftUI doesn't need to track it.
+    private let recorder = AudioRecorder()
+    private let hotkeys = HotkeyManager()
+    private let transcriber = TranscriptionService()
+    private let llm = LLMService()
+    private let speech = SpeechService()
+    private let pill = PillController()
+    private let answerPanel = AnswerPanelController()
+    @ObservationIgnored private var targetApp: NSRunningApplication?
+    @ObservationIgnored private var maxDurationTask: Task<Void, Never>?
+    @ObservationIgnored private var assistantTask: Task<Void, Never>?
+    @ObservationIgnored private var started = false
+
+    /// Hard stop so a stuck key doesn't record forever.
+    private let maxRecordingSeconds: Double = 120
+
+    private init() {
+        do {
+            container = try ModelContainer(for: DictationRecord.self)
+        } catch {
+            fatalError("Could not open history store: \(error)")
+        }
+    }
+
+    // MARK: - Lifecycle
+
+    func start() {
+        guard !started else { return }
+        started = true
+
+        recorder.onLevel = { [weak self] value in
+            Task { @MainActor in self?.level = value }
+        }
+        hotkeys.onPress = { [weak self] action in self?.beginRecording(action) }
+        hotkeys.onRelease = { [weak self] action in self?.endRecording(action) }
+        hotkeys.onCancel = { [weak self] in self?.cancelRecording() }
+        configureHotkeys()
+        transcriber.useNeuralEngine = preferences.useNeuralEngine
+        speech.onFinished = { [weak self] in self?.isSpeaking = false }
+
+        observePreferences()
+        watchAccessibility()
+
+        HistoryPruner.prune(context: container.mainContext, retentionDays: preferences.historyRetentionDays)
+    }
+
+    private func configureHotkeys() {
+        hotkeys.configure(dictate: preferences.hotkey, assistant: preferences.assistantHotkey)
+    }
+
+    /// Reacts when hotkeys or models change anywhere in the UI (Settings, Onboarding, Models).
+    /// `withObservationTracking` fires once per change, so it re-registers itself each time.
+    private func observePreferences() {
+        let hotkey = preferences.hotkey
+        let assistantHotkey = preferences.assistantHotkey
+        let modelID = preferences.selectedModelID
+        let neuralEngine = preferences.useNeuralEngine
+        let chatModelID = preferences.chatModelID
+        let voiceModelID = preferences.voiceModelID
+        withObservationTracking {
+            _ = preferences.hotkey
+            _ = preferences.assistantHotkey
+            _ = preferences.selectedModelID
+            _ = preferences.useNeuralEngine
+            _ = preferences.chatModelID
+            _ = preferences.voiceModelID
+        } onChange: { [weak self] in
+            // onChange runs just before the new value is stored, so hop to the next main-actor turn to read it.
+            Task { @MainActor in
+                guard let self else { return }
+                let p = self.preferences
+                if p.hotkey != hotkey || p.assistantHotkey != assistantHotkey { self.configureHotkeys() }
+                if p.selectedModelID != modelID { self.transcriber.unload() }
+                if p.useNeuralEngine != neuralEngine {
+                    self.transcriber.useNeuralEngine = p.useNeuralEngine
+                    self.transcriber.unload()
+                }
+                if p.chatModelID != chatModelID { self.llm.unload() }
+                if p.voiceModelID != voiceModelID { self.speech.unload() }
+                self.observePreferences()
+            }
+        }
+    }
+
+    /// Global key monitors only deliver events once Accessibility is granted; re-arm them when it flips on.
+    private func watchAccessibility() {
+        Task { [weak self] in
+            var wasTrusted = Permissions.accessibilityGranted
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(2))
+                guard let self else { return }
+                let trusted = Permissions.accessibilityGranted
+                if trusted && !wasTrusted { self.configureHotkeys() }
+                wasTrusted = trusted
+            }
+        }
+    }
+
+    var menuBarSymbol: String {
+        switch status {
+        case .recording: return currentAction == .assistant ? "sparkles" : "waveform.circle.fill"
+        case .transcribing: return "ellipsis.circle"
+        default: return isSpeaking ? "speaker.wave.2.fill" : "waveform"
+        }
+    }
+
+    var isBusy: Bool {
+        status == .recording || status == .transcribing
+    }
+
+    // MARK: - Recording (shared by both hotkeys)
+
+    func beginRecording(_ action: HotkeyAction) {
+        guard !isBusy else { return }
+
+        let model = preferences.selectedModel
+        guard modelManager.isDownloaded(model) else {
+            flash(.error("Download \(model.name) first"))
+            return
+        }
+        if action == .assistant {
+            let chat = preferences.chatModel
+            guard modelManager.isDownloaded(chat) else {
+                flash(.error("Download \(chat.name) first"))
+                return
+            }
+        }
+        guard Permissions.microphoneGranted else {
+            flash(.error("Microphone access needed"))
+            return
+        }
+
+        // Talking over an answer: stop the voice so the mic hears only you.
+        if isSpeaking { stopSpeaking() }
+
+        currentAction = action
+        targetApp = NSWorkspace.shared.frontmostApplication
+        do {
+            try recorder.start()
+        } catch {
+            flash(.error("Mic error: \(error.localizedDescription)"))
+            return
+        }
+
+        status = .recording
+        hotkeys.recordingActive = true
+        pill.show(state: self)
+        Sounds.play(.start, enabled: preferences.playSounds)
+
+        // Load models while the user is still talking.
+        Task { [transcriber, modelManager] in
+            try? await transcriber.prepare(model: model, modelManager: modelManager)
+        }
+        if action == .assistant { preloadAssistant() }
+
+        maxDurationTask?.cancel()
+        maxDurationTask = Task { [weak self, maxRecordingSeconds] in
+            try? await Task.sleep(for: .seconds(maxRecordingSeconds))
+            guard !Task.isCancelled, let self else { return }
+            self.endRecording(self.currentAction)
+        }
+    }
+
+    func cancelRecording() {
+        guard status == .recording else { return }
+        maxDurationTask?.cancel()
+        _ = recorder.stop()
+        hotkeys.recordingActive = false
+        flash(.done("Cancelled"))
+    }
+
+    func endRecording(_ action: HotkeyAction) {
+        guard status == .recording, action == currentAction else { return }
+        maxDurationTask?.cancel()
+        hotkeys.recordingActive = false
+
+        let samples = recorder.stop()
+        let duration = Double(samples.count) / AudioRecorder.sampleRate
+
+        // Ignore taps and silence (Whisper tends to hallucinate on silence).
+        guard duration >= 0.3, AudioRecorder.rms(samples) > 0.004 else {
+            status = .idle
+            pill.hide()
+            return
+        }
+
+        status = .transcribing
+        Sounds.play(.stop, enabled: preferences.playSounds)
+
+        let model = preferences.selectedModel
+        let language = preferences.languageCode
+        let removeFillers = preferences.removeFillers
+
+        Task {
+            do {
+                let raw = try await transcriber.transcribe(samples, model: model, language: language, modelManager: modelManager)
+                let text = PostProcessor.clean(raw, removeFillers: removeFillers)
+                guard !text.isEmpty else {
+                    flash(.done("Nothing heard"))
+                    return
+                }
+                switch action {
+                case .dictate: await paste(text, duration: duration, model: model)
+                case .assistant: ask(text, duration: duration)
+                }
+            } catch {
+                flash(.error("Transcription failed"))
+                NSLog("AK Assistant transcription error: \(error)")
+            }
+        }
+    }
+
+    // MARK: - Dictation
+
+    private func paste(_ text: String, duration: Double, model: SpeechModel) async {
+        let app = targetApp
+        // Make sure the original app is still in front before pasting.
+        if let app, app != NSWorkspace.shared.frontmostApplication {
+            app.activate()
+            try? await Task.sleep(for: .milliseconds(120))
+        }
+        let result = TextInserter.insert(text, restoreClipboard: preferences.restoreClipboard)
+        saveHistory(DictationRecord(
+            text: text, duration: duration, modelName: model.name,
+            appName: app?.localizedName, appBundleID: app?.bundleIdentifier
+        ))
+        flash(.done(result == .pasted ? "Pasted" : "Copied to clipboard"))
+    }
+
+    // MARK: - AI assistant
+
+    /// Starts loading the chat model (and the voice) as soon as the AI hotkey goes down.
+    private func preloadAssistant() {
+        let chat = preferences.chatModel
+        Task { [llm] in try? await llm.prepare(chat) }
+        if preferences.replyStyle.speaks, let folder = modelManager.localFolder(for: preferences.voiceModel) {
+            let variant = preferences.voiceModel.id
+            Task { [speech] in try? await speech.prepare(variant: variant, folder: folder) }
+        }
+    }
+
+    private func ask(_ question: String, duration: Double) {
+        let style = preferences.replyStyle
+        let chat = preferences.chatModel
+        reply = AssistantReply(question: question)
+        if style.shows {
+            answerPanel.show(state: self)
+            pill.hide()
+            status = .idle
+        } else {
+            status = .transcribing   // pill keeps saying "Thinking…"
+        }
+
+        assistantTask?.cancel()
+        assistantTask = Task {
+            do {
+                let stream = try await llm.ask(question, model: chat)
+                var raw = ""
+                for try await chunk in stream {
+                    if Task.isCancelled { break }
+                    raw += chunk
+                    reply?.answer = AnswerCleaner.forDisplay(raw)
+                }
+                let answer = AnswerCleaner.forDisplay(raw)
+                reply?.answer = answer
+                reply?.isStreaming = false
+                if !style.shows { flash(.done("Answering…")) }
+                if style.speaks { speak(answer) }
+                saveHistory(DictationRecord(
+                    text: question, duration: duration, modelName: chat.name,
+                    appName: nil, appBundleID: nil, kind: "assistant", answer: answer
+                ))
+            } catch {
+                reply?.isStreaming = false
+                reply?.error = "The AI couldn't answer: \(error.localizedDescription)"
+                if !style.shows { flash(.error("AI error")) }
+                NSLog("AK Assistant AI error: \(error)")
+            }
+        }
+    }
+
+    /// Reads the answer aloud if a voice model is downloaded.
+    func speak(_ answer: String) {
+        let voiceModel = preferences.voiceModel
+        guard let folder = modelManager.localFolder(for: voiceModel) else {
+            if reply != nil, reply?.error == nil {
+                reply?.error = "Download a voice in Models to hear answers aloud."
+            }
+            return
+        }
+        let voice = preferences.voice
+        let language = preferences.languageCode
+        isSpeaking = true
+        Task {
+            do {
+                try await speech.prepare(variant: voiceModel.id, folder: folder)
+                speech.speak(AnswerCleaner.forSpeech(answer), voice: voice, languageCode: language)
+            } catch {
+                isSpeaking = false
+                NSLog("AK Assistant voice error: \(error)")
+            }
+        }
+    }
+
+    func speakAgain() {
+        guard let answer = reply?.answer, !answer.isEmpty else { return }
+        speak(answer)
+    }
+
+    func stopSpeaking() {
+        speech.stop()
+        isSpeaking = false
+    }
+
+    func copyAnswer() {
+        guard let answer = reply?.answer, !answer.isEmpty else { return }
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(answer, forType: .string)
+    }
+
+    /// Forget earlier questions so the next one starts a fresh conversation.
+    func newConversation() {
+        llm.newConversation()
+        closeAnswer()
+    }
+
+    func closeAnswer() {
+        assistantTask?.cancel()
+        stopSpeaking()
+        answerPanel.hide()
+        reply = nil
+    }
+
+    // MARK: - Helpers
+
+    private func flash(_ newStatus: DictationStatus) {
+        status = newStatus
+        pill.show(state: self)
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(1.2))
+            guard let self else { return }
+            if case .recording = self.status { return }
+            if case .transcribing = self.status { return }
+            self.status = .idle
+            self.pill.hide()
+        }
+    }
+
+    private func saveHistory(_ record: DictationRecord) {
+        guard preferences.historyRetentionDays >= 0 else { return }
+        container.mainContext.insert(record)
+        try? container.mainContext.save()
+    }
+
+    // MARK: - Model warm-up (used by onboarding)
+
+    func warmUpSelectedModel() async throws {
+        try await transcriber.prepare(model: preferences.selectedModel, modelManager: modelManager)
+    }
+}
