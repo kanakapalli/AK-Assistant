@@ -3,7 +3,6 @@ import SwiftUI
 
 // The two expanded shapes of the floating popup (see FloatingIsland.swift).
 
-private let cardShape = RoundedRectangle(cornerRadius: 18, style: .continuous)
 
 /// Tall content scrolls instead of growing the popup past the screen.
 private func maxTextHeight(fraction: CGFloat, cap: CGFloat) -> CGFloat {
@@ -31,9 +30,11 @@ struct AnswerCard: View {
                 .padding(.top, 14)
                 .padding(.bottom, 10)
 
-            question
-                .padding(.horizontal, 16)
-                .padding(.bottom, 10)
+            if !reply.question.isEmpty {
+                question
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 10)
+            }
 
             Divider().opacity(0.6)
 
@@ -50,10 +51,7 @@ struct AnswerCard: View {
                 .padding(.horizontal, 10)
                 .padding(.vertical, 7)
         }
-        .frame(width: 480)
-        .background(.regularMaterial, in: cardShape)
-        .overlay(cardShape.strokeBorder(.white.opacity(0.12)))
-        .clipShape(cardShape)
+        .frame(width: 480)   // background and shape come from the island (FloatingIsland.swift)
     }
 
     private var header: some View {
@@ -63,6 +61,9 @@ struct AnswerCard: View {
                 .foregroundStyle(.purple.gradient)
             Text("AK Assistant")
                 .font(.headline)
+            if let command = reply.command {
+                CommandChip(command: command)
+            }
             statusBadge
             Spacer()
             CloseButton { state.closeAnswer() }
@@ -130,6 +131,38 @@ struct AnswerCard: View {
                 Label(error, systemImage: "exclamationmark.triangle.fill")
                     .font(.callout)
                     .foregroundStyle(.orange)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            if !reply.suggestions.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Did you mean")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.secondary)
+                    ForEach(reply.suggestions, id: \.self) { phrase in
+                        Button {
+                            state.tryCommand(phrase)
+                        } label: {
+                            Label(phrase, systemImage: "command")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .buttonStyle(.bordered)
+                        .disabled(reply.isStreaming)
+                    }
+                }
+                .padding(.top, 2)
+            }
+            if reply.command?.needsConfirmation == true {
+                HStack(spacing: 8) {
+                    Button(role: .destructive) { state.confirmPendingCommand() } label: {
+                        Label("Run", systemImage: "play.fill")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .keyboardShortcut(.defaultAction)
+                    Button("Cancel") { state.cancelPendingCommand() }
+                        .buttonStyle(.bordered)
+                }
+                .controlSize(.regular)
+                .padding(.top, 2)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -219,10 +252,7 @@ struct DictationCard: View {
                 .padding(.horizontal, 10)
                 .padding(.vertical, 7)
         }
-        .frame(width: 440)
-        .background(.regularMaterial, in: cardShape)
-        .overlay(cardShape.strokeBorder(.white.opacity(0.12)))
-        .clipShape(cardShape)
+        .frame(width: 440)   // background and shape come from the island (FloatingIsland.swift)
     }
 
     private var header: some View {
@@ -232,10 +262,11 @@ struct DictationCard: View {
                 .foregroundStyle(result.pasted ? Color.green : Color.blue)
             VStack(alignment: .leading, spacing: 1) {
                 Text(title).font(.headline)
-                if !result.pasted {
-                    Text("Press ⌘V to paste it where you want")
+                if !result.pasted || result.unconfirmed {
+                    Text(subtitle)
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(result.copyReason != nil ? Color.orange : Color.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
             Spacer()
@@ -243,6 +274,17 @@ struct DictationCard: View {
                 .font(.caption)
                 .foregroundStyle(.tertiary)
             CloseButton { state.dismissDictation() }
+        }
+    }
+
+    private var subtitle: String {
+        switch result.copyReason {
+        case .noAccessibility:
+            return "Couldn't paste: Accessibility is off for this copy of AK Assistant. Press ⌘V to paste."
+        case .secureInput:
+            return "Typing is blocked here (password field or Secure Keyboard Entry). Press ⌘V to paste."
+        case nil:
+            return "If it didn't appear, click the text field and press ⌘V — it's on your clipboard."
         }
     }
 
@@ -263,6 +305,14 @@ struct DictationCard: View {
                 }
             } label: {
                 Label(copied ? "Copied" : "Copy", systemImage: copied ? "checkmark" : "doc.on.doc")
+            }
+            if result.copyReason == .noAccessibility {
+                Button {
+                    Permissions.requestAccessibility()
+                    Permissions.openAccessibilitySettings()
+                } label: {
+                    Label("Fix Accessibility", systemImage: "hand.raised")
+                }
             }
             Spacer()
             Text(state.isHoveringIsland ? "Stays open while the pointer is here" : "Closes automatically")
@@ -332,6 +382,23 @@ struct FittedScrollView<Content: View>: View {
                 }
             }
         }
+    }
+}
+
+/// "Open Xcode", "Timer" … next to the title when the AI key ran a Mac command.
+struct CommandChip: View {
+    let command: CommandBadge
+
+    var body: some View {
+        Label(command.title, systemImage: command.symbol)
+            .font(.caption.weight(.medium))
+            .lineLimit(1)
+            .truncationMode(.tail)
+            .foregroundStyle(command.needsConfirmation ? Color.orange : Color.purple)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background((command.needsConfirmation ? Color.orange : Color.purple).opacity(0.12), in: Capsule())
+            .frame(maxWidth: 220, alignment: .leading)
     }
 }
 

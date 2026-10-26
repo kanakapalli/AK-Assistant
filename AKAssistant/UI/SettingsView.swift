@@ -2,49 +2,307 @@ import SwiftUI
 import ServiceManagement
 import KeyboardShortcuts
 
+/// The pages of Settings, picked with the bar at the top.
+enum SettingsTab: String, CaseIterable, Identifiable {
+    case dictation, assistant, meetings, grammar, general, permissions
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .dictation: return "Dictation"
+        case .assistant: return "AI Assistant"
+        case .meetings: return "Meetings"
+        case .grammar: return "Grammar"
+        case .general: return "General"
+        case .permissions: return "Permissions"
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .dictation: return "waveform"
+        case .assistant: return "sparkles"
+        case .meetings: return "person.2.wave.2"
+        case .grammar: return "text.badge.checkmark"
+        case .general: return "gearshape"
+        case .permissions: return "lock.shield"
+        }
+    }
+
+    /// One line under the bar saying what the page covers.
+    var summary: String {
+        switch self {
+        case .dictation: return "The push-to-talk key, the speech model, how your speech becomes text, and how it's pasted."
+        case .assistant: return "The AI key, the AI and voice models, how answers come back, Mac commands, and smart search."
+        case .meetings: return "Recording, the transcript and speakers, notes, and storage for meetings."
+        case .grammar: return "Shortcuts that fix or rewrite text in any field (email, professional, rude, your own), their prompts, and the AI model."
+        case .general: return "Startup, sounds, history, and disk space used by models."
+        case .permissions: return "What macOS lets AK Assistant do, and a check for the hotkeys."
+        }
+    }
+}
+
 struct SettingsView: View {
-    @Environment(Preferences.self) private var preferences
-    @Environment(\.modelContext) private var context
-    @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
-    @State private var micGranted = Permissions.microphoneGranted
-    @State private var axGranted = Permissions.accessibilityGranted
+    @Environment(AppState.self) private var appState
 
     var body: some View {
-        // @Bindable turns the @Observable object into bindings ($preferences.language, …) for controls.
+        // The page lives in AppState so Learn and Meetings can open Settings on the right page.
+        @Bindable var appState = appState
+
+        VStack(spacing: 0) {
+            VStack(spacing: 8) {
+                Picker("Settings page", selection: $appState.settingsTab) {
+                    ForEach(SettingsTab.allCases) { tab in
+                        Label(tab.title, systemImage: tab.symbol).tag(tab)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                Text(appState.settingsTab.summary)
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
+
+            Divider()
+
+            Group {
+                switch appState.settingsTab {
+                case .dictation: DictationSettings()
+                case .assistant: AssistantSettings()
+                case .meetings: Form { MeetingSettingsSections() }.formStyle(.grouped)
+                case .grammar: GrammarSettings()
+                case .general: GeneralSettings()
+                case .permissions: PermissionsSettings()
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .navigationTitle("Settings")
+    }
+}
+
+// MARK: - Dictation
+
+private struct DictationSettings: View {
+    @Environment(Preferences.self) private var preferences
+
+    var body: some View {
         @Bindable var preferences = preferences
 
         Form {
             Section("Push-to-talk") {
                 HotkeyPicker(action: .dictate)
-                Text("Hold the key to record. Release it to transcribe and paste. Press Esc while holding to cancel.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                SettingCaption("Hold the key to record. Release it to transcribe and paste. Press Esc while holding to cancel.")
             }
 
-            Section("AI assistant") {
-                HotkeyPicker(action: .assistant)
-                Text("Hold the key and ask a question. Release it and a local AI answers. Follow-up questions within 5 minutes continue the same conversation.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                if preferences.assistantEnabled {
-                    ReplySettings()
-                }
-            }
+            ModelChoiceSection(kind: .speech, caption: "Turns your voice into text, for dictation, questions to the AI and meetings. Click a model to use it; each one also lets you choose where it runs.")
 
-            Section("Transcription") {
+            Section("Speech to text") {
                 Picker("Language", selection: $preferences.language) {
                     ForEach(Preferences.languages, id: \.code) { lang in
                         Text(lang.name).tag(lang.code)
                     }
                 }
+                Toggle("Show what I'm saying while I talk", isOn: $preferences.showLiveTranscript)
                 Toggle("Remove filler words (um, uh)", isOn: $preferences.removeFillers)
-                Toggle("Restore my clipboard after pasting", isOn: $preferences.restoreClipboard)
-                Toggle("Use the Neural Engine (lower power, slow first load)", isOn: $preferences.useNeuralEngine)
-                Text("Off: Whisper runs on the GPU and loads in seconds. On: uses less power, but the first load of each model can take several minutes while macOS optimizes it.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
 
+            Section("Microphone") {
+                Toggle("Mute the Mac's sound while I'm talking", isOn: $preferences.muteWhileDictating)
+                SettingCaption("While you hold a hotkey, videos, music and calls are muted so they can't get into the microphone. The sound comes straight back when you let go.")
+                Toggle("Only hear my voice, not the Mac's speakers", isOn: $preferences.cancelSpeakerEcho)
+                SettingCaption("Extra filtering of the Mac's own sound, like FaceTime does. Usually not needed with muting on, and it adds a short delay when you start talking.")
+            }
+
+            Section("Pasting") {
+                Toggle("Restore my clipboard after pasting", isOn: $preferences.restoreClipboard)
+                SettingCaption("Also used by Fix grammar.")
+            }
+        }
+        .formStyle(.grouped)
+    }
+}
+
+// MARK: - AI assistant
+
+private struct AssistantSettings: View {
+    @Environment(Preferences.self) private var preferences
+    @Environment(AppState.self) private var appState
+
+    var body: some View {
+        @Bindable var preferences = preferences
+
+        Form {
+            Section("AI key") {
+                HotkeyPicker(action: .assistant)
+                SettingCaption("Hold the key and ask a question. Release it and a local AI answers. Follow-up questions within 5 minutes continue the same conversation.")
+            }
+
+            ModelChoiceSection(kind: .chat, caption: "Answers your questions, understands commands phrased any way, fixes grammar and writes meeting notes. Bigger models answer better but are slower and use more memory.")
+
+            if preferences.assistantEnabled {
+                Section("Answers") {
+                    ReplySettings()
+                }
+                if preferences.replyStyle.speaks {
+                    ModelChoiceSection(kind: .voice, caption: "Reads the AI's answers aloud.")
+                }
+            }
+
+            Section("Mac commands") {
+                Toggle("Let the AI key control my Mac", isOn: $preferences.macCommandsEnabled)
+                SettingCaption("Say things like “open Xcode”, “set a timer for 10 minutes” or “volume 30” to the AI key. Common commands run instantly, even without the AI model.")
+                if preferences.macCommandsEnabled {
+                    Toggle("Understand commands phrased any way (uses the AI model)", isOn: $preferences.aiCommandsEnabled)
+                    SettingCaption("When a request isn't a command AK Assistant knows, the AI model can still turn it into one, e.g. “fire up Apple's coding app” or “xcode kholo”.")
+                    Toggle("Ask before risky actions", isOn: $preferences.confirmRiskyCommands)
+                    SettingCaption("Quitting an app, closing a window or tab, lock, sleep, emptying the Trash, turning off Wi-Fi, restart, shut down and log out. When this is off they run right away; restart, shut down and log out still show macOS's own confirmation.")
+                    HStack {
+                        Button("See everything you can say") { appState.sidebarSelection = .learn }
+                        Button("Automation permissions…") { Shell.openAutomationSettings() }
+                            .help("Dark mode and emptying the Trash need permission to control System Events and Finder.")
+                    }
+                }
+            }
+
+            MemorySettingsSection()
+        }
+        .formStyle(.grouped)
+    }
+}
+
+// MARK: - Grammar
+
+private struct GrammarSettings: View {
+    @Environment(Preferences.self) private var preferences
+
+    var body: some View {
+        @Bindable var preferences = preferences
+
+        Form {
+            Section("Writing tools") {
+                Toggle("Rewrite text with shortcuts", isOn: $preferences.grammarFixEnabled)
+                SettingCaption("Click into any text field and press an action's shortcut. AK Assistant selects all the text (⌘A), copies it (⌘C), rewrites it with the local AI model using that action's prompt, and pastes the result back. Each prompt can be changed.")
+                if preferences.grammarFixEnabled {
+                    SettingCaption("While an action is on, its shortcut works only for AK Assistant, so the app's own command (for example ⌘P Print, ⌘R Reload) won't run. Record a different shortcut, or turn the action off, if you need it.")
+                }
+            }
+
+            if preferences.grammarFixEnabled {
+                ForEach(preferences.textActions) { action in
+                    TextActionSection(action: action, update: update, delete: { delete(action) })
+                }
+
+                Section {
+                    Button {
+                        let number = preferences.textActions.filter { !$0.builtIn }.count + 1
+                        preferences.textActions.append(TextActionCatalog.newCustom(number: number))
+                    } label: {
+                        Label("Add custom action", systemImage: "plus")
+                    }
+                    SettingCaption("Make your own, e.g. “Translate to Hindi”, “Make it shorter” or “Turn into bullet points”. Give it a name, a prompt and a shortcut.")
+                }
+            }
+
+            ModelChoiceSection(kind: .chat, caption: "The same AI model as the AI assistant: picking one here changes it there too.")
+
+            Section("Clipboard") {
+                Toggle("Restore my clipboard afterwards", isOn: $preferences.restoreClipboard)
+                SettingCaption("Shared with dictation's “Restore my clipboard after pasting”.")
+            }
+        }
+        .formStyle(.grouped)
+    }
+
+    private func update(_ action: TextAction) {
+        guard let index = preferences.textActions.firstIndex(where: { $0.id == action.id }) else { return }
+        preferences.textActions[index] = action
+    }
+
+    private func delete(_ action: TextAction) {
+        guard !action.builtIn else { return }
+        KeyboardShortcuts.reset(action.shortcutName)
+        preferences.textActions.removeAll { $0.id == action.id }
+    }
+}
+
+/// One writing tool: on/off, name, shortcut and prompt.
+private struct TextActionSection: View {
+    let action: TextAction
+    let update: (TextAction) -> Void
+    let delete: () -> Void
+    @State private var confirmDelete = false
+
+    var body: some View {
+        Section {
+            Toggle(isOn: binding(\.enabled)) {
+                Label(action.title, systemImage: action.symbol)
+                    .font(.headline)
+            }
+            if action.enabled {
+                if !action.builtIn {
+                    TextField("Name", text: binding(\.title))
+                }
+                KeyboardShortcuts.Recorder("Shortcut", name: action.shortcutName)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Prompt")
+                    TextEditor(text: binding(\.prompt))
+                        .font(.callout)
+                        .frame(minHeight: 64, maxHeight: 140)
+                        .scrollContentBackground(.hidden)
+                        .padding(6)
+                        .background(RoundedRectangle(cornerRadius: 6).fill(Color(nsColor: .textBackgroundColor)))
+                        .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Color.secondary.opacity(0.25)))
+                    SettingCaption("Tell the AI how to rewrite the text. It always replies with the rewritten text only.")
+                }
+                HStack {
+                    if let builtIn = TextActionCatalog.BuiltIn(rawValue: action.id) {
+                        Button("Reset to default") {
+                            var reset = builtIn.defaultAction
+                            reset.enabled = action.enabled
+                            update(reset)
+                            KeyboardShortcuts.reset(action.shortcutName)
+                        }
+                        .disabled(action.prompt == builtIn.defaultPrompt
+                                  && KeyboardShortcuts.getShortcut(for: action.shortcutName) == builtIn.defaultShortcut)
+                        .help("Puts back the default prompt and shortcut")
+                    } else {
+                        Button("Delete action", role: .destructive) { confirmDelete = true }
+                    }
+                }
+            }
+        }
+        .confirmationDialog("Delete “\(action.title)”?", isPresented: $confirmDelete) {
+            Button("Delete", role: .destructive, action: delete)
+        }
+    }
+
+    private func binding<Value>(_ keyPath: WritableKeyPath<TextAction, Value>) -> Binding<Value> {
+        Binding(
+            get: { action[keyPath: keyPath] },
+            set: { newValue in
+                var changed = action
+                changed[keyPath: keyPath] = newValue
+                update(changed)
+            }
+        )
+    }
+}
+
+// MARK: - Models & general
+
+private struct GeneralSettings: View {
+    @Environment(Preferences.self) private var preferences
+    @Environment(ModelManager.self) private var modelManager
+    @Environment(\.modelContext) private var context
+    @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
+
+    var body: some View {
+        @Bindable var preferences = preferences
+        Form {
             Section("General") {
                 Toggle("Launch at login", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, enabled in setLaunchAtLogin(enabled) }
@@ -63,6 +321,37 @@ struct SettingsView: View {
                 }
             }
 
+            Section("Storage") {
+                LabeledContent("Disk used by models", value: modelManager.diskUsageLabel)
+                SettingCaption("Download or delete models on the page of the feature that uses them: speech in Dictation, the AI model in AI Assistant or Grammar, the voice in AI Assistant.")
+            }
+
+            Section {
+                Button("Run onboarding again") { preferences.onboarded = false }
+            }
+        }
+        .formStyle(.grouped)
+    }
+
+    private func setLaunchAtLogin(_ enabled: Bool) {
+        do {
+            if enabled { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
+        } catch {
+            launchAtLogin = SMAppService.mainApp.status == .enabled
+        }
+    }
+}
+
+// MARK: - Permissions
+
+private struct PermissionsSettings: View {
+    @State private var micGranted = Permissions.microphoneGranted
+    @State private var axGranted = Permissions.accessibilityGranted
+    @State private var sendKeysGranted = Permissions.canSendKeystrokes
+    @State private var screenGranted = Permissions.screenCaptureGranted
+
+    var body: some View {
+        Form {
             Section("Permissions") {
                 PermissionRow(title: "Microphone", granted: micGranted) {
                     Task {
@@ -74,30 +363,53 @@ struct SettingsView: View {
                     Permissions.requestAccessibility()
                     Permissions.openAccessibilitySettings()
                 }
+                PermissionRow(title: "Send keystrokes (paste into other apps)", granted: sendKeysGranted) {
+                    Permissions.requestSendKeystrokes()
+                    Permissions.openAccessibilitySettings()
+                }
+                PermissionRow(title: "Screen & System Audio Recording (meeting audio)", granted: screenGranted) {
+                    Permissions.requestScreenCapture()
+                    Permissions.openScreenCaptureSettings()
+                }
             }
 
             Section {
-                Button("Run onboarding again") { preferences.onboarded = false }
+                HotkeyCheck()
+            }
+
+            Section("This copy of the app") {
+                Text(Permissions.runningAppPath)
+                    .font(.caption.monospaced())
+                    .foregroundStyle(.secondary)
+                    .textSelection(.enabled)
+                    .lineLimit(2)
+                    .truncationMode(.middle)
+                SettingCaption("macOS gives permissions to one specific copy of the app. If a row shows as missing even though AK Assistant looks switched on in System Settings, that entry belongs to another copy (for example the one Xcode runs versus the one in Applications). Remove AKAssistant there with –, then add this copy again with +.")
             }
         }
         .formStyle(.grouped)
-        .navigationTitle("Settings")
         .task {
-            // Re-check permissions while this screen is visible (the user may grant them in System Settings).
+            // Re-check while this page is visible (the user may grant them in System Settings).
             while !Task.isCancelled {
                 micGranted = Permissions.microphoneGranted
                 axGranted = Permissions.accessibilityGranted
+                sendKeysGranted = Permissions.canSendKeystrokes
+                screenGranted = Permissions.screenCaptureGranted
                 try? await Task.sleep(for: .seconds(1.5))
             }
         }
     }
+}
 
-    private func setLaunchAtLogin(_ enabled: Bool) {
-        do {
-            if enabled { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
-        } catch {
-            launchAtLogin = SMAppService.mainApp.status == .enabled
-        }
+/// Small grey explanation under a setting.
+struct SettingCaption: View {
+    let text: String
+    init(_ text: String) { self.text = text }
+
+    var body: some View {
+        Text(text)
+            .font(.caption)
+            .foregroundStyle(.secondary)
     }
 }
 

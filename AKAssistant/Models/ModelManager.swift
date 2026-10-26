@@ -30,15 +30,20 @@ final class ModelManager {
         return dir
     }()
 
-    /// Where FluidAudio caches Parakeet by default.
+    /// Where FluidAudio keeps all Parakeet models (one subfolder per model).
     private static let fluidAudioModelDirectory: URL = {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        return base.appendingPathComponent("FluidAudio/Models/parakeet-tdt-0.6b-v3-coreml", isDirectory: true)
+        return base.appendingPathComponent("FluidAudio/Models", isDirectory: true)
     }()
 
     init() {
+        removeRetiredModels()
         for model in ModelCatalog.all {
             states[model.id] = isOnDisk(model) ? .downloaded : .notDownloaded
+            if model.mlx != nil {
+                let key = Self.mlxKey(model)
+                states[key] = isOnDisk(key: key) ? .downloaded : .notDownloaded
+            }
         }
         for model in AssistantCatalog.chatModels {
             states[Self.key(model)] = isOnDisk(model) ? .downloaded : .notDownloaded
@@ -48,8 +53,16 @@ final class ModelManager {
         }
     }
 
+    /// Speech models keep separate files per runtime: Core ML (Neural Engine and GPU share them)
+    /// and MLX. State, download and delete always refer to the runtime picked for the model.
+    func storageKey(_ model: SpeechModel) -> String {
+        ModelRuntimeStore.shared.runtime(for: model) == .mlx ? Self.mlxKey(model) : model.id
+    }
+
+    private static func mlxKey(_ model: SpeechModel) -> String { model.id + "@mlx" }
+
     func state(of model: SpeechModel) -> State {
-        states[model.id] ?? .notDownloaded
+        states[storageKey(model)] ?? .notDownloaded
     }
 
     func isDownloaded(_ model: SpeechModel) -> Bool {
@@ -62,7 +75,8 @@ final class ModelManager {
     }
 
     var diskUsageLabel: String {
-        let chatBytes = AssistantCatalog.chatModels.reduce(Int64(0)) { $0 + Self.folderSize(LLMService.cacheFolder(for: $1)) }
+        // Custom chat models copied from a folder already sit inside modelsDirectory; don't count them twice.
+        let chatBytes = AssistantCatalog.chatModels.filter { $0.localPath == nil }.reduce(Int64(0)) { $0 + Self.folderSize(LLMService.cacheFolder(for: $1)) }
         let bytes = Self.folderSize(Self.modelsDirectory) + Self.folderSize(Self.fluidAudioModelDirectory) + chatBytes
         return ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
     }
@@ -71,12 +85,25 @@ final class ModelManager {
 
     func download(_ model: SpeechModel) async {
         if case .downloading = state(of: model) { return }
-        states[model.id] = .downloading(progress: model.engine == .whisperKit ? 0 : nil)
+        let key = storageKey(model)
+        states[key] = .downloading(progress: 0)
 
         do {
+            #if canImport(MLXAudioSTT)
+            if key != model.id, let spec = model.mlx {
+                // MLX weights come from Hugging Face (cache: ~/.cache/huggingface/hub); no percentage is reported.
+                states[key] = .downloading(progress: nil)
+                try await MLXSpeechEngine.download(spec)
+                var paths = localPaths
+                paths[key] = Self.huggingFaceCacheFolder(spec.repo).path
+                localPaths = paths
+                states[key] = .downloaded
+                return
+            }
+            #endif
             switch model.engine {
             case .whisperKit:
-                let modelID = model.id
+                let modelID = key
                 let folder = try await WhisperKit.download(
                     variant: model.variant,
                     downloadBase: Self.modelsDirectory,
@@ -84,37 +111,73 @@ final class ModelManager {
                     progressCallback: { progress in
                         let fraction = progress.fractionCompleted
                         Task { @MainActor [weak self] in
-                            self?.states[modelID] = .downloading(progress: fraction)
+                            // Progress updates can arrive after the download has finished; without this
+                            // check a late one flips the model back to "downloading" and onboarding's
+                            // Continue button stays disabled.
+                            if case .downloading = self?.states[modelID] {
+                                self?.states[modelID] = .downloading(progress: fraction)
+                            }
                         }
                     }
                 )
                 var paths = localPaths
-                paths[model.id] = folder.path
+                paths[key] = folder.path
+                localPaths = paths
+
+            case .nemotronStreaming:
+                let modelID = key
+                try await NemotronStreamingEngine.download { fraction in
+                    Task { @MainActor [weak self] in
+                        if case .downloading = self?.states[modelID] {
+                            self?.states[modelID] = .downloading(progress: fraction)
+                        }
+                    }
+                }
+                var paths = localPaths
+                paths[key] = NemotronStreamingEngine.modelFolder.path
                 localPaths = paths
 
             case .parakeet:
-                // FluidAudio downloads into its own cache and compiles the Core ML models.
-                _ = try await AsrModels.downloadAndLoad(version: .v3)
+                // FluidAudio downloads into its own cache (Application Support/FluidAudio/Models).
+                let modelID = key
+                let folder = try await AsrModels.download(
+                    version: ParakeetEngine.version(for: model),
+                    progressHandler: { progress in
+                        let fraction = progress.fractionCompleted
+                        Task { @MainActor [weak self] in
+                            if case .downloading = self?.states[modelID] {
+                                self?.states[modelID] = .downloading(progress: fraction)
+                            }
+                        }
+                    }
+                )
                 var paths = localPaths
-                paths[model.id] = Self.fluidAudioModelDirectory.path
+                paths[key] = folder.path
                 localPaths = paths
             }
-            states[model.id] = .downloaded
+            states[key] = .downloaded
         } catch {
-            states[model.id] = .failed(error.localizedDescription)
+            states[key] = .failed(error.localizedDescription)
         }
     }
 
     // MARK: - Delete
 
     func delete(_ model: SpeechModel) {
-        if let path = localPaths[model.id] {
+        let key = storageKey(model)
+        if let path = localPaths[key] {
             try? FileManager.default.removeItem(atPath: path)
         }
         var paths = localPaths
-        paths[model.id] = nil
+        paths[key] = nil
         localPaths = paths
-        states[model.id] = .notDownloaded
+        states[key] = .notDownloaded
+    }
+
+    /// Where swift-huggingface keeps a repo (the same cache the AI models use).
+    static func huggingFaceCacheFolder(_ repo: String) -> URL {
+        FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent(".cache/huggingface/hub/models--" + repo.replacingOccurrences(of: "/", with: "--"), isDirectory: true)
     }
 
     // MARK: - AI chat models (MLX, Hugging Face cache)
@@ -217,8 +280,23 @@ final class ModelManager {
 
     // MARK: - Helpers
 
+    /// Deletes files of speech models this version no longer offers, so they don't take up disk space.
+    private func removeRetiredModels() {
+        var paths = localPaths
+        for id in ModelCatalog.retiredIDs {
+            guard let path = paths[id] else { continue }
+            try? FileManager.default.removeItem(atPath: path)
+            paths[id] = nil
+        }
+        localPaths = paths
+    }
+
     private func isOnDisk(_ model: SpeechModel) -> Bool {
-        guard let path = localPaths[model.id] else { return false }
+        isOnDisk(key: model.id)
+    }
+
+    private func isOnDisk(key: String) -> Bool {
+        guard let path = localPaths[key] else { return false }
         return FileManager.default.fileExists(atPath: path)
     }
 
@@ -232,5 +310,151 @@ final class ModelManager {
             total += Int64(size)
         }
         return total
+    }
+}
+
+// MARK: - Custom models (see CustomModels.swift)
+
+extension ModelManager {
+    /// Where custom models copied from a folder or a .zip link are kept.
+    static let customDirectory: URL = modelsDirectory.appendingPathComponent("Custom", isDirectory: true)
+
+    /// What an "Add custom model" request points at.
+    enum CustomSource {
+        case huggingFace(repo: String, variant: String?)
+        case zipLink(String)
+        case folder(URL)
+    }
+
+    /// Adds a model, downloads or copies it, then loads it once to prove it works.
+    /// On failure nothing is left behind and the error explains what's wrong.
+    /// `status` reports each step for the sheet ("Downloading…", "Checking the model…").
+    @discardableResult
+    func addCustomModel(
+        kind: CustomModelRecord.Kind,
+        name: String,
+        source: CustomSource,
+        allowThinking: Bool,
+        status: @escaping @MainActor (String) -> Void
+    ) async throws -> String {
+        let id = "custom-" + UUID().uuidString.prefix(8).lowercased()
+        let store = CustomModelStore.shared
+        var record = CustomModelRecord(id: id, kind: kind, name: name, source: .local(path: "", origin: ""), allowThinking: allowThinking)
+        let stateKey = kind == .speech ? id : "chat:" + id
+
+        do {
+            switch source {
+            case .huggingFace(let rawRepo, let variant):
+                let repo = CustomModelInspector.normalizedRepo(rawRepo)
+                status("Checking \(repo) on Hugging Face…")
+                if kind == .chat {
+                    try await CustomModelInspector.checkMLXRepo(repo)
+                } else {
+                    let variants = try await CustomModelInspector.whisperKitVariants(in: repo)
+                    guard let variant, variants.contains(variant) else {
+                        throw CustomModelError.message("Pick one of the models in this repo: \(variants.prefix(6).joined(separator: ", "))")
+                    }
+                }
+                record.source = .huggingFace(repo: repo, variant: variant)
+                store.add(record)
+                status("Downloading… large models can take several minutes. Progress also shows on the model's card.")
+                if kind == .speech {
+                    await download(record.speechModel)
+                    if case .failed(let message) = state(of: record.speechModel) { throw CustomModelError.message(message) }
+                } else {
+                    await download(record.chatModel)   // MLX loads the model after downloading, which also checks it
+                    if case .failed(let message) = state(of: record.chatModel) { throw CustomModelError.message(message) }
+                }
+
+            case .zipLink(let link):
+                status("Downloading the .zip…")
+                let unpacked = try await CustomModelInspector.downloadAndUnzip(link)
+                defer { try? FileManager.default.removeItem(at: unpacked.deletingLastPathComponent()) }
+                let host = URL(string: link)?.host ?? "a download link"
+                try await installLocal(from: unpacked, move: true, origin: host, into: &record, stateKey: stateKey, status: status)
+
+            case .folder(let folder):
+                let accessing = folder.startAccessingSecurityScopedResource()
+                defer { if accessing { folder.stopAccessingSecurityScopedResource() } }
+                try await installLocal(from: folder, move: false, origin: folder.lastPathComponent, into: &record, stateKey: stateKey, status: status)
+            }
+
+            if kind == .speech {
+                // Loading once proves the files are a working WhisperKit model.
+                status("Checking the model…")
+                guard let folder = localFolder(for: record.speechModel) else {
+                    throw CustomModelError.message("The model files are missing after download.")
+                }
+                _ = try await WhisperKitEngine(modelFolder: folder, useNeuralEngine: false)
+                store.update(id) { $0.sizeLabel = ByteCountFormatter.string(fromByteCount: Self.folderSize(folder), countStyle: .file) }
+            } else {
+                store.update(id) { [folder = LLMService.cacheFolder(for: record.chatModel)] in
+                    $0.sizeLabel = ByteCountFormatter.string(fromByteCount: Self.folderSize(folder), countStyle: .file)
+                }
+            }
+            return id
+        } catch {
+            // Undo everything so a broken model doesn't linger in the list. Only delete files once the
+            // record points at them (an empty local path must never reach delete()).
+            if let saved = store.records.first(where: { $0.id == id }) {
+                if kind == .speech { delete(saved.speechModel) } else { delete(saved.chatModel) }
+            }
+            try? FileManager.default.removeItem(at: Self.customDirectory.appendingPathComponent(id, isDirectory: true))
+            store.remove(id)
+            states[stateKey] = nil
+            throw Self.friendly(error, kind: kind)
+        }
+    }
+
+    /// Copies (or moves, for an unzipped download) the model folder into the app, and for chat models
+    /// loads it once to check MLX can run it.
+    private func installLocal(
+        from source: URL, move: Bool, origin: String,
+        into record: inout CustomModelRecord, stateKey: String,
+        status: @escaping @MainActor (String) -> Void
+    ) async throws {
+        let root = try CustomModelInspector.modelRoot(in: source, kind: record.kind)
+        let destination = Self.customDirectory.appendingPathComponent(record.id, isDirectory: true)
+        status(move ? "Installing…" : "Copying the model into AK Assistant…")
+        states[stateKey] = .downloading(progress: nil)
+        let customDirectory = Self.customDirectory
+        try await Task.detached(priority: .userInitiated) {
+            let fm = FileManager.default
+            try fm.createDirectory(at: customDirectory, withIntermediateDirectories: true)
+            if move { try fm.moveItem(at: root, to: destination) } else { try fm.copyItem(at: root, to: destination) }
+        }.value
+
+        record.source = .local(path: destination.path, origin: origin)
+        CustomModelStore.shared.add(record)
+        var paths = localPaths
+        paths[stateKey] = destination.path
+        localPaths = paths
+
+        if record.kind == .chat {
+            status("Checking the model…")
+            try await LLMService.download(record.chatModel) { _ in }   // loads from the folder; fails if MLX can't run it
+        }
+        states[stateKey] = .downloaded
+    }
+
+    /// Removes a custom model: its files, its card and (if it was selected) the selection.
+    func removeCustom(_ id: String) {
+        guard let record = CustomModelStore.shared.records.first(where: { $0.id == id }) else { return }
+        switch record.kind {
+        case .speech: delete(record.speechModel)
+        case .chat: delete(record.chatModel)
+        }
+        CustomModelStore.shared.remove(id)
+    }
+
+    /// Turns library errors into something a person can act on.
+    private static func friendly(_ error: Error, kind: CustomModelRecord.Kind) -> Error {
+        if error is CustomModelError { return error }
+        let text = error.localizedDescription
+        if text.localizedCaseInsensitiveContains("Unsupported model type") {
+            return CustomModelError.message("MLX doesn't support this model's architecture yet (\(text)). Try a Llama, Qwen, Gemma, Mistral or Phi model from mlx-community.")
+        }
+        let what = kind == .speech ? "WhisperKit" : "MLX"
+        return CustomModelError.message("\(what) couldn't load this model: \(text)")
     }
 }

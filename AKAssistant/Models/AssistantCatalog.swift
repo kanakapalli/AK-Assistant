@@ -14,6 +14,10 @@ struct ChatModel: Identifiable, Hashable {
     let extraEOSTokens: Set<String>
     /// Qwen3 "thinks" out loud before answering unless this is turned off.
     let disableThinking: Bool
+    /// Added by the user (see CustomModels.swift) rather than built in.
+    var isCustom = false
+    /// Set for a model copied from a folder or a .zip link: load from here instead of the Hugging Face cache.
+    var localPath: String? = nil
 
     var huggingFaceURL: URL { URL(string: "https://huggingface.co/\(repo)")! }
 }
@@ -55,7 +59,10 @@ enum ReplyStyle: String, CaseIterable, Identifiable, Codable {
 }
 
 enum AssistantCatalog {
-    static let chatModels: [ChatModel] = [
+    /// Built-in chat models plus any the user added.
+    @MainActor static var chatModels: [ChatModel] { builtInChatModels + CustomModelStore.shared.chatModels }
+
+    static let builtInChatModels: [ChatModel] = [
         ChatModel(
             id: "qwen3-4b",
             name: "Qwen3 4B",
@@ -122,9 +129,16 @@ enum AssistantCatalog {
         ("sohee", "Sohee"), ("uncle-fu", "Uncle Fu"),
     ]
 
-    static var defaultChatModel: ChatModel { chatModels[0] }
+    static var defaultChatModel: ChatModel { builtInChatModels[0] }
     static var defaultVoiceModel: VoiceModel { voiceModels[0] }
 
-    static func chatModel(id: String) -> ChatModel? { chatModels.first { $0.id == id } }
+    @MainActor static func chatModel(id: String) -> ChatModel? { chatModels.first { $0.id == id } }
     static func voiceModel(id: String) -> VoiceModel? { voiceModels.first { $0.id == id } }
+}
+
+extension VoiceModel {
+    /// Qwen3-TTS (TTSKit, Core ML) only runs correctly on the Neural Engine. On the GPU its 16-bit
+    /// maths overflows to NaN and TTSKit's sampler crashes ("Can't get random value with an empty
+    /// range"), so the GPU isn't offered.
+    static let runtimes: [ModelRuntime] = [.neuralEngine]
 }

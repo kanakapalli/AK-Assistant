@@ -16,6 +16,7 @@
 		AC0000000000000000000107 /* MLXHuggingFace in Frameworks */ = {isa = PBXBuildFile; productRef = AC0000000000000000000207 /* MLXHuggingFace */; };
 		AC0000000000000000000108 /* HuggingFace in Frameworks */ = {isa = PBXBuildFile; productRef = AC0000000000000000000208 /* HuggingFace */; };
 		AC0000000000000000000109 /* Tokenizers in Frameworks */ = {isa = PBXBuildFile; productRef = AC0000000000000000000209 /* Tokenizers */; };
+		AC0000000000000000000110 /* MLXEmbedders in Frameworks */ = {isa = PBXBuildFile; productRef = AC0000000000000000000210 /* MLXEmbedders */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,6 +45,7 @@
 				AC0000000000000000000107 /* MLXHuggingFace in Frameworks */,
 				AC0000000000000000000108 /* HuggingFace in Frameworks */,
 				AC0000000000000000000109 /* Tokenizers in Frameworks */,
+				AC0000000000000000000110 /* MLXEmbedders in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -95,6 +97,7 @@
 				AC0000000000000000000207 /* MLXHuggingFace */,
 				AC0000000000000000000208 /* HuggingFace */,
 				AC0000000000000000000209 /* Tokenizers */,
+				AC0000000000000000000210 /* MLXEmbedders */,
 			);
 			productName = AKAssistant;
 			productReference = AC0000000000000000000001 /* AKAssistant.app */;
@@ -295,21 +298,22 @@
 				CODE_SIGN_ENTITLEMENTS = AKAssistant/AKAssistant.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEAD_CODE_STRIPPING = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "AK Assistant";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "AK Assistant controls System Events, Finder or loginwindow only when you ask it to, for example to switch dark mode, empty the Trash or restart.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 NatFirst";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "AK Assistant listens only while you hold the dictation hotkey and transcribes on this Mac.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "AK Assistant listens only while you hold a hotkey or record a meeting you started, and transcribes on this Mac.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.natfirst.akassistant;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -325,21 +329,22 @@
 				CODE_SIGN_ENTITLEMENTS = AKAssistant/AKAssistant.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEAD_CODE_STRIPPING = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "AK Assistant";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "AK Assistant controls System Events, Finder or loginwindow only when you ask it to, for example to switch dark mode, empty the Trash or restart.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 NatFirst";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "AK Assistant listens only while you hold the dictation hotkey and transcribes on this Mac.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "AK Assistant listens only while you hold a hotkey or record a meeting you started, and transcribes on this Mac.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.natfirst.akassistant;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -466,6 +471,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = AC0000000000000000000306 /* XCRemoteSwiftPackageReference "swift-transformers" */;
 			productName = Tokenizers;
+		};
+		AC0000000000000000000210 /* MLXEmbedders */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AC0000000000000000000304 /* XCRemoteSwiftPackageReference "mlx-swift-lm" */;
+			productName = MLXEmbedders;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

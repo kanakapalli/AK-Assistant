@@ -1,8 +1,13 @@
 # Xcode
 build/
+dist/
 DerivedData/
 xcuserdata/
 *.xcuserstate
 
 # macOS
 .DS_Store
+
+# Local backups and raw video clips
+Backup before */
+Demo Video Parts/

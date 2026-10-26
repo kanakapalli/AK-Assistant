@@ -1,4 +1,5 @@
 import SwiftUI
+import ServiceManagement
 
 /// First-launch flow: welcome -> microphone -> accessibility -> speech model -> AI assistant -> hotkeys -> try it.
 struct OnboardingView: View {
@@ -29,6 +30,8 @@ struct OnboardingView: View {
     @State private var warmUpStarted: Date?
     @State private var warmUpError: String?
     @State private var tryText = ""
+    /// On by default: a dictation app is most useful when it's already running after a restart.
+    @State private var launchAtLogin = true
 
     var body: some View {
         VStack(spacing: 0) {
@@ -50,12 +53,19 @@ struct OnboardingView: View {
                 }
                 Spacer()
                 Button(step == .tryIt ? "Finish" : "Continue") {
-                    if step == .tryIt { preferences.onboarded = true } else { move(1) }
+                    if step == .tryIt { finish() } else { move(1) }
                 }
                 .keyboardShortcut(.defaultAction)
                 .disabled(!canContinue)
             }
             .padding(20)
+        }
+        .onChange(of: modelManager.states) {
+            // Downloaded a model other than the highlighted one? Select it, so Continue unlocks.
+            guard step == .model, !modelManager.isDownloaded(preferences.selectedModel),
+                  let ready = ModelCatalog.all.first(where: { modelManager.isDownloaded($0) })
+            else { return }
+            preferences.selectedModelID = ready.id
         }
         .task {
             // Poll permission status so the steps unlock as soon as the user grants access.
@@ -115,6 +125,12 @@ struct OnboardingView: View {
             if let warmUpError {
                 Text(warmUpError).foregroundStyle(.red).font(.callout)
             }
+            if !modelManager.isDownloaded(preferences.selectedModel) && !warmingUp {
+                Text("Download the selected model to continue.")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .padding(.top, 4)
+            }
 
         case .assistant:
             AssistantSetupStep()
@@ -144,6 +160,12 @@ struct OnboardingView: View {
                 .font(.body)
                 .frame(height: 140)
                 .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(.secondary.opacity(0.3)))
+            Toggle("Open AK Assistant automatically when I log in", isOn: $launchAtLogin)
+                .toggleStyle(.switch)
+                .padding(.top, 12)
+            Text("You can change this later in Settings.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
             Text("After this, AK Assistant keeps running in the menu bar. Open this window from the Dock or the menu bar to see your history.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -158,6 +180,21 @@ struct OnboardingView: View {
         case .model: return modelManager.isDownloaded(preferences.selectedModel) && !warmingUp
         default: return true
         }
+    }
+
+    private func finish() {
+        let service = SMAppService.mainApp
+        do {
+            if launchAtLogin, service.status != .enabled {
+                try service.register()
+            } else if !launchAtLogin, service.status == .enabled {
+                try service.unregister()
+            }
+        } catch {
+            // Not fatal: the user can turn it on later in Settings (macOS may ask for approval there).
+            NSLog("AK Assistant launch-at-login error: \(error)")
+        }
+        preferences.onboarded = true
     }
 
     private func move(_ delta: Int) {

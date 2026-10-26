@@ -15,10 +15,14 @@ struct AKAssistantApp: App {
                 .environment(appState)
                 .environment(appState.preferences)
                 .environment(appState.modelManager)
-                .frame(minWidth: 820, minHeight: 540)
+                .frame(minWidth: 900, minHeight: 560)
         }
         .modelContainer(appState.container)
-        .defaultSize(width: 960, height: 620)
+        .defaultSize(width: 1100, height: 700)
+        // Once set up, start quietly in the menu bar (e.g. at login) instead of opening this window.
+        // Click the Dock icon or "Open AK Assistant" in the menu bar to show it.
+        .defaultLaunchBehavior(appState.preferences.onboarded ? .suppressed : .presented)
+        .restorationBehavior(.disabled)
 
         // Menu bar icon: status, recent dictations, quick actions.
         MenuBarExtra {
@@ -43,6 +47,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.setActivationPolicy(.regular)
         MainActor.assumeIsolated {
             AppState.shared.start()
+        }
+    }
+
+    /// Make sure meetings and history are on disk before quitting.
+    func applicationWillTerminate(_ notification: Notification) {
+        MainActor.assumeIsolated {
+            AppState.shared.restoreSystemAudio()   // never leave the Mac muted
+            AppState.shared.saveData()
         }
     }
 

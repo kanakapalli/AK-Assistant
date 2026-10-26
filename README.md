@@ -4,6 +4,9 @@ Hold a key, speak, let go: AK Assistant turns your speech into text and pastes i
 
 - **Push-to-talk:** hold the hotkey to record, release to transcribe and paste. Press **Esc** while holding to cancel.
 - **AI assistant:** hold the AI hotkey (default Right Command), ask anything, release. A local chat model answers in a floating panel and, if you like, a local voice reads it aloud. Follow-ups within 5 minutes continue the conversation.
+- **Mac commands:** the AI hotkey also does things: "open Xcode", "search YouTube for lofi music", "set a timer for 10 minutes", "remind me at 5 pm to call mom", "volume 30", "take a screenshot", "lock my screen", "what's my battery?". See **Mac commands** below.
+- **Meetings:** double-tap the dictation key to record a meeting; press it again (or double-tap) to stop. You get a live transcript, then a summary, key points, decisions and a to-do list written by the local AI. See **Meetings** below.
+- **Learn:** a section in the app that explains every feature and lists everything you can say, with Try buttons.
 - **Works in any app:** dictation runs in the background. AK Assistant doesn't need to be in front.
 - **Dock and menu bar:** open the app from the Dock or the menu bar icon to see your history, manage models and change settings.
 - **History:** every dictation is saved locally with the time, the app it went into, and the model used. Search, copy, export or delete it.
@@ -43,6 +46,49 @@ This is a standard Xcode project, like one made with File → New → Project �
 The project uses Xcode 16 folder syncing: any file you add to the `AKAssistant` folder, in Finder or in Xcode, becomes part of the app automatically.
 
 > **Accessibility permission and rebuilds:** macOS ties the Accessibility grant to the app's code signature. If the hotkey stops working after a rebuild, remove AK Assistant from System Settings → Privacy & Security → Accessibility and add it again. Keeping the same signing team avoids most of this.
+
+## Meetings
+
+Double-tap the dictation key (Right Option by default) to start recording a meeting. A red **Meeting** capsule with a timer appears at the top of the screen. Press the key once, or double-tap it, to stop. You can also start and stop from the menu bar or the **Meetings** screen.
+
+- **What's recorded:** your microphone plus the Mac's own audio (via ScreenCaptureKit), so the other people on Zoom, Meet or Teams are captured even with headphones on. The two are mixed into one 16 kHz track. If Screen & System Audio Recording isn't allowed, the meeting continues with the mic only and says so.
+- **Less noise:** the mic uses Apple's voice processing (noise suppression + echo cancellation, as in FaceTime). Your mic and the Mac's audio are also saved as separate tracks (`<id>-mic.m4a`, `<id>-mac.m4a`) on the same timeline, next to the mix used for playback.
+- **Clean-up pass:** when the meeting ends, the transcript is redone from the separate tracks (`Meetings/MeetingCleanup.swift`): Silero VAD (FluidAudio) cuts each track at real pauses and skips silence/noise, each piece is transcribed (optionally with a bigger model picked in Settings › Meetings), mic lines that merely repeat the call (speaker echo) are dropped, and lines are joined into paragraphs. If it fails, the live transcript stays.
+- **Who said what:** FluidAudio's offline diarizer (pyannote segmentation + WeSpeaker embeddings + VBx, on-device, ~30 MB downloaded the first time) splits the Mac's audio into Speaker 1, 2, 3…; the mic is "You". For an in-person meeting (mic only), the mic track is split instead. Click a speaker chip in the Transcript tab to rename them everywhere — transcript, summary and to-dos. Notes are written with the names, so owners on to-dos come out right. **Redo Clean-up and Speakers** in the ⋯ menu reruns it from the kept tracks.
+- **Live transcript:** every 15–28 seconds, cut at a pause where possible, a piece goes through the selected speech model. Lines appear in Meetings while the meeting is running.
+- **Notes:** when you stop, the selected AI model writes a title, summary, key points, decisions and action items (task · owner · due date). Long meetings are summarised part by part first, so an hour-long transcript fits a small model. **Rewrite Summary and To-dos** in the ⋯ menu runs it again; to-dos you ticked are kept.
+- **Meetings screen:** list on the left; on the right Summary, To-dos (tick, edit, add, delete) and Transcript (search, click a time to play from there). Export a meeting as Markdown or copy the notes.
+- **Audio:** kept as `~/Library/Application Support/AK Assistant/Meetings/<id>.m4a` (AAC, ~15 MB/hour) plus the two tracks (~30 MB/hour), unless turned off in Settings › Meetings (then the tracks are deleted right after the clean-up). Deleting a meeting deletes its audio.
+- **Safety:** recordings stop on their own after 4 hours. If the app quits mid-meeting, what was transcribed is kept.
+- **Double-tap rules:** both taps must be shorter than 0.3 s, at most 0.4 s apart, with no other key pressed in between, so ⌥← word jumps don't start a meeting. Turn it off in Settings › Meetings.
+
+Code: `Meetings/MeetingRecorder.swift` (mic + system audio, mixing, chunking, .m4a), `Meetings/MeetingCoordinator.swift` (start/stop, live transcription, notes), `Meetings/MeetingSummarizer.swift` (prompts + parsing), `Meetings/Meeting.swift` (SwiftData model), `UI/MeetingsView.swift`.
+
+## Mac commands
+
+Hold the AI hotkey and say a command instead of a question. The full list, with Try buttons, is in the app under **Learn**.
+
+| Group | Examples |
+| --- | --- |
+| Apps & windows | open Xcode, switch to Finder, quit Slack, hide other apps, minimize, new tab, full screen |
+| Websites & search | open YouTube, go to github.com, search YouTube for…, google…, look up … on Wikipedia, directions to… |
+| Files, folders, settings | open Downloads, find files named invoice, open file budget, open Wi-Fi settings, run shortcut … |
+| Sound & music | set volume to 40, turn it up, mute, pause the music, next song |
+| Screen & system | brightness up, dark mode on, take a screenshot, record my screen, turn off Wi-Fi, keep my Mac awake for 1 hour |
+| Timers & reminders | set a timer for 10 minutes, remind me in 20 minutes to…, set an alarm for 7 am, how much time is left, cancel all timers |
+| Quick info | what time is it, what's my battery, how much space do I have, what's my IP address, which macOS am I on |
+| Typing | type …, copy … to clipboard |
+| Power | lock my screen, turn off the display, go to sleep, empty the trash, restart, shut down, log out |
+
+How it works (`AKAssistant/Tools/`):
+
+- **`CommandParser`** recognises common phrasings with plain pattern matching, so they run instantly, offline, without loading the AI model.
+- Anything it doesn't recognise goes to the AI model. With **Settings › Mac commands › Understand commands phrased any way** on, the model can answer `ACTION: open Xcode` for requests phrased unusually or in another language; AK Assistant then runs that command.
+- **`AppFinder`** matches spoken app names against `/Applications` and the system app folders, with aliases ("vs code", "chrome", "settings") and fuzzy matching ("ex code" → Xcode).
+- **`CommandRunner`** carries commands out with `NSWorkspace`, simulated keys (media keys, ⌘⇧3, ⌃⌘Q), `osascript`, `pmset`, `mdfind`, `networksetup`, `caffeinate` and `shortcuts`.
+- **`TimerCenter`** keeps voice timers and reminders and posts macOS notifications.
+- **Risky actions** (quit, close window/tab, lock, sleep, empty Trash, Wi-Fi off, restart, shut down, log out) run immediately by default. Turn on **Ask before risky actions** to get Run / Cancel in the popup (or say "yes"). Restart, shut down and log out always show macOS's own confirmation.
+- **Permissions:** dark mode, Empty Trash and restart/shut down/log out use Apple Events, so macOS asks once to let AK Assistant control System Events, Finder or loginwindow (entitlement `com.apple.security.automation.apple-events` and `NSAppleEventsUsageDescription`). Timers ask for notification permission the first time.
 
 ## Models
 
@@ -123,6 +169,7 @@ AK Assistant/
     ├── Models/                 ModelCatalog (speech models), AssistantCatalog (AI + voice models), ModelManager (download/delete)
     ├── Insertion/              TextInserter (paste + clipboard restore, typing fallback)
     ├── History/                DictationRecord (SwiftData), pruning, export
+    ├── Meetings/               Meeting mode: recorder (mic + Mac audio), coordinator, AI summariser, SwiftData model
     ├── Support/                Permissions, sounds, post-processing
     └── UI/                     Main window, History, Models, Settings, Onboarding, menu bar, recording pill
 ```
@@ -169,6 +216,7 @@ The target builds in the Swift 5 language mode, so the third-party packages don'
 | --- | --- |
 | Microphone | Recording while the hotkey is held |
 | Accessibility | Seeing the hotkey in other apps and pasting into them |
+| Screen & System Audio Recording | Meetings only: recording the Mac's audio (other people on a call). The picture is ignored. Optional. |
 | Network | Only to download models from Hugging Face. Questions and answers stay on the Mac. |
 
 The app isn't sandboxed, because the App Sandbox blocks synthetic key events into other apps. Distribute it outside the Mac App Store with a Developer ID certificate and notarization.
@@ -179,6 +227,11 @@ The app isn't sandboxed, because the App Sandbox blocks synthetic key events int
 - **Language:** auto-detect, or pin one (English, Hindi, Telugu, Tamil, Kannada, Marathi, Bengali, Spanish, French, German, Japanese, Chinese). Parakeet ignores this setting.
 - Remove filler words, restore the clipboard after pasting, start/stop sounds, launch at login.
 - History retention and permission status.
+- **Meetings** (`UI/MeetingSettings.swift`, also reachable from the Meetings toolbar):
+  - *Recording:* double-tap to start, record the Mac's audio, mic noise/echo reduction, meeting language (or same as dictation), live transcript on/off, auto-stop after 1/2/4/8 hours.
+  - *Transcript & speakers:* clean-up pass on/off, speech model for the clean-up, speech detection sensitivity (Low for noisy rooms, High for soft voices), remove call echo, speaker labels on/off, number of people (automatic or 2–10).
+  - *Notes:* write notes automatically, AI model for notes, detail (Brief / Standard / Detailed).
+  - *Storage:* keep audio, space used, Show in Finder.
 
 ## Status and next steps
 
@@ -186,6 +239,8 @@ Dictation builds and runs. The AI assistant (chat model + voice) is new and hasn
 
 - [x] Dictation, history, onboarding, app icon
 - [ ] First build and fix-ups for the AI assistant
+- [ ] First build and fix-ups for Meetings (new, not compiled yet)
+- [ ] Meetings: remember named voices across meetings (FluidAudio speaker embeddings)
 - [ ] Per-app paste overrides and a typing fallback toggle (`TextInserter.typeText` is already in place)
 - [ ] Custom vocabulary (names, jargon) passed to Whisper as a prompt
 - [ ] Voice-activity detection to trim leading and trailing silence

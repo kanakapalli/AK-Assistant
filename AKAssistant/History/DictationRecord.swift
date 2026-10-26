@@ -1,16 +1,17 @@
 import Foundation
 import SwiftData
 
-/// One saved dictation, or one question to the AI assistant with its answer.
+/// One saved dictation, one question to the AI assistant with its answer, or one writing-tool
+/// rewrite (fix grammar, write as email, …) with the original text and the result.
 /// (New properties have defaults, so SwiftData upgrades existing history automatically.)
 @Model
 final class DictationRecord {
     var id: UUID
     /// What you said: the dictated text, or your question to the AI.
     var text: String
-    /// "dictation" or "assistant".
+    /// "dictation", "assistant" or "rewrite" ("grammar" for early grammar fixes).
     var kind: String = "dictation"
-    /// The AI's reply, for assistant entries.
+    /// The AI's reply for assistant entries; the rewritten text for rewrites.
     var answer: String?
     var createdAt: Date
     var duration: Double
@@ -32,6 +33,23 @@ final class DictationRecord {
     }
 
     var isAssistant: Bool { kind == "assistant" }
+    /// Made by a writing tool: `text` is the original, `answer` the rewritten text.
+    var isRewrite: Bool { kind == "rewrite" || kind == "grammar" }
+    var isDictation: Bool { !isAssistant && !isRewrite }
+
+    /// Which writing tool made it ("Write as email"). Saved as the start of modelName: "Write as email · Qwen3 4B".
+    var rewriteActionTitle: String {
+        guard isRewrite else { return "" }
+        if kind == "grammar" { return "Fix grammar" }
+        return modelName.components(separatedBy: " · ").first ?? modelName
+    }
+
+    /// The model alone, without the writing tool's name in front.
+    var displayModelName: String {
+        guard isRewrite, kind != "grammar" else { return modelName }
+        let parts = modelName.components(separatedBy: " · ")
+        return parts.count > 1 ? parts.dropFirst().joined(separator: " · ") : modelName
+    }
 
     var wordCount: Int {
         text.split(whereSeparator: { $0.isWhitespace }).count
@@ -76,6 +94,9 @@ enum HistoryExporter {
         formatter.timeStyle = .short
         return records.map { r in
             let stamp = "[\(formatter.string(from: r.createdAt))]"
+            if r.isRewrite, let answer = r.answer {
+                return "\(stamp) \(r.rewriteActionTitle)\nOriginal: \(r.text)\nRewritten: \(answer)"
+            }
             if let answer = r.answer { return "\(stamp) Q: \(r.text)\nA: \(answer)" }
             return "\(stamp) \(r.text)"
         }.joined(separator: "\n\n")

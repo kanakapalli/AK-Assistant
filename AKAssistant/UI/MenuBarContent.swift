@@ -17,6 +17,21 @@ struct MenuBarContent: View {
 
         Divider()
 
+        if appState.meetings.isRecording {
+            Button("Stop meeting recording") { appState.stopMeeting() }
+        } else {
+            Button(preferences.meetingDoubleTap ? "Start meeting recording (double-tap \(preferences.hotkey.shortTitle))" : "Start meeting recording") {
+                appState.startMeeting()
+            }
+        }
+        Button("Meetings…") {
+            appState.showMeetings()
+            openWindow(id: WindowID.main)
+            NSApp.activate()
+        }
+
+        Divider()
+
         if records.isEmpty {
             Text("No dictations yet")
         } else {
@@ -39,6 +54,24 @@ struct MenuBarContent: View {
             Divider()
         }
 
+        let timers = appState.timers.timers
+        if !timers.isEmpty {
+            Text("Timers — click to cancel")
+            ForEach(timers) { timer in
+                Button(timerLine(timer)) { appState.timers.cancel(timer.id) }
+            }
+            if timers.count > 1 {
+                Button("Cancel all timers") { appState.timers.cancelAll() }
+            }
+            Divider()
+        }
+
+        Button("Learn what AK Assistant can do") {
+            appState.sidebarSelection = .learn
+            openWindow(id: WindowID.main)
+            NSApp.activate()
+        }
+
         Button("Open AK Assistant") {
             openWindow(id: WindowID.main)
             NSApp.activate()
@@ -52,6 +85,7 @@ struct MenuBarContent: View {
     }
 
     private var statusLine: String {
+        if appState.meetings.isRecording { return "Recording a meeting…" }
         switch appState.status {
         case .recording: return "Listening…"
         case .transcribing: return "Transcribing…"
@@ -61,6 +95,12 @@ struct MenuBarContent: View {
 
     private var assistantLine: String {
         "Hold \(preferences.assistantHotkey.title) to ask AI · \(preferences.chatModel.name)"
+    }
+
+    private func timerLine(_ timer: ActiveTimer) -> String {
+        let time = timer.fireDate.formatted(date: .omitted, time: .shortened)
+        let name = timer.isReminder ? timer.label : "\(DurationText.spoken(timer.length ?? 0)) timer"
+        return "\(name) · \(time)"
     }
 
     private func preview(_ text: String) -> String {

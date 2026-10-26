@@ -1,6 +1,7 @@
 import Foundation
 import os
 import TTSKit
+import CoreML
 
 /// Speaks answers aloud with a local Qwen3-TTS model (Argmax TTSKit, Core ML, from Hugging Face).
 ///
@@ -22,6 +23,7 @@ final class SpeechService {
     private var input: AsyncStream<String>.Continuation?
     private var stopFlag = StopFlag()
     private let log = Logger(subsystem: "com.natfirst.akassistant", category: "Speech")
+
 
     /// Called when an answer finishes being spoken (not when it's stopped early).
     var onFinished: (@MainActor () -> Void)?
@@ -48,6 +50,7 @@ final class SpeechService {
         guard cachedVoiceKey != key else { return }
 
         let started = Date()
+        Self.discardGPUPromptCaches(in: folder)
         if tts.loadPromptCache(voice: speaker.rawValue, language: language.rawValue) == nil {
             try await tts.buildPromptCache(speaker: speaker, language: language)
             try? tts.savePromptCache()   // next launch loads it from disk instead of rebuilding
@@ -57,24 +60,35 @@ final class SpeechService {
     }
 
     private func load(variant id: String, folder: URL) async throws -> TTSKit {
-        if let tts, loadedVariant == id { return tts }
+        // Where it runs is picked per voice model in Settings; a different choice means a reload.
+        let runtime = AssistantCatalog.voiceModel(id: id).map { ModelRuntimeStore.shared.runtime(for: $0) } ?? .gpu
+        let loadKey = id + "@" + runtime.rawValue
+        if let tts, loadedVariant == loadKey { return tts }
         // Reuse a load that's already running (preload on hotkey press + speak can overlap).
-        if let loadingTask, loadingVariant == id { return try await loadingTask.value }
+        if let loadingTask, loadingVariant == loadKey { return try await loadingTask.value }
 
         let variant = TTSModelVariant(rawValue: id) ?? .qwen3TTS_0_6b
         log.info("Loading voice model \(variant.description, privacy: .public)")
         let started = Date()
+        let units: MLComputeUnits = runtime == .gpu ? .cpuAndGPU : .cpuAndNeuralEngine
         let task = Task<TTSKit, Error> {
-            let config = TTSKitConfig(model: variant, modelFolder: folder, verbose: false, download: false)
+            // Embedding lookups are tiny table reads and stay on the CPU; the three heavy parts go to the GPU.
+            let compute = ComputeOptions(
+                embedderComputeUnits: .cpuOnly,
+                codeDecoderComputeUnits: units,
+                multiCodeDecoderComputeUnits: units,
+                speechDecoderComputeUnits: units
+            )
+            let config = TTSKitConfig(model: variant, modelFolder: folder, computeOptions: compute, verbose: false, download: false)
             return try await TTSKit(config)
         }
         loadingTask = task
-        loadingVariant = id
+        loadingVariant = loadKey
         defer { loadingTask = nil; loadingVariant = nil }
 
         let loaded = try await task.value
         tts = loaded
-        loadedVariant = id
+        loadedVariant = loadKey
         cachedVoiceKey = nil
         log.info("Voice model ready in \(Date().timeIntervalSince(started), format: .fixed(precision: 1))s")
         return loaded
@@ -205,6 +219,19 @@ final class SpeechService {
         loadingTask?.cancel()
         loadingTask = nil
         loadingVariant = nil
+    }
+
+    /// Voice caches saved while the voice ran on the GPU can contain NaN values that crash TTSKit.
+    /// Delete them once; they're rebuilt on the Neural Engine the next time the voice loads.
+    private static func discardGPUPromptCaches(in folder: URL) {
+        let flag = "voicePromptCacheReset.v2." + folder.lastPathComponent   // once per voice model
+        guard !UserDefaults.standard.bool(forKey: flag) else { return }
+        let embeddings = folder.appendingPathComponent("embeddings", isDirectory: true)
+        let files = (try? FileManager.default.contentsOfDirectory(at: embeddings, includingPropertiesForKeys: nil)) ?? []
+        for file in files where file.pathExtension == "promptcache" {
+            try? FileManager.default.removeItem(at: file)
+        }
+        UserDefaults.standard.set(true, forKey: flag)
     }
 
     /// Qwen3-TTS speaks 10 languages; anything else falls back to English.

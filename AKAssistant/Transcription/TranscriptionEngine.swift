@@ -3,10 +3,21 @@ import CoreML
 import os
 import WhisperKit
 import FluidAudio
+import AVFoundation
 
 /// Anything that turns 16 kHz mono samples into text. New backends (or an LLM cleanup step) plug in here.
 protocol TranscriptionEngine: AnyObject {
     func transcribe(_ samples: [Float], language: String?) async throws -> String
+}
+
+/// An engine that transcribes while audio is still arriving, instead of after the recording ends.
+protocol StreamingTranscriptionEngine: TranscriptionEngine {
+    /// Starts a new utterance (clears anything from the previous one).
+    func beginStream() async
+    /// Adds newly recorded 16 kHz audio and returns the transcript so far.
+    func feed(_ samples: [Float]) async throws -> String
+    /// Processes what's left and returns the final transcript.
+    func finishStream() async throws -> String
 }
 
 enum TranscriptionError: LocalizedError {
@@ -71,11 +82,35 @@ final class WhisperKitEngine: TranscriptionEngine {
 
 final class ParakeetEngine: TranscriptionEngine {
     private let manager: AsrManager
+    private let version: AsrModelVersion
 
-    init() async throws {
-        let models = try await AsrModels.downloadAndLoad(version: .v3)
+    /// Which FluidAudio model a catalog entry means ("ultra", "v2", "redux", "v3").
+    static func version(for model: SpeechModel) -> AsrModelVersion {
+        switch model.variant {
+        case "v2": return .v2
+        case "redux": return .redux
+        case "v3": return .v3
+        default: return .ultra
+        }
+    }
+
+    /// - Parameter useNeuralEngine: false (default) runs every part of the model on the GPU.
+    init(version: AsrModelVersion, useNeuralEngine: Bool) async throws {
+        self.version = version
+        let log = Logger(subsystem: "com.natfirst.akassistant", category: "Transcription")
+        let started = Date()
+        let units: MLComputeUnits = useNeuralEngine ? .cpuAndNeuralEngine : .cpuAndGPU
+        let configuration = MLModelConfiguration()
+        configuration.computeUnits = units
+        let folder = AsrModels.defaultCacheDirectory(for: version)
+        // Load what's already downloaded; only go to the network if the files are missing.
+        let models = AsrModels.modelsExist(at: folder, version: version)
+            ? try await AsrModels.load(from: folder, configuration: configuration, version: version, encoderComputeUnits: units)
+            : try await AsrModels.downloadAndLoad(configuration: configuration, version: version, encoderComputeUnits: units)
+        log.info("Parakeet: loading on \(useNeuralEngine ? "Neural Engine" : "GPU", privacy: .public)")
         manager = AsrManager(config: .default)
         try await manager.loadModels(models)
+        log.info("Parakeet: model ready in \(Date().timeIntervalSince(started), format: .fixed(precision: 1))s")
     }
 
     func transcribe(_ samples: [Float], language: String?) async throws -> String {
@@ -85,8 +120,76 @@ final class ParakeetEngine: TranscriptionEngine {
         if audio.count < minimum {
             audio.append(contentsOf: [Float](repeating: 0, count: minimum - audio.count))
         }
-        var decoderState = try TdtDecoderState()
+        var decoderState = try TdtDecoderState(decoderLayers: version.decoderLayers)
         let result = try await manager.transcribe(audio, decoderState: &decoderState)
         return result.text
+    }
+}
+
+// MARK: - Nemotron Streaming via FluidAudio
+
+/// NVIDIA's Nemotron Speech Streaming (English, 0.6B). It works through the audio in 0.56 s steps as you
+/// talk, keeping its state between steps, so nothing is re-read and the final text is ready right away.
+final class NemotronStreamingEngine: StreamingTranscriptionEngine {
+    static let chunkSize: NemotronChunkSize = .ms560   // lowest-latency tier; same accuracy as the larger ones
+
+    /// Where FluidAudio keeps the model (Application Support/FluidAudio/Models/...).
+    static var modelFolder: URL {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("FluidAudio/Models", isDirectory: true)
+            .appendingPathComponent(chunkSize.repo.folderName, isDirectory: true)
+    }
+
+    private let manager: StreamingNemotronAsrManager
+    private let format = AVAudioFormat(
+        commonFormat: .pcmFormatFloat32, sampleRate: AudioRecorder.sampleRate, channels: 1, interleaved: false
+    )!
+
+    /// Downloads the model (if needed) and loads it.
+    /// It always runs on the Neural Engine: its int8 encoder is built for it, and FluidAudio measured it
+    /// about 10x slower on the GPU. This is the one exception to the "everything on the GPU" setting.
+    init() async throws {
+        let log = Logger(subsystem: "com.natfirst.akassistant", category: "Transcription")
+        let started = Date()
+        manager = StreamingNemotronAsrManager(requestedChunkSize: Self.chunkSize)
+        try await manager.loadModels(to: nil, configuration: nil, progressHandler: nil)
+        log.info("Nemotron Streaming: model ready in \(Date().timeIntervalSince(started), format: .fixed(precision: 1))s")
+    }
+
+    /// Downloads the model files without keeping the model in memory.
+    static func download(progress: @escaping @Sendable (Double) -> Void) async throws {
+        let manager = StreamingNemotronAsrManager(requestedChunkSize: chunkSize)
+        try await manager.loadModels(to: nil, configuration: nil, progressHandler: { progress($0.fractionCompleted) })
+        await manager.cleanup()
+    }
+
+    func beginStream() async {
+        await manager.reset()
+    }
+
+    func feed(_ samples: [Float]) async throws -> String {
+        if !samples.isEmpty, let buffer = makeBuffer(samples) {
+            _ = try await manager.process(audioBuffer: buffer)
+        }
+        return await manager.getPartialTranscript()
+    }
+
+    func finishStream() async throws -> String {
+        try await manager.finish()
+    }
+
+    /// Whole-recording transcription (used for warm-up and as a fallback).
+    func transcribe(_ samples: [Float], language: String?) async throws -> String {
+        await beginStream()
+        _ = try await feed(samples)
+        return try await finishStream()
+    }
+
+    private func makeBuffer(_ samples: [Float]) -> AVAudioPCMBuffer? {
+        guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(samples.count)),
+              let channel = buffer.floatChannelData?[0] else { return nil }
+        buffer.frameLength = AVAudioFrameCount(samples.count)
+        samples.withUnsafeBufferPointer { channel.update(from: $0.baseAddress!, count: samples.count) }
+        return buffer
     }
 }

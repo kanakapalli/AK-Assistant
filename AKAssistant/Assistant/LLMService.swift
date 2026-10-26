@@ -18,6 +18,8 @@ final class LLMService {
     private var loadingTask: Task<ModelContainer, Error>?
     private var loadingModelID: String?
     private var lastUse = Date.distantPast
+    /// Whether the current conversation was started with the Mac-command instructions.
+    private var sessionAllowsActions = false
     private var idleTask: Task<Void, Never>?
     private let log = Logger(subsystem: "com.natfirst.akassistant", category: "Assistant")
 
@@ -34,8 +36,26 @@ final class LLMService {
         tables, code blocks or bullet lists unless the user asks for them.
         """
 
+    /// Added when Mac commands are on. Common commands are recognised before the AI is asked
+    /// (CommandParser); this lets the model hand back ones phrased in other ways or other languages.
+    @MainActor static var actionInstructions: String {
+        """
+        You can also control this Mac. If the user wants something done on the Mac (open or quit an app, \
+        open a website, search the web, set a timer or reminder, change the volume or brightness, take a \
+        screenshot, lock the screen and so on), reply with exactly one line and nothing else, in this form:
+        ACTION: <short English command>
+        Use simple commands like these: \(ToolCatalog.phrasesForModel).
+        For example "fire up the coding app from Apple" becomes "ACTION: open Xcode", and \
+        "xcode kholo" becomes "ACTION: open Xcode". Only use ACTION when the user wants an action on the Mac. \
+        For questions, chatting or writing, answer normally and never mention ACTION.
+        """
+    }
+
     static func configuration(for model: ChatModel) -> ModelConfiguration {
-        ModelConfiguration(id: model.repo, extraEOSTokens: model.extraEOSTokens)
+        if let path = model.localPath {
+            return ModelConfiguration(directory: URL(fileURLWithPath: path, isDirectory: true), extraEOSTokens: model.extraEOSTokens)
+        }
+        return ModelConfiguration(id: model.repo, extraEOSTokens: model.extraEOSTokens)
     }
 
     /// Downloads the model into the Hugging Face cache (~/.cache/huggingface/hub).
@@ -50,6 +70,7 @@ final class LLMService {
 
     /// Where the Hugging Face cache keeps this model, used to check for and delete it.
     static func cacheFolder(for model: ChatModel) -> URL {
+        if let path = model.localPath { return URL(fileURLWithPath: path, isDirectory: true) }
         let home = FileManager.default.homeDirectoryForCurrentUser
         let name = "models--" + model.repo.replacingOccurrences(of: "/", with: "--")
         return home.appendingPathComponent(".cache/huggingface/hub/\(name)", isDirectory: true)
@@ -88,12 +109,15 @@ final class LLMService {
     }
 
     /// Streams the answer to a question, a few words at a time.
-    func ask(_ question: String, model: ChatModel) async throws -> AsyncThrowingStream<String, Error> {
+    func ask(_ question: String, model: ChatModel, allowActions: Bool = false) async throws -> AsyncThrowingStream<String, Error> {
         try await prepare(model)
         guard let container else { throw AssistantError.modelNotLoaded }
 
         if Date().timeIntervalSince(lastUse) > conversationTimeout {
             session = nil   // long pause: start a fresh conversation
+        }
+        if session != nil, sessionAllowsActions != allowActions {
+            session = nil   // Mac commands were switched on or off
         }
         if session == nil {
             var parameters = GenerateParameters()
@@ -101,14 +125,38 @@ final class LLMService {
             parameters.temperature = 0.7
             session = ChatSession(
                 container,
-                instructions: Self.instructions,
+                instructions: allowActions ? Self.instructions + "\n\n" + Self.actionInstructions : Self.instructions,
                 generateParameters: parameters,
                 additionalContext: model.disableThinking ? ["enable_thinking": false] : nil
             )
+            sessionAllowsActions = allowActions
         }
         lastUse = Date()
         scheduleIdleUnload()
         return session!.streamResponse(to: question)
+    }
+
+    /// A one-off answer that doesn't touch the spoken conversation (used for meeting notes).
+    func generate(_ prompt: String, instructions: String, model: ChatModel, maxTokens: Int,
+                  temperature: Float = 0.3) async throws -> String {
+        try await prepare(model)
+        guard let container else { throw AssistantError.modelNotLoaded }
+        var parameters = GenerateParameters()
+        parameters.maxTokens = maxTokens
+        parameters.temperature = temperature   // low: notes and corrections should stick to the text
+        let oneOff = ChatSession(
+            container,
+            instructions: instructions,
+            generateParameters: parameters,
+            additionalContext: model.disableThinking ? ["enable_thinking": false] : nil
+        )
+        var text = ""
+        for try await chunk in oneOff.streamResponse(to: prompt) {
+            if Task.isCancelled { break }
+            text += chunk
+        }
+        scheduleIdleUnload()
+        return AnswerCleaner.forDisplay(text)
     }
 
     /// Forget the conversation so the next question starts fresh.

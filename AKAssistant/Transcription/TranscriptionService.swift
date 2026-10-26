@@ -9,11 +9,9 @@ final class TranscriptionService {
     private var loadingModelID: String?
     private var idleTask: Task<Void, Never>?
 
-    /// Which chip runs Whisper. Changing it takes effect on the next load (AppState unloads when it changes).
-    var useNeuralEngine = false
-
-    /// Unload after this long without a dictation, to free memory.
-    var idleUnloadInterval: TimeInterval = 30 * 60
+    /// Unload after this long without a dictation, to free memory. Reloading means another cold
+    /// start (load + GPU kernel compile), so keep it loaded for a long time.
+    var idleUnloadInterval: TimeInterval = 4 * 60 * 60
 
     func prepare(model: SpeechModel, modelManager: ModelManager) async throws {
         _ = try await engine(for: model, modelManager: modelManager)
@@ -24,6 +22,14 @@ final class TranscriptionService {
         let text = try await engine.transcribe(samples, language: language)
         scheduleIdleUnload()
         return text
+    }
+
+    /// The selected model's engine if it can stream (loads it if needed), otherwise nil.
+    func streamingEngine(for model: SpeechModel, modelManager: ModelManager) async throws -> StreamingTranscriptionEngine? {
+        guard model.supportsStreaming else { return nil }
+        let engine = try await engine(for: model, modelManager: modelManager) as? StreamingTranscriptionEngine
+        scheduleIdleUnload()
+        return engine
     }
 
     func unload() {
@@ -38,11 +44,14 @@ final class TranscriptionService {
     // MARK: - Private
 
     private func engine(for model: SpeechModel, modelManager: ModelManager) async throws -> TranscriptionEngine {
-        if let engine, loadedModelID == model.id {
+        // A model loaded for a different runtime (picked in Settings) counts as a different engine.
+        let runtime = ModelRuntimeStore.shared.runtime(for: model)
+        let key = model.id + "@" + runtime.rawValue
+        if let engine, loadedModelID == key {
             return engine
         }
         // Reuse an in-flight load (the recorder starts loading while you talk).
-        if let loadingTask, loadingModelID == model.id {
+        if let loadingTask, loadingModelID == key {
             return try await loadingTask.value
         }
 
@@ -51,23 +60,24 @@ final class TranscriptionService {
         }
 
         let folder = modelManager.localFolder(for: model)
-        let useNeuralEngine = useNeuralEngine
+        let useNeuralEngine = runtime == .neuralEngine
         let task = Task<TranscriptionEngine, Error> {
-            switch model.engine {
-            case .whisperKit:
-                guard let folder else { throw TranscriptionError.modelNotDownloaded(model.name) }
-                return try await WhisperKitEngine(modelFolder: folder, useNeuralEngine: useNeuralEngine)
-            case .parakeet:
-                return try await ParakeetEngine()
-            }
+            let engine = try await Self.makeEngine(model: model, runtime: runtime, folder: folder, useNeuralEngine: useNeuralEngine)
+            // Warm-up: run one second of silence through the model right after loading. The first
+            // real transcription otherwise pays for compiling the GPU / Neural Engine kernels, which
+            // can take seconds. (The faster wisperflow-local app does the same.)
+            let started = Date()
+            _ = try? await engine.transcribe([Float](repeating: 0, count: Int(AudioRecorder.sampleRate)), language: "en")
+            NSLog("AK Assistant: speech model warmed up in %.2fs", Date().timeIntervalSince(started))
+            return engine
         }
         loadingTask = task
-        loadingModelID = model.id
+        loadingModelID = key
 
         do {
             let loaded = try await task.value
             engine = loaded
-            loadedModelID = model.id
+            loadedModelID = key
             loadingTask = nil
             loadingModelID = nil
             scheduleIdleUnload()
@@ -76,6 +86,25 @@ final class TranscriptionService {
             loadingTask = nil
             loadingModelID = nil
             throw error
+        }
+    }
+
+    private static func makeEngine(model: SpeechModel, runtime: ModelRuntime, folder: URL?, useNeuralEngine: Bool) async throws -> TranscriptionEngine {
+        #if canImport(MLXAudioSTT)
+        if runtime == .mlx {
+            guard let spec = model.mlx else { throw TranscriptionError.modelNotDownloaded(model.name) }
+            if model.supportsStreaming { return try await MLXNemotronStreamingEngine(spec: spec) }
+            return try await MLXSpeechEngine(spec: spec)
+        }
+        #endif
+        switch model.engine {
+        case .whisperKit:
+            guard let folder else { throw TranscriptionError.modelNotDownloaded(model.name) }
+            return try await WhisperKitEngine(modelFolder: folder, useNeuralEngine: useNeuralEngine)
+        case .nemotronStreaming:
+            return try await NemotronStreamingEngine()
+        case .parakeet:
+            return try await ParakeetEngine(version: ParakeetEngine.version(for: model), useNeuralEngine: useNeuralEngine)
         }
     }
 
