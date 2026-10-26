@@ -96,6 +96,8 @@ final class AppState {
     private(set) var lastCommand: (title: String, at: Date)?
     /// A writing tool is copying, rewriting or pasting: what the popup says ("Write as email…").
     private(set) var rewriteLabel: String?
+    /// When a writing tool last pasted its result (Learn's "Get started" checks this off).
+    private(set) var lastRewriteAt: Date?
 
     // Internal plumbing: not UI state, so SwiftUI doesn't need to track it.
     private let recorder = AudioRecorder()
@@ -852,6 +854,7 @@ final class AppState {
             flash(.error("Result copied · press ⌘V to paste it"))
         } else {
             flash(.done(action.keepsLength ? "Grammar fixed" : "Done: \(action.title)"))
+            lastRewriteAt = Date()
             if putClipboardBack {
                 // Give slow apps time to read the clipboard before it's put back (as for dictation).
                 let ours = pasteboard.changeCount

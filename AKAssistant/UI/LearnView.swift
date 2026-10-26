@@ -1,10 +1,12 @@
 import SwiftUI
 import UserNotifications
+import KeyboardShortcuts
 
 // Learn: a hands-on guide to AK Assistant.
 //
 //  • Get started   – a checklist you complete by actually using the app (permissions, models,
-//                    a practice dictation, a first question, a first command). Ticks itself off.
+//                    a practice dictation, a first question, a first command, a first rewrite).
+//                    Ticks itself off.
 //  • Commands      – everything you can say, as clickable pills (click = try it now).
 //  • Features      – short cards per feature, with "Show more" and a button to the right screen.
 //  • Tips & fixes  – live permission status and answers to common problems, with Fix buttons.
@@ -78,7 +80,7 @@ struct LearnView: View {
 // MARK: - Get started
 
 private enum LearnStep: Int, CaseIterable, Identifiable {
-    case permissions, models, dictate, ask, command
+    case permissions, models, dictate, ask, command, rewrite
     var id: Int { rawValue }
 
     var title: String {
@@ -88,6 +90,7 @@ private enum LearnStep: Int, CaseIterable, Identifiable {
         case .dictate: return "Dictate your first sentence"
         case .ask: return "Ask the AI a question"
         case .command: return "Give your Mac a command"
+        case .rewrite: return "Fix a sentence with a writing tool"
         }
     }
 }
@@ -101,6 +104,7 @@ private struct GetStartedTab: View {
     @AppStorage("learn.didDictate") private var didDictate = false
     @AppStorage("learn.didAsk") private var didAsk = false
     @AppStorage("learn.didCommand") private var didCommand = false
+    @AppStorage("learn.didRewrite") private var didRewrite = false
     @State private var micGranted = Permissions.microphoneGranted
     @State private var axGranted = Permissions.accessibilityGranted
     /// A step the user clicked open; otherwise the first unfinished one is open.
@@ -113,6 +117,7 @@ private struct GetStartedTab: View {
         case .dictate: return didDictate
         case .ask: return didAsk
         case .command: return didCommand
+        case .rewrite: return didRewrite
         }
     }
 
@@ -164,6 +169,12 @@ private struct GetStartedTab: View {
                 opened = nil
             }
         }
+        .onChange(of: appState.lastRewriteAt) { _, at in
+            if at != nil {
+                didRewrite = true
+                opened = nil
+            }
+        }
     }
 
     private func toggle(_ step: LearnStep) {
@@ -208,6 +219,8 @@ private struct GetStartedTab: View {
             return isDone(step) ? "The AI answered you" : "Hold \(keyName(preferences.assistantHotkey)) and ask anything"
         case .command:
             return isDone(step) ? "Your Mac did what you said" : "Same AI key: “Open Calculator”"
+        case .rewrite:
+            return isDone(step) ? "Your text was rewritten in place" : "Click in a text field, press \(writingShortcut(for: "grammar"))"
         }
     }
 
@@ -288,6 +301,35 @@ private struct GetStartedTab: View {
                     }
                 }
             }
+        case .rewrite:
+            VStack(alignment: .leading, spacing: 10) {
+                InstructionLine(key: writingShortcut(for: "grammar"), text: "Click in the box below, then press the shortcut. The mistakes are fixed and the text is pasted back.")
+                WritingPracticeBox()
+                FlowLayout(spacing: 6) {
+                    ForEach(preferences.textActions.filter(\.enabled)) { action in
+                        HStack(spacing: 6) {
+                            KeyCap(writingShortcut(for: action.id), compact: true)
+                            Text(action.title).font(.callout)
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.mint.opacity(0.1), in: Capsule())
+                    }
+                }
+                HStack(spacing: 10) {
+                    Text("Try the others on the same text, or change their prompts.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Button("Writing tool settings") { appState.openSettings(.grammar) }
+                        .controlSize(.small)
+                }
+                if !preferences.grammarFixEnabled {
+                    HStack {
+                        Label("Writing tools are turned off.", systemImage: "exclamationmark.circle").foregroundStyle(.orange)
+                        Button("Turn on") { preferences.grammarFixEnabled = true }
+                    }
+                }
+            }
         }
     }
 
@@ -299,7 +341,7 @@ private struct GetStartedTab: View {
                 .symbolEffect(.bounce, value: doneCount)
             VStack(alignment: .leading, spacing: 2) {
                 Text("You're all set").font(.title3.weight(.semibold))
-                Text("Next, see the 70+ things you can say, or explore what else the app does.")
+                Text("Next, see the 70+ things you can say, or explore meetings, writing tools and the rest.")
                     .foregroundStyle(.secondary)
             }
             Spacer()
@@ -311,6 +353,7 @@ private struct GetStartedTab: View {
                     didDictate = false
                     didAsk = false
                     didCommand = false
+                    didRewrite = false
                     opened = nil
                 }
             } label: {
@@ -322,6 +365,26 @@ private struct GetStartedTab: View {
         .padding(16)
         .background(Color.green.opacity(0.08), in: learnCardShape)
         .overlay(learnCardShape.strokeBorder(Color.green.opacity(0.25)))
+    }
+}
+
+/// A text box with mistakes in it, to try a writing tool on.
+private struct WritingPracticeBox: View {
+    @State private var text = "i has went to the shop yesterday and buyed three apple, they was very tasty"
+    @FocusState private var focused: Bool
+
+    var body: some View {
+        TextEditor(text: $text)
+            .font(.title3)
+            .scrollContentBackground(.hidden)
+            .focused($focused)
+            .padding(8)
+            .frame(height: 90)
+            .background(Color(nsColor: .textBackgroundColor), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .strokeBorder(focused ? Color.mint : Color.primary.opacity(0.15), lineWidth: focused ? 2 : 1)
+            )
     }
 }
 
@@ -422,8 +485,8 @@ private struct HowItWorks: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("How the two keys work").font(.title2.weight(.semibold))
-            HStack(alignment: .top, spacing: 14) {
+            Text("How the keys work").font(.title2.weight(.semibold))
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 340), spacing: 14, alignment: .top)], spacing: 14) {
                 FlowCard(
                     color: .blue, title: "Dictation key",
                     stages: [
@@ -442,8 +505,25 @@ private struct HowItWorks: View {
                         FlowStage(symbol: "sparkles", caption: "Answer or action"),
                     ]
                 )
+                FlowCard(
+                    color: .red, title: "Meetings",
+                    stages: [
+                        FlowStage(symbol: "\(keyName(preferences.hotkey)) ×2", caption: "Double-tap"),
+                        FlowStage(symbol: "person.2.wave.2.fill", caption: "Talk as usual"),
+                        FlowStage(symbol: "stop.circle", caption: "Press again to stop"),
+                        FlowStage(symbol: "checklist", caption: "Notes and to-dos"),
+                    ]
+                )
+                FlowCard(
+                    color: .mint, title: "Writing tools",
+                    stages: [
+                        FlowStage(symbol: writingShortcut(for: "grammar"), caption: "Press in a text field"),
+                        FlowStage(symbol: "doc.on.doc", caption: "Text copied"),
+                        FlowStage(symbol: "wand.and.stars", caption: "AI rewrites"),
+                        FlowStage(symbol: "text.cursor", caption: "Pasted back"),
+                    ]
+                )
             }
-            .fixedSize(horizontal: false, vertical: true)
         }
     }
 }
@@ -773,7 +853,8 @@ private struct LearnTopic: Identifiable {
 }
 
 private enum LearnContent {
-    static func topics(dictate: String, ask: String) -> [LearnTopic] {
+    /// `writing` lists the writing tools' current shortcuts: "⌘G fixes grammar, ⌘E writes it as an email…".
+    static func topics(dictate: String, ask: String, writing: String) -> [LearnTopic] {
         let dictation = LearnTopic(
             id: "dictation", title: "Dictation", symbol: "waveform", color: .blue,
             summary: "Type anywhere just by talking.",
@@ -798,7 +879,7 @@ private enum LearnContent {
             ],
             linkTitle: "AI settings", linkPage: .settings, settingsTab: .assistant)
         let commands = LearnTopic(
-            id: "commands", title: "Mac commands", symbol: "command", color: .pink, isNew: true,
+            id: "commands", title: "Mac commands", symbol: "command", color: .pink,
             summary: "Tell your Mac what to do with the same AI key.",
             points: [
                 "Open apps, search the web, set timers, change the volume, take screenshots, lock the screen and more.",
@@ -809,18 +890,19 @@ private enum LearnContent {
             ],
             linkTitle: "Mac command settings", linkPage: .settings, settingsTab: .assistant)
         let grammar = LearnTopic(
-            id: "grammar", title: "Writing tools", symbol: "text.badge.checkmark", color: .mint, isNew: true,
-            summary: "Fix or rewrite the text in any field with a shortcut.",
+            id: "grammar", title: "Writing tools", symbol: "wand.and.stars", color: .mint, isNew: true,
+            summary: "Fix or rewrite the text in any field with one key.",
             points: [
-                "Click into a text field with your text and press a shortcut: ⌘G fixes grammar and typos, ⌘E writes it as an email, ⌘P makes it professional, ⌘R makes it rude.",
-                "AK Assistant selects all the text, copies it, rewrites it with the local AI model, and pastes the result back.",
-                "Every action's prompt and shortcut can be changed in Settings › Grammar, and you can add your own actions (e.g. “Translate to Hindi”).",
-                "While an action is on, its shortcut is used by AK Assistant instead of the app's own command. Change it or turn it off if you need ⌘P or ⌘R.",
-                "Your clipboard is put back afterwards. Each rewrite is saved in History, before and after. Up to 8,000 characters at a time; nothing leaves your Mac.",
+                "Click into a text field and press a shortcut: \(writing).",
+                "AK Assistant selects all the text, copies it, rewrites it with the local AI model and pastes the result back. The popup shows which action is running.",
+                "Change any prompt or shortcut in Settings › Grammar, or add your own actions, like “Translate to Hindi” or “Make it shorter”.",
+                "While an action is on, its shortcut belongs to AK Assistant, so the app's own command (⌘P Print, ⌘R Reload) won't run. Change it or turn the action off if you need it.",
+                "Your clipboard is put back afterwards, and every rewrite is in History with the before and after.",
+                "Works on up to 8,000 characters at a time. Nothing leaves your Mac.",
             ],
             linkTitle: "Writing tool settings", linkPage: .settings, settingsTab: .grammar)
         let timers = LearnTopic(
-            id: "timers", title: "Timers & reminders", symbol: "timer", color: .orange, isNew: true,
+            id: "timers", title: "Timers & reminders", symbol: "timer", color: .orange,
             summary: "Countdowns, reminders and alarms by voice.",
             points: [
                 "“Set a timer for 25 minutes”, “Remind me in an hour to stretch”, “Remind me at 5 pm to call mom”, “Set an alarm for 7 am”.",
@@ -829,22 +911,24 @@ private enum LearnContent {
                 "Quitting AK Assistant cancels its timers.",
             ])
         let models = LearnTopic(
-            id: "models", title: "Models", symbol: "cpu", color: .teal,
-            summary: "The open-source brains, all on your Mac.",
+            id: "models", title: "Settings & models", symbol: "slider.horizontal.3", color: .teal, isNew: true,
+            summary: "One page per feature, with its models right there.",
             points: [
-                "Three kinds: speech to text, the AI chat model and the voice. Download, switch and delete each one in Settings, on the page of the feature that uses it: speech in Dictation, the AI model in AI Assistant or Grammar, the voice in AI Assistant.",
-                "Each shows its size, speed and quality. Smaller ones suit 8 GB Macs.",
-                "Choose where a model runs (GPU, Neural Engine or MLX).",
-                "Add your own from Hugging Face, a folder or a .zip link.",
+                "Settings has a page for each feature: Dictation, AI Assistant, Meetings, Grammar, General and Permissions.",
+                "Models live on the page of the feature that uses them: the speech model in Dictation, the AI model in AI Assistant (and Grammar), the voice in AI Assistant.",
+                "Click a model to use it. Download, delete, and choose where it runs (GPU, Neural Engine or MLX) on the same row.",
+                "Add your own from Hugging Face, a folder or a .zip link with “Add custom model…”.",
+                "Smaller models suit 8 GB Macs. General shows how much disk your models use.",
             ],
-            linkTitle: "Speech model settings", linkPage: .settings, settingsTab: .dictation)
+            linkTitle: "Open Settings", linkPage: .settings, settingsTab: .dictation)
         let history = LearnTopic(
-            id: "history", title: "History", symbol: "clock.arrow.circlepath", color: .green,
-            summary: "Everything you said, searchable.",
+            id: "history", title: "History", symbol: "clock.arrow.circlepath", color: .green, isNew: true,
+            summary: "Everything you said, asked and rewrote, searchable.",
             points: [
-                "Every dictation, question and command is saved on this Mac. Search, filter, copy or delete.",
-                "Export as CSV or text from the toolbar.",
-                "Choose how long to keep it, or not at all, in Settings › General.",
+                "Dictations, AI questions and rewrites are saved on this Mac, grouped by day, each with its own icon.",
+                "Filter by Dictation, AI or Writing. Rewrites show the text before and after.",
+                "Search by words, app or writing tool. Right-click to copy the original, the answer or the rewritten text, or to delete.",
+                "Export as CSV or text from the toolbar. Choose how long to keep it in Settings › General.",
                 "The menu bar shows your last five dictations: click one to copy it.",
             ],
             linkTitle: "Open History", linkPage: .history)
@@ -852,7 +936,7 @@ private enum LearnContent {
             id: "privacy", title: "Privacy", symbol: "lock.shield", color: .indigo,
             summary: "Nothing you say leaves this Mac.",
             points: [
-                "Every model runs locally. Your voice and text are never uploaded.",
+                "Every model runs locally. Your voice, questions, meetings and rewritten text are never uploaded.",
                 "The internet is only used to download models, and for websites and searches you ask to open.",
                 "The microphone is only on while you hold a hotkey.",
             ])
@@ -878,7 +962,7 @@ private enum LearnContent {
                 "You can also start and stop a meeting from the menu bar or the Meetings screen. Turn the double-tap off in Settings › Meetings.",
             ],
             linkTitle: "Open Meetings", linkPage: .meetings)
-        return [dictation, assistant, grammar, meetings, commands, timers, models, history, privacy, background]
+        return [dictation, assistant, grammar, meetings, models, history, commands, timers, privacy, background]
     }
 }
 
@@ -889,7 +973,7 @@ private struct FeaturesTab: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("What AK Assistant can do").font(.largeTitle.weight(.bold))
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 360), spacing: 14, alignment: .top)], alignment: .leading, spacing: 14) {
-                ForEach(LearnContent.topics(dictate: keyName(preferences.hotkey), ask: keyName(preferences.assistantHotkey))) { topic in
+                ForEach(LearnContent.topics(dictate: keyName(preferences.hotkey), ask: keyName(preferences.assistantHotkey), writing: writingSummary(preferences.textActions))) { topic in
                     FeatureCard(topic: topic)
                 }
             }
@@ -965,6 +1049,15 @@ private struct HelpItem: Identifiable {
     var id: String { question }
 
     static let all: [HelpItem] = [
+        HelpItem(question: "⌘P doesn't print (or ⌘R doesn't reload) any more",
+                 answer: "A writing tool is using that shortcut, and while it's on it works only for AK Assistant. Record a different shortcut for it, like ⌃⌥P, or turn that action off in Settings › Grammar.",
+                 fixTitle: "Open Settings", fix: .settings(.grammar)),
+        HelpItem(question: "A writing tool says “No text found”",
+                 answer: "Click inside the text field first so the cursor is in it, then press the shortcut. Empty fields, password fields and apps with Secure Keyboard Entry can't be read. Accessibility must be allowed too.",
+                 fixTitle: "Open Accessibility", fix: .accessibility),
+        HelpItem(question: "The rewrite isn't what I wanted",
+                 answer: "Each action follows its prompt. Make the prompt more specific in Settings › Grammar (for example “Keep it under 3 sentences” or “Use British spelling”), or pick a bigger AI model on the same page. Most apps let you undo a rewrite with ⌘Z.",
+                 fixTitle: "Open Settings", fix: .settings(.grammar)),
         HelpItem(question: "My words don't appear in the app I'm typing in",
                  answer: "Check Accessibility above. macOS gives permissions to one specific copy of the app, so after rebuilding or moving it, remove AK Assistant in System Settings › Privacy & Security › Accessibility with –, then add this copy with +. In password fields, and in Terminal with Secure Keyboard Entry, typing is blocked: the text is on your clipboard, press ⌘V.",
                  fixTitle: "Open Accessibility", fix: .accessibility),
@@ -1128,7 +1221,7 @@ private struct LearnSearchResults: View {
     }
 
     private var topics: [LearnTopic] {
-        LearnContent.topics(dictate: keyName(preferences.hotkey), ask: keyName(preferences.assistantHotkey)).filter { topic in
+        LearnContent.topics(dictate: keyName(preferences.hotkey), ask: keyName(preferences.assistantHotkey), writing: writingSummary(preferences.textActions)).filter { topic in
             topic.title.localizedCaseInsensitiveContains(query)
                 || topic.summary.localizedCaseInsensitiveContains(query)
                 || topic.points.contains { $0.localizedCaseInsensitiveContains(query) }
@@ -1188,6 +1281,22 @@ private struct ResultSection<Content: View>: View {
 // MARK: - Shared pieces
 
 private let learnCardShape = RoundedRectangle(cornerRadius: 14, style: .continuous)
+
+/// A writing tool's current shortcut for a keycap ("⌘G"), or "no shortcut".
+@MainActor
+private func writingShortcut(for id: String) -> String {
+    KeyboardShortcuts.getShortcut(for: TextActionCatalog.shortcutName(for: id))?.description ?? "no shortcut"
+}
+
+/// "⌘G: Fix grammar and typos, ⌘E: Write as email, …" for the enabled writing tools that have a shortcut.
+@MainActor
+private func writingSummary(_ actions: [TextAction]) -> String {
+    let parts = actions.filter(\.enabled).compactMap { action -> String? in
+        guard let shortcut = KeyboardShortcuts.getShortcut(for: action.shortcutName) else { return nil }
+        return "\(shortcut.description) \(action.title.lowercased())"
+    }
+    return parts.isEmpty ? "set one up in Settings › Grammar" : parts.joined(separator: ", ")
+}
 
 /// Short name for the keycap ("Right ⌥"); custom shortcuts read "your shortcut".
 private func keyName(_ choice: HotkeyChoice) -> String {
