@@ -1,0 +1,954 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AK Assistant Handbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Schibsted+Grotesk:wght@600;700;800&display=swap">
+<style>
+/* Layout: a sticky sidebar of pages beside one reading column; each page is a section swapped by #hash. */
+:root {
+  --bg: #F5F6F9;
+  --surface: #FFFFFF;
+  --ink: #151922;
+  --muted: #586174;
+  --line: #DCE0E8;
+  --accent: #2F55C4;
+  --accent-soft: #E6ECFB;
+  --rec: #D1372A;
+  --rec-soft: #FBE7E4;
+  --ok: #1E7F4F;
+  --warn: #9A5B00;
+  --warn-soft: #FFF2DC;
+  --code-bg: #EDF0F5;
+  --key-top: #FFFFFF;
+  --key-edge: #C4CAD6;
+  --font-display: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "IBM Plex Sans", -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F1217; --surface: #161A22; --ink: #E6E9EF; --muted: #9AA3B3; --line: #2A303B;
+    --accent: #84A2FF; --accent-soft: #1E2843; --rec: #FF6F61; --rec-soft: #3A1E1C;
+    --ok: #57C98E; --warn: #F0B45A; --warn-soft: #34291A; --code-bg: #1C2129;
+    --key-top: #232935; --key-edge: #3A4250; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F1217; --surface: #161A22; --ink: #E6E9EF; --muted: #9AA3B3; --line: #2A303B;
+  --accent: #84A2FF; --accent-soft: #1E2843; --rec: #FF6F61; --rec-soft: #3A1E1C;
+  --ok: #57C98E; --warn: #F0B45A; --warn-soft: #34291A; --code-bg: #1C2129;
+  --key-top: #232935; --key-edge: #3A4250; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15.5px; line-height: 1.62; }
+a { color: var(--accent); text-underline-offset: 2px; }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+code, pre, kbd { font-family: var(--font-mono); font-size: 0.86em; }
+code { background: var(--code-bg); padding: 0.1em 0.38em; border-radius: 4px; overflow-wrap: anywhere; }
+
+.shell { display: grid; grid-template-columns: 272px minmax(0, 1fr); min-height: 100vh; }
+
+/* Sidebar */
+.side { position: sticky; top: env(safe-area-inset-top, 0px); height: 100vh; overflow-y: auto; border-right: 1px solid var(--line); background: var(--surface); padding: 22px 18px 28px; display: flex; flex-direction: column; gap: 18px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
+.brand-mark { display: flex; align-items: center; gap: 2px; height: 26px; padding: 0 7px; border-radius: 7px; background: var(--ink); }
+.brand-mark i { display: block; width: 3px; border-radius: 2px; background: var(--bg); }
+.brand-mark i:nth-child(1){height:8px}.brand-mark i:nth-child(2){height:16px}.brand-mark i:nth-child(3){height:11px}.brand-mark i:nth-child(4){height:19px}.brand-mark i:nth-child(5){height:7px}
+.brand b { font-family: var(--font-display); font-size: 17px; letter-spacing: -0.01em; }
+.brand small { display: block; color: var(--muted); font-size: 12px; font-weight: 400; }
+.search { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: inherit; font-size: 14px; }
+.nav { display: flex; flex-direction: column; gap: 14px; }
+.nav-group > span { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 8px 4px; }
+.nav a { display: flex; justify-content: space-between; gap: 8px; padding: 5px 8px; border-radius: 6px; color: var(--ink); text-decoration: none; font-size: 14.5px; }
+.nav a:hover { background: var(--code-bg); }
+.nav a[aria-current="page"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.nav a .hits { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.side-foot { margin-top: auto; font-size: 12px; color: var(--muted); }
+.mobile-nav { display: none; }
+
+/* Content */
+main { padding-block: 40px 80px; padding-inline: clamp(16px, 5vw, 64px); min-width: 0; }
+.page { max-width: 820px; }
+.eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; letter-spacing: -0.015em; line-height: 1.2; }
+h1 { font-size: clamp(30px, 4.2vw, 42px); margin: 6px 0 12px; font-weight: 800; }
+h2 { font-size: 23px; margin: 42px 0 10px; padding-top: 6px; }
+h3 { font-size: 17px; margin: 26px 0 6px; }
+.lead { font-size: 18px; color: var(--muted); max-width: 64ch; margin: 0 0 8px; }
+p, li { max-width: 68ch; }
+ul, ol { padding-left: 1.3em; }
+li + li { margin-top: 4px; }
+.muted { color: var(--muted); }
+
+/* Keycaps */
+kbd { display: inline-block; min-width: 1.9em; text-align: center; padding: 0.08em 0.5em 0.12em; border: 1px solid var(--key-edge); border-bottom-width: 3px; border-radius: 6px; background: var(--key-top); color: var(--ink); font-size: 0.82em; font-weight: 500; white-space: nowrap; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; margin: 14px 0 6px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+th { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); background: var(--bg); white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td code { white-space: nowrap; }
+td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* Pipeline diagram: real stages, real order */
+.flow { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; margin: 16px 0; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.stage { flex: 1 1 130px; min-width: 0; padding: 10px 12px; border-radius: 8px; background: var(--bg); border: 1px solid var(--line); }
+.stage b { display: block; font-size: 13.5px; }
+.stage span { display: block; font-size: 12.5px; color: var(--muted); line-height: 1.4; margin-top: 2px; }
+.stage code { font-size: 11.5px; }
+.arrow { align-self: center; color: var(--muted); font-size: 18px; flex: 0 0 auto; }
+.stage.hot { border-color: var(--accent); background: var(--accent-soft); }
+.stage.rec { border-color: var(--rec); background: var(--rec-soft); }
+.flow-cap { font-size: 12.5px; color: var(--muted); margin-top: -8px; }
+
+/* Callouts */
+.note { margin: 16px 0; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 14.5px; }
+.note.warn { border-color: var(--warn); background: var(--warn-soft); }
+.note b:first-child { display: block; margin-bottom: 2px; }
+
+/* Feature grid */
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 16px 0; }
+.card { padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); min-width: 0; }
+.card h3 { margin: 0 0 4px; font-size: 16px; }
+.card p { margin: 0; font-size: 14px; color: var(--muted); }
+.card .how { margin-top: 8px; font-size: 13px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); margin: 18px 0; overflow: hidden; }
+.facts div { padding: 12px 14px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); margin: -1px -1px 0 0; }
+.facts dt { font-size: 11.5px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+.facts dd { margin: 2px 0 0; font-weight: 600; font-size: 15px; }
+
+pre.tree, pre.code { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; line-height: 1.55; font-size: 13px; }
+.tag { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 1px 7px; border-radius: 999px; background: var(--code-bg); color: var(--muted); white-space: nowrap; }
+.tag.new { background: var(--accent-soft); color: var(--accent); }
+.tag.rec { background: var(--rec-soft); color: var(--rec); }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--rec); margin-right: 6px; vertical-align: 1px; }
+
+.pager { display: flex; justify-content: space-between; gap: 12px; margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line); }
+.pager a { display: block; max-width: 48%; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; text-decoration: none; background: var(--surface); }
+.pager a small { display: block; color: var(--muted); font-size: 12px; }
+.pager a.next { margin-left: auto; text-align: right; }
+
+dl.defs { display: grid; grid-template-columns: minmax(120px, 210px) minmax(0, 1fr); gap: 8px 18px; margin: 14px 0; }
+dl.defs dt { font-weight: 600; }
+dl.defs dd { margin: 0; color: var(--muted); min-width: 0; }
+
+@media (max-width: 860px) {
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .side { display: none; }
+  .mobile-nav { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--line); background: var(--surface); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 2; }
+  .mobile-nav select { font: inherit; padding: 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+  main { padding-block: 24px 64px; }
+  dl.defs { grid-template-columns: minmax(0, 1fr); gap: 2px 0; }
+  dl.defs dd { margin-bottom: 10px; }
+  .arrow { transform: rotate(90deg); flex-basis: 100%; text-align: center; }
+  .stage { flex-basis: 100%; }
+}
+@media (prefers-reduced-motion: no-preference) { .page:not([hidden]) { animation: fade .18s ease-out; } }
+@keyframes fade { from { opacity: .4; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+
+
+<div class="shell">
+  <aside class="side" aria-label="Documentation">
+    <a class="brand" href="#overview">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+      <span><b>AK Assistant</b><small>Handbook · v0.1.0</small></span>
+    </a>
+    <input class="search" id="search" type="search" placeholder="Search the docs…" aria-label="Search the docs">
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot">macOS 15+ · Apple Silicon · everything on-device<br>Bundle ID <code>com.natfirst.akassistant</code></div>
+  </aside>
+
+  <div class="mobile-nav">
+    <a class="brand" href="#overview"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><b>AK Assistant Handbook</b></a>
+    <label class="muted" for="page-select" style="font-size:12px">Page</label>
+    <select id="page-select"></select>
+  </div>
+
+  <main id="main">
+
+<section class="page" data-page="overview" data-group="Start here" data-title="Overview">
+  <div class="eyebrow">Start here</div>
+  <h1>AK Assistant</h1>
+  <p class="lead">A macOS app that turns your voice into text, answers, Mac actions and meeting notes. Every model runs on the Mac itself; audio, questions and meetings never leave it.</p>
+
+  <dl class="facts">
+    <div><dt>Platform</dt><dd>macOS 15+, Apple Silicon</dd></div>
+    <div><dt>Built with</dt><dd>Swift, SwiftUI, SwiftData</dd></div>
+    <div><dt>Version</dt><dd>0.1.0</dd></div>
+    <div><dt>Network use</dt><dd>Model downloads only</dd></div>
+  </dl>
+
+  <h2>What it does</h2>
+  <div class="grid">
+    <div class="card"><h3>Dictation</h3><p>Hold a key, speak, let go. The text is typed into whatever field has focus, in any app.</p><div class="how">Hold <kbd>Right ⌥</kbd></div></div>
+    <div class="card"><h3>Ask the AI</h3><p>A local chat model answers in a floating card and can read the answer aloud.</p><div class="how">Hold <kbd>Right ⌘</kbd></div></div>
+    <div class="card"><h3>Mac commands</h3><p>“Open Xcode”, “set a timer for 10 minutes”, “volume 30”, “lock my screen”.</p><div class="how">Hold <kbd>Right ⌘</kbd> and say it</div></div>
+    <div class="card"><h3>Meetings</h3><p>Records your mic and the call, transcribes with speaker labels, then writes a summary and to-dos.</p><div class="how">Double-tap <kbd>Right ⌥</kbd></div></div>
+    <div class="card"><h3>History</h3><p>Every dictation and question, searchable and exportable as CSV or text.</p><div class="how">Main window › History</div></div>
+    <div class="card"><h3>Learn</h3><p>An in-app guide to every feature and every phrase, with Try buttons.</p><div class="how">Main window › Learn</div></div>
+  </div>
+
+  <h2>Design principles</h2>
+  <ul>
+    <li><b>Private by construction.</b> Speech-to-text, the chat model, the voice, speaker detection and summaries are local models. The only network traffic is downloading those models from Hugging Face.</li>
+    <li><b>Works from anywhere.</b> The app lives in the menu bar and the Dock, starts at login, and its hotkeys work while any other app is in front.</li>
+    <li><b>Fast by default.</b> Models are loaded in the background at launch and kept warm; speech is transcribed while you are still talking; answers are spoken sentence by sentence as they are written.</li>
+    <li><b>Standard Xcode project.</b> Plain SwiftUI and the current observation APIs, no generated tooling, so it doubles as a learning project.</li>
+  </ul>
+
+  <h2>How to read these docs</h2>
+  <p>Start with <a href="#getting-started">Getting started</a> to build it, then <a href="#using">Using the app</a>. The Inside section explains each pipeline down to the file and the numbers in the code. Reference pages list every model, setting, permission and file.</p>
+  <div class="note"><b>Status</b>Dictation, history, onboarding and Mac commands are in daily use. The AI voice, meeting mode, the clean-up pass and speaker labels are the newest parts and the ones most likely to need fixes after a build. See <a href="#troubleshooting">Troubleshooting &amp; roadmap</a>.</div>
+</section>
+
+<section class="page" data-page="getting-started" data-group="Start here" data-title="Getting started" hidden>
+  <div class="eyebrow">Start here</div>
+  <h1>Getting started</h1>
+  <p class="lead">Open the project in Xcode, let it fetch the Swift packages, pick a signing team and run.</p>
+
+  <h2>Requirements</h2>
+  <div class="table-wrap"><table>
+    <tr><th>Item</th><th>Needed</th></tr>
+    <tr><td>Mac</td><td>Apple Silicon (M1 or newer)</td></tr>
+    <tr><td>macOS</td><td>15 Sequoia or newer (deployment target 15.0; the voice engine needs it)</td></tr>
+    <tr><td>Xcode</td><td>26 or newer (MLX Swift LM needs Swift 6.2 tools; the app target itself builds in Swift 5 mode)</td></tr>
+    <tr><td>Memory</td><td>16 GB recommended with the AI assistant on. On 8 GB use Qwen3 1.7B and Parakeet Redux.</td></tr>
+    <tr><td>Disk</td><td>~220–650 MB per speech model, 1–5.2 GB per AI model, 1–2.2 GB per voice, ~45 MB per hour of kept meeting audio</td></tr>
+  </table></div>
+
+  <h2>Build and run</h2>
+  <ol>
+    <li>Open <code>AKAssistant.xcodeproj</code> in the <code>AK Assistant</code> folder on the Desktop.</li>
+    <li>Wait for Xcode to resolve the Swift packages (first time: several minutes). If it asks to <b>Trust &amp; Enable</b> the <code>MLXHuggingFaceMacros</code> macros, allow it. If it reports a missing <b>Metal Toolchain</b>, install it from Xcode › Settings › Components.</li>
+    <li>Select the <b>AKAssistant</b> target › <b>Signing &amp; Capabilities</b> and choose your team.</li>
+    <li>Press <kbd>⌘R</kbd>. Onboarding opens on the first launch.</li>
+  </ol>
+  <p>The project uses Xcode 16+ folder syncing (<code>PBXFileSystemSynchronizedRootGroup</code>): any file added to the <code>AKAssistant</code> folder, in Finder or Xcode, is part of the app automatically.</p>
+
+  <h2>Swift packages</h2>
+  <div class="table-wrap"><table>
+    <tr><th>Package</th><th>Version</th><th>Used for</th></tr>
+    <tr><td><a href="https://github.com/argmaxinc/argmax-oss-swift">argmax-oss-swift</a></td><td class="num">1.1.0</td><td>WhisperKit (speech-to-text) and TTSKit (Qwen3-TTS voice)</td></tr>
+    <tr><td><a href="https://github.com/FluidInference/FluidAudio">FluidAudio</a></td><td class="num">0.17.4</td><td>Parakeet and Nemotron speech models, Silero VAD, offline speaker diarization</td></tr>
+    <tr><td><a href="https://github.com/ml-explore/mlx-swift-lm">mlx-swift-lm</a></td><td class="num">3.31.4</td><td>Running the AI chat models with MLX</td></tr>
+    <tr><td><a href="https://github.com/ml-explore/mlx-swift">mlx-swift</a></td><td class="num">0.31.6</td><td>MLX array framework (dependency of the above)</td></tr>
+    <tr><td><a href="https://github.com/huggingface/swift-huggingface">swift-huggingface</a></td><td class="num">0.11.0</td><td>Hugging Face downloads, <code>#huggingFaceLoadModelContainer</code></td></tr>
+    <tr><td><a href="https://github.com/huggingface/swift-transformers">swift-transformers</a></td><td class="num">1.3.4</td><td>Tokenizers for the chat models</td></tr>
+    <tr><td><a href="https://github.com/sindresorhus/KeyboardShortcuts">KeyboardShortcuts</a></td><td class="num">2.4.0</td><td>Custom hotkey combos and the shortcut recorder</td></tr>
+  </table></div>
+  <p class="muted">Pulled in indirectly: swift-jinja, swift-collections, swift-crypto, swift-asn1, swift-numerics, swift-syntax, swift-argument-parser, eventsource, yyjson.</p>
+
+  <h2>Where things are set in Xcode</h2>
+  <div class="table-wrap"><table>
+    <tr><th>What</th><th>Where</th></tr>
+    <tr><td>App name, bundle ID (<code>com.natfirst.akassistant</code>), version</td><td>Target › General</td></tr>
+    <tr><td>Microphone and Apple Events permission texts</td><td>Target › Info, or Build Settings › <code>INFOPLIST_KEY_*</code></td></tr>
+    <tr><td>Entitlements, signing, hardened runtime</td><td>Target › Signing &amp; Capabilities (<code>AKAssistant.entitlements</code>)</td></tr>
+    <tr><td>Swift packages</td><td>Project › Package Dependencies</td></tr>
+    <tr><td>App icon, accent colour</td><td><code>Assets.xcassets</code> (source art: <code>AppIcon.svg</code>)</td></tr>
+  </table></div>
+
+  <h2>Making a DMG to share</h2>
+  <p><code>make-dmg.sh</code> in the project folder archives a Release build and packages it as a drag-to-Applications disk image in <code>dist/AK-Assistant-&lt;version&gt;.dmg</code>.</p>
+  <pre class="code">./make-dmg.sh                       # build + DMG, signed the way Xcode signs
+NOTARY_PROFILE=ak ./make-dmg.sh     # also notarize, so other Macs open it without warnings</pre>
+  <div class="note warn"><b>Replace old copies when you update</b>An older copy left in Applications (it starts at login) keeps its own hotkeys running alongside the new build. Before meetings moved to their own database file, an old copy could also wipe the meetings table. Quit or replace old copies after each update.</div>
+</section>
+
+<section class="page" data-page="using" data-group="Start here" data-title="Using the app" hidden>
+  <div class="eyebrow">Start here</div>
+  <h1>Using the app</h1>
+  <p class="lead">Three keys do almost everything. The window is for history, meetings, models and settings.</p>
+
+  <h2>Keys</h2>
+  <div class="table-wrap"><table>
+    <tr><th>Do this</th><th>Default key</th><th>What happens</th></tr>
+    <tr><td>Hold and talk, then let go</td><td><kbd>Right ⌥</kbd></td><td>Dictation: the text is typed into the focused field</td></tr>
+    <tr><td>Hold and ask, then let go</td><td><kbd>Right ⌘</kbd></td><td>AI answer or Mac command</td></tr>
+    <tr><td>Double-tap</td><td><kbd>Right ⌥</kbd> <kbd>Right ⌥</kbd></td><td>Start recording a meeting</td></tr>
+    <tr><td>Press once (or double-tap) during a meeting</td><td><kbd>Right ⌥</kbd></td><td>Stop the meeting and write the notes</td></tr>
+    <tr><td>Press while still holding</td><td><kbd>Esc</kbd></td><td>Cancel the current recording</td></tr>
+  </table></div>
+  <p>Either key can be Right Option, Right Command, Right Control, Fn/Globe or a custom combination. The AI key can also be Off. The two can never be the same key; picking the other key's key swaps them.</p>
+
+  <h2>The floating popup</h2>
+  <p>One borderless panel at the top centre of the screen changes shape with what is happening. It never takes focus, so the field you are typing in stays active.</p>
+  <dl class="defs">
+    <dt>Capsule</dt><dd>“Listening…”, “Transcribing…”, “Thinking…”, short messages. Grows to show the live transcript while you talk.</dd>
+    <dt>Transcript card</dt><dd>After dictation: what was typed and where. Stays 4–15 s depending on length, longer while the pointer is over it.</dd>
+    <dt>Answer card</dt><dd>Your question and the AI answer as it streams in, with copy, speak again, new chat and close.</dd>
+    <dt>Meeting capsule</dt><dd><span class="dot"></span>“Meeting · press ⌥ to stop” with a level meter and timer while a meeting records.</dd>
+  </dl>
+
+  <h2>Main window</h2>
+  <div class="table-wrap"><table>
+    <tr><th>Page</th><th>What it shows</th></tr>
+    <tr><td>History</td><td>Dictations and AI questions with time, app, model and word count. Search, filter, copy, export (CSV or text), clear.</td></tr>
+    <tr><td>Meetings</td><td>Recorded meetings: Summary, To-dos and Transcript tabs, audio player, speaker names. See <a href="#meetings">Meetings</a>.</td></tr>
+    <tr><td>Learn</td><td>Get started checklist, every command phrase with Try buttons, feature guides, tips and fixes.</td></tr>
+    <tr><td>Models</td><td>Download, delete and pick speech, AI and voice models; choose where each speech model runs; add custom models.</td></tr>
+    <tr><td>Settings</td><td>Keys, AI answers, Mac commands, Meetings (four sections), transcription, general, history, permissions.</td></tr>
+  </table></div>
+  <p>Closing the window leaves the app running. The menu bar icon shows status, the last five dictations (click to copy), timers, meeting start/stop and quick links.</p>
+
+  <h2>First launch</h2>
+  <p>Onboarding runs once, in seven steps: <b>Welcome</b> → <b>Microphone</b> → <b>Accessibility</b> → <b>Speech model</b> (downloads and warms it) → <b>AI assistant</b> (chat model, voice, how answers come back) → <b>Keys</b> → <b>Try it</b>. Launch at login is turned on. If the window is closed on the last step but everything is granted and downloaded, onboarding is marked done anyway.</p>
+</section>
+
+<section class="page" data-page="architecture" data-group="Inside" data-title="Architecture" hidden>
+  <div class="eyebrow">Inside</div>
+  <h1>Architecture</h1>
+  <p class="lead">One observable hub, <code>AppState</code>, owns every pipeline. Services do the work; SwiftUI views only read state and call methods.</p>
+
+  <h2>The layers</h2>
+  <div class="flow" aria-label="Layers from input to storage">
+    <div class="stage"><b>Input</b><span><code>HotkeyManager</code>, <code>AudioRecorder</code>, <code>MeetingRecorder</code></span></div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="stage hot"><b>AppState</b><span>status, popup mode, routing; owns all services</span></div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="stage"><b>Services</b><span>Transcription, LLM, Speech, Commands, Meetings</span></div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="stage"><b>Output</b><span><code>TextInserter</code>, popup, voice, SwiftData</span></div>
+  </div>
+
+  <h2>Key types</h2>
+  <div class="table-wrap"><table>
+    <tr><th>Type</th><th>File</th><th>Role</th></tr>
+    <tr><td><code>AKAssistantApp</code>, <code>AppDelegate</code></td><td><code>AKAssistantApp.swift</code></td><td><code>@main</code>. Main <code>Window</code>, <code>MenuBarExtra</code>, Dock icon, saves data on quit. Window is suppressed at launch once onboarded.</td></tr>
+    <tr><td><code>AppState</code></td><td><code>App/AppState.swift</code></td><td><code>@MainActor @Observable</code> singleton. Dictation and assistant pipelines, Mac commands, meeting routing, model warm-up, history saving.</td></tr>
+    <tr><td><code>Preferences</code></td><td><code>App/Preferences.swift</code></td><td>Every setting, persisted in <code>UserDefaults</code> through <code>didSet</code>.</td></tr>
+    <tr><td><code>ModelManager</code></td><td><code>Models/ModelManager.swift</code></td><td>Downloads, tracks and deletes speech, chat and voice models.</td></tr>
+    <tr><td><code>TranscriptionService</code></td><td><code>Transcription/</code></td><td>Keeps one speech engine loaded; reuses in-flight loads; unloads after 4 idle hours.</td></tr>
+    <tr><td><code>LLMService</code></td><td><code>Assistant/LLMService.swift</code></td><td>Loads an MLX chat model, holds the conversation, one-off generation for meeting notes.</td></tr>
+    <tr><td><code>SpeechService</code></td><td><code>Assistant/SpeechService.swift</code></td><td>Qwen3-TTS through TTSKit; speaks sentence by sentence.</td></tr>
+    <tr><td><code>CommandRunner</code></td><td><code>Tools/</code></td><td>Parses and runs Mac commands, timers and reminders.</td></tr>
+    <tr><td><code>MeetingCoordinator</code></td><td><code>Meetings/</code></td><td>Meeting mode: recording, live transcript, clean-up pass, notes.</td></tr>
+    <tr><td><code>IslandController</code></td><td><code>UI/FloatingIsland.swift</code></td><td>The non-activating <code>NSPanel</code> that follows <code>AppState.islandMode</code>.</td></tr>
+  </table></div>
+
+  <h2>State and observation</h2>
+  <ul>
+    <li><code>AppState</code>, <code>Preferences</code>, <code>ModelManager</code> and <code>MeetingCoordinator</code> are <code>@Observable</code>. Views read them through <code>@Environment(Type.self)</code>; only views that read a changed property redraw.</li>
+    <li>Plumbing that isn't UI state (tasks, recorder handles) is <code>@ObservationIgnored</code>.</li>
+    <li><code>AppState.observePreferences()</code> uses <code>withObservationTracking</code> to react to settings changes (new hotkeys, a different model) from anywhere in the UI.</li>
+    <li>The popup follows <code>islandMode</code>, computed from <code>status</code>, the dictation result, the AI reply and whether a meeting is recording.</li>
+  </ul>
+
+  <h2>Threads</h2>
+  <dl class="defs">
+    <dt>Main actor</dt><dd>All app state, services' bookkeeping, SwiftData's main context, UI.</dd>
+    <dt>Audio thread</dt><dd>Microphone taps convert to 16 kHz mono and append under an <code>NSLock</code>; levels hop to the main actor.</dd>
+    <dt>Mixer queue</dt><dd>Meetings: a serial <code>DispatchQueue</code> mixes mic and Mac audio every 0.25 s, writes the .m4a files and cuts transcript chunks.</dd>
+    <dt>ScreenCaptureKit queue</dt><dd>Delivers the Mac's audio buffers for meetings.</dd>
+    <dt>Model inference</dt><dd>Core ML, MLX and FluidAudio run their own work off the main thread; the services <code>await</code> them.</dd>
+  </dl>
+
+  <h2>Where data lives</h2>
+  <div class="table-wrap"><table>
+    <tr><th>Data</th><th>Location</th><th>Format</th></tr>
+    <tr><td>Dictation and AI history</td><td><code>~/Library/Application Support/default.store</code></td><td>SwiftData (<code>DictationRecord</code>)</td></tr>
+    <tr><td>Meetings</td><td><code>~/Library/Application Support/AK Assistant/Meetings.store</code></td><td>SwiftData (<code>Meeting</code>), private to the app</td></tr>
+    <tr><td>Meeting audio</td><td><code>…/AK Assistant/Meetings/&lt;id&gt;.m4a</code>, <code>-mic.m4a</code>, <code>-mac.m4a</code></td><td>AAC, 16 kHz mono, 32 kbps</td></tr>
+    <tr><td>Settings, custom models, runtimes</td><td><code>UserDefaults</code> (<code>com.natfirst.akassistant</code>)</td><td>Property list</td></tr>
+    <tr><td>WhisperKit models, voices</td><td><code>…/AK Assistant/Models</code> (voices in <code>Models/Voice</code>)</td><td>Core ML</td></tr>
+    <tr><td>Parakeet, Nemotron, VAD, diarizer</td><td><code>~/Library/Application Support/FluidAudio/Models</code></td><td>Core ML (managed by FluidAudio)</td></tr>
+    <tr><td>Chat models</td><td><code>~/.cache/huggingface/hub</code></td><td>MLX safetensors</td></tr>
+  </table></div>
+  <div class="note"><b>Why meetings have their own store</b>SwiftData's default file is shared by every non-sandboxed app that uses the default configuration. An older AK Assistant build without the <code>Meeting</code> entity would migrate that file and drop the meetings table. Meetings moved to <code>Meetings.store</code>; on first launch of that version, meetings left in the shared file are copied over once.</div>
+</section>
+
+<section class="page" data-page="dictation" data-group="Inside" data-title="Dictation pipeline" hidden>
+  <div class="eyebrow">Inside</div>
+  <h1>Dictation pipeline</h1>
+  <p class="lead">From key down to text in another app, with the model already warm and the transcript mostly done before you let go.</p>
+
+  <div class="flow" aria-label="Dictation pipeline">
+    <div class="stage"><b>Key down</b><span><code>HotkeyManager</code> flagsChanged monitor</span></div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="stage"><b>Record</b><span><code>AudioRecorder</code>, 16 kHz mono in memory</span></div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="stage hot"><b>Transcribe</b><span>streaming or final pass</span></div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="stage"><b>Clean</b><span><code>PostProcessor</code></span></div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="stage"><b>Insert</b><span><code>TextInserter</code></span></div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="stage"><b>Save</b><span>History, transcript card</span></div>
+  </div>
+
+  <h2>1. The key</h2>
+  <p>Modifier-only keys (Right ⌥ 61, Right ⌘ 54, Right ⌃ 62, Fn 63) are watched with global and local <code>NSEvent</code> <code>.flagsChanged</code> monitors, which need Accessibility. Custom combos use KeyboardShortcuts' key-down and key-up handlers. <kbd>Esc</kbd> while recording cancels. Double-tap detection for meetings lives here too (see <a href="#meetings">Meetings</a>).</p>
+
+  <h2>2. Recording</h2>
+  <ul>
+    <li><code>AVAudioEngine</code> taps the mic and converts each buffer to 16 kHz mono Float32 with <code>AVAudioConverter</code>. Nothing is written to disk.</li>
+    <li>The app you were typing in is remembered so it can be brought back to the front before pasting.</li>
+    <li>The speech model's load starts the moment the key goes down, in case it was unloaded.</li>
+    <li>Recordings stop on their own after <b>120 s</b>.</li>
+  </ul>
+
+  <h2>3. Transcribing</h2>
+  <dl class="defs">
+    <dt>Streaming models</dt><dd>Nemotron Streaming gets audio in ~0.1 s pieces while you talk; its running transcript is the live text, and only the last fraction of a second remains when you let go.</dd>
+    <dt>Other models</dt><dd>A live preview re-transcribes the recent audio about every 0.25 s (Parakeet, 20 s window) or 0.6 s (Whisper, 30 s window). When you let go, the whole clip is transcribed once more for the final text.</dd>
+    <dt>Skipped clips</dt><dd>Shorter than 0.3 s or with RMS below 0.004 (near silence), so Whisper can't invent “Thank you.” from nothing.</dd>
+  </dl>
+  <p>Engines implement one protocol, <code>TranscriptionEngine</code> (<code>transcribe(samples, language)</code>), with <code>StreamingTranscriptionEngine</code> adding <code>beginStream / feed / finishStream</code>. Backends: <code>WhisperKitEngine</code>, <code>ParakeetEngine</code>, <code>NemotronStreamingEngine</code> and, when the mlx-audio package is present, MLX engines. Each new load runs one second of silence through the model to compile its kernels before real use.</p>
+
+  <h2>4. Cleaning up</h2>
+  <p><code>PostProcessor.clean</code> strips model artefacts such as <code>[BLANK_AUDIO]</code>, removes filler words (“um”, “uh”) when that setting is on, collapses whitespace, fixes spaces before punctuation and capitalises the first letter.</p>
+
+  <h2>5. Inserting</h2>
+  <ol>
+    <li>Checks Accessibility and permission to post key events, and Secure Keyboard Entry (password fields, Terminal). If blocked, the text goes to the clipboard with the reason shown on the card.</li>
+    <li><b>Accessibility insert:</b> writes straight into the focused element of native apps and verifies the value changed. No clipboard involved.</li>
+    <li><b>Clipboard + ⌘V:</b> for browsers, Electron, Office and the rest. Waits for the hotkey's modifier to be released first so it can't combine with ⌘V. The previous clipboard is restored afterwards (after a delay, so slow apps read the new text first).</li>
+  </ol>
+  <p>The result (<code>inserted</code>, <code>pasted(focusConfirmed:)</code> or <code>copiedOnly(reason)</code>) decides what the transcript card says.</p>
+
+  <h2>6. History</h2>
+  <p>Each dictation is saved as a <code>DictationRecord</code> (text, duration, model, app name and bundle ID). Retention: forever, 30 days, 7 days or don't save; old entries are pruned at launch and when the setting changes. Export as CSV or plain text.</p>
+</section>
+
+<section class="page" data-page="assistant" data-group="Inside" data-title="AI assistant" hidden>
+  <div class="eyebrow">Inside</div>
+  <h1>AI assistant</h1>
+  <p class="lead">Hold the AI key, ask, let go. A local chat model streams the answer into the popup while a local voice reads each sentence as soon as it's written.</p>
+
+  <div class="flow" aria-label="AI assistant pipeline">
+    <div class="stage"><b>Speech-to-text</b><span>same pipeline as dictation</span></div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="stage"><b>Command?</b><span><code>CommandParser</code> first</span></div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="stage hot"><b>Chat model</b><span><code>LLMService</code>, MLX, streamed</span></div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="stage"><b>Sentences</b><span><code>SentenceSplitter</code></span></div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="stage"><b>Voice</b><span><code>SpeechService</code>, Qwen3-TTS</span></div>
+  </div>
+
+  <h2>The chat model</h2>
+  <ul>
+    <li>Loaded with <code>#huggingFaceLoadModelContainer</code> into an MLX <code>ModelContainer</code>; a <code>ChatSession</code> keeps the conversation.</li>
+    <li>Follow-ups within <b>5 minutes</b> continue the same conversation; “New chat” or a longer pause starts fresh.</li>
+    <li>Generation: up to 500 tokens, temperature 0.7. Qwen3's thinking mode is turned off so answers start quickly.</li>
+    <li>The system prompt asks for short, spoken-style answers without markdown, since they may be read aloud.</li>
+    <li>The model loads in the background 2 s after launch (speech model first, then chat, then voice, one after another to avoid a memory spike) and unloads after 30 idle minutes.</li>
+  </ul>
+
+  <h2>The voice</h2>
+  <ul>
+    <li>Qwen3-TTS through Argmax TTSKit (Core ML). Nine speakers: Ryan, Aiden, Eric, Dylan, Serena, Vivian, Ono Anna, Sohee, Uncle Fu.</li>
+    <li>The voice opens before the answer arrives; each finished sentence is queued while the previous one plays, in one audio session so there are no gaps.</li>
+    <li>The speaker/language prompt prefix is cached on disk, which removes most per-sentence start-up work.</li>
+    <li>Pressing either hotkey while it's speaking stops the voice so the mic only hears you.</li>
+  </ul>
+
+  <h2>Answer styles</h2>
+  <div class="table-wrap"><table>
+    <tr><th>Setting</th><th>Behaviour</th></tr>
+    <tr><td>Show and speak (default)</td><td>Answer card plus voice</td></tr>
+    <tr><td>Show only</td><td>Answer card, nothing spoken</td></tr>
+    <tr><td>Speak only</td><td>Voice only; the capsule says “Answering…”. Still saved in History.</td></tr>
+  </table></div>
+  <p>Questions and answers are saved in History as <code>kind = "assistant"</code> records.</p>
+</section>
+
+<section class="page" data-page="commands" data-group="Inside" data-title="Mac commands" hidden>
+  <div class="eyebrow">Inside</div>
+  <h1>Mac commands</h1>
+  <p class="lead">The AI key also acts on the Mac. Common phrasings are matched instantly and offline; anything else can still be turned into a command by the AI model.</p>
+
+  <h2>How a phrase becomes an action</h2>
+  <ol>
+    <li><code>CommandParser.parse</code> matches the transcript against known phrasings and returns a <code>MacCommand</code>. No model needed.</li>
+    <li>If nothing matches and <b>Understand commands phrased any way</b> is on, the chat model is told it may reply <code>ACTION: &lt;short English command&gt;</code>. The app holds back the streamed text until it can tell an action from an answer, then parses that phrase. This handles “fire up Apple's coding app” or “xcode kholo”.</li>
+    <li><code>CommandRunner</code> carries it out and returns <code>done</code>, <code>answer</code> (shown and optionally spoken), <code>failed</code> or <code>notHandled</code> (falls back to a normal AI answer).</li>
+  </ol>
+
+  <h2>What you can say</h2>
+  <div class="table-wrap"><table>
+    <tr><th>Group</th><th>Examples</th></tr>
+    <tr><td>Apps &amp; windows</td><td>open Xcode, switch to Finder, quit Slack, hide other apps, minimize, new tab, full screen, run shortcut …</td></tr>
+    <tr><td>Websites &amp; search</td><td>open YouTube, go to github.com, search YouTube for …, google …; Google, YouTube, Images, Wikipedia, Amazon, GitHub, Reddit, Stack Overflow, Maps, News; directions to …</td></tr>
+    <tr><td>Files, folders &amp; settings</td><td>open Downloads, find files named invoice, open file budget, open Wi-Fi settings</td></tr>
+    <tr><td>Sound &amp; music</td><td>set volume to 40, turn it up, mute, pause the music, next song</td></tr>
+    <tr><td>Screen &amp; system</td><td>brightness up, dark mode on, take a screenshot, screenshot a selection, record my screen, turn off Wi-Fi, keep my Mac awake for 1 hour</td></tr>
+    <tr><td>Timers &amp; reminders</td><td>set a timer for 10 minutes, remind me in 20 minutes to …, remind me at 5 pm to …, how much time is left, cancel all timers</td></tr>
+    <tr><td>Quick info</td><td>time, date, battery, storage, memory, uptime, macOS version, IP address, clipboard, front app</td></tr>
+    <tr><td>Typing &amp; clipboard</td><td>type …, copy … to clipboard</td></tr>
+    <tr><td>Lock, sleep &amp; power</td><td>lock my screen, turn off the display, go to sleep, screen saver, empty the trash, restart, shut down, log out</td></tr>
+  </table></div>
+
+  <h2>Building blocks</h2>
+  <dl class="defs">
+    <dt><code>AppFinder</code></dt><dd>Matches spoken app names against installed and running apps, with aliases (“vs code”, “chrome”, “settings”) and Levenshtein fuzzy matching (“ex code” → Xcode). Suggests close matches when unsure.</dd>
+    <dt><code>CommandRunner</code></dt><dd>Uses <code>NSWorkspace</code>, synthetic keys (media keys, ⌘⇧3, ⌃⌘Q), and through <code>SystemControl</code> runs <code>osascript</code>, <code>pmset</code>, <code>mdfind</code>, <code>networksetup</code>, <code>caffeinate</code> and <code>shortcuts</code> off the main thread.</dd>
+    <dt><code>TimerCenter</code></dt><dd>Voice timers and reminders; posts macOS notifications, plays a chime and shows a card when one fires. Cancel them from the menu bar.</dd>
+    <dt><code>ToolCatalog</code></dt><dd>The phrase list shown in Learn and given to the AI model as examples.</dd>
+  </dl>
+
+  <h2>Risky actions</h2>
+  <p>Quit an app, close a window or tab, lock, sleep, empty the Trash, Wi-Fi off, restart, shut down and log out. They run immediately by default. With <b>Ask before risky actions</b> on, the popup shows Run / Cancel, or you can hold the AI key and say “yes” or “no”. Restart, shut down and log out always show macOS's own confirmation too.</p>
+  <p>Dark mode, Empty Trash and restart/shut down/log out use Apple Events, so macOS asks once for permission to control System Events, Finder or loginwindow.</p>
+</section>
+
+<section class="page" data-page="meetings" data-group="Inside" data-title="Meetings" hidden>
+  <div class="eyebrow">Inside</div>
+  <h1>Meetings</h1>
+  <p class="lead">Records you and the people on the call, transcribes while it runs, redoes the transcript with speaker labels when it ends, then writes the summary and to-dos. All on the Mac.</p>
+
+  <div class="flow" aria-label="Meeting pipeline">
+    <div class="stage rec"><b>Record</b><span>mic + Mac audio, three .m4a files</span></div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="stage"><b>Live transcript</b><span>pieces of 15–28 s</span></div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="stage hot"><b>Clean-up pass</b><span>VAD, speakers, echo filter</span></div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="stage"><b>Notes</b><span>summary, decisions, to-dos</span></div>
+  </div>
+
+  <h2>Starting and stopping</h2>
+  <ul>
+    <li>Double-tap the dictation key: both taps under <b>0.3 s</b>, the second starting within <b>0.4 s</b> of the first ending, and no other key pressed in between, so ⌥← word jumps never start a meeting.</li>
+    <li>A single press of the dictation key (or a double-tap) stops it. A second tap within 1 s of stopping is ignored, so a double-tap stop can't start a new meeting.</li>
+    <li>Also from the menu bar and the Meetings toolbar. Recording stops by itself after the configured maximum (default 4 hours).</li>
+    <li>While recording, dictation is paused and the AI key shows “Recording a meeting · press … to stop”.</li>
+  </ul>
+
+  <h2>Recording (<code>MeetingRecorder</code>)</h2>
+  <dl class="defs">
+    <dt>Microphone</dt><dd><code>AVAudioEngine</code> with Apple's voice processing (noise suppression and echo cancellation, as in FaceTime), other-audio ducking set to minimum. If macOS can't start it (error −10875, typically Bluetooth headphones or mismatched sample rates), the engine is rebuilt and the plain mic is used; the meeting gets a note.</dd>
+    <dt>The Mac's audio</dt><dd>ScreenCaptureKit stream with <code>capturesAudio</code>, excluding AK Assistant's own sound, 48 kHz stereo converted to 16 kHz mono. Video is set to 2×2 px at 1 fps and ignored. Needs Screen &amp; System Audio Recording; without it the meeting continues mic-only.</dd>
+    <dt>Mixing</dt><dd>Every 0.25 s on a serial queue, the mic samples set the clock; Mac audio is added to them (zero-padded), and its backlog is capped at 1 s to absorb clock drift.</dd>
+    <dt>Files</dt><dd><code>&lt;id&gt;.m4a</code> (mix, for playback), <code>&lt;id&gt;-mic.m4a</code> and <code>&lt;id&gt;-mac.m4a</code> (separate tracks on the same timeline, for the clean-up). AAC, 16 kHz mono, 32 kbps, about 15 MB per hour each, written as they record.</dd>
+    <dt>Chunks</dt><dd>From 18 s on, a piece is cut as soon as the last 0.4 s is quiet; at 28 s it's cut at the quietest 0.2 s between 15 s and 28 s.</dd>
+  </dl>
+
+  <h2>Live transcript</h2>
+  <p>Each piece goes through the selected speech model in order (pieces with RMS below 0.003 are skipped) and is saved straight away as a <code>TranscriptSegment</code>, so the Meetings screen fills in during the meeting and a crash loses at most one piece. It can be turned off to save battery when the clean-up pass is on.</p>
+
+  <h2>Clean-up pass (<code>MeetingCleanup</code>)</h2>
+  <ol>
+    <li><b>Speakers.</b> FluidAudio's offline diarizer (pyannote segmentation, WeSpeaker embeddings, VBx clustering; about 30 MB downloaded the first time) splits the Mac track into Speaker 1, 2, 3… in order of first appearance. The mic track is “You”. With no Mac track (an in-person meeting), the mic track is split instead. An expected number of people can be set; the Mac track then gets that number minus one.</li>
+    <li><b>Speech detection.</b> Silero VAD finds speech in the mic track (and in the Mac track if speakers are off or fail), reading 10 minutes at a time to keep memory flat. Thresholds: Low 0.85, Normal 0.7, High 0.5; minimum speech 0.25 s, minimum silence 0.6 s.</li>
+    <li><b>Transcription.</b> Each piece of up to 25 s (longer turns are split at their pauses) is transcribed from its own track, with the dictation model or a bigger one picked in Settings.</li>
+    <li><b>Echo filter.</b> A “You” line is dropped when over half of it overlaps the others' speech and over 60% of its words also appear in what they said.</li>
+    <li><b>Paragraphs.</b> Consecutive lines from the same speaker less than 1.5 s apart are joined, up to a minute each.</li>
+  </ol>
+  <p>If it fails, the live transcript is kept and the meeting shows why. <b>Redo Clean-up and Speakers</b> reruns it from the kept tracks and keeps names you already gave.</p>
+
+  <h2>Notes (<code>MeetingSummarizer</code>)</h2>
+  <ul>
+    <li>A fresh one-off chat session (temperature 0.3) separate from the spoken conversation.</li>
+    <li>Transcripts over 2,500 words are summarised part by part first (700 tokens of notes each), then the notes are combined, so an hour fits a small model.</li>
+    <li>The model answers in a fixed format: <code>TITLE</code>, <code>SUMMARY</code>, <code>KEY POINTS</code>, <code>DECISIONS</code>, <code>ACTION ITEMS</code> with <code>task | owner | due</code>. The parser tolerates markdown and numbered lists, and keeps the raw text as the summary if the format wasn't followed.</li>
+    <li>Lines carry speaker labels, and the prompt says “You” is the person recording, so to-do owners come out right.</li>
+    <li>Detail: Brief (2–3 sentences, ≤4 points, 700 tokens), Standard (3–6 sentences, ≤8 points, 1,200 tokens), Detailed (2–3 paragraphs, 2,000 tokens).</li>
+    <li>Rewriting keeps to-dos you already ticked. An automatic “Meeting · date” title is replaced by the AI's title; one you typed is kept.</li>
+  </ul>
+
+  <h2>The Meetings screen</h2>
+  <p>A resizable split view: the list (with a red Recording banner while live) and the selected meeting. Its header has an editable title, date, length, word count and a ⋯ menu (Copy Notes, Export as Markdown, Write/Rewrite Summary and To-dos, Redo Clean-up and Speakers, Show Audio in Finder, Delete). Below: the audio player and three tabs.</p>
+  <dl class="defs">
+    <dt>Summary</dt><dd>Summary, key points, decisions and action items, with the model that wrote them.</dd>
+    <dt>To-dos</dt><dd>Tick, edit, add, delete, copy as a checklist.</dd>
+    <dt>Transcript</dt><dd>Search; speaker chips with talk time (click one to rename the speaker everywhere: transcript, summary, key points, decisions, to-do text and owners); click a time to play from there; the playing line is highlighted.</dd>
+  </dl>
+
+  <h2>Data model</h2>
+  <p><code>Meeting</code> is a SwiftData <code>@Model</code>. Lists are stored as JSON <code>Data</code> with computed accessors to keep the schema simple.</p>
+  <div class="table-wrap"><table>
+    <tr><th>Field</th><th>Holds</th></tr>
+    <tr><td><code>id</code>, <code>title</code>, <code>startedAt</code>, <code>duration</code></td><td>Identity and timing; <code>hasDefaultTitle</code> says whether the AI may rename it</td></tr>
+    <tr><td><code>stateRaw</code></td><td><code>recording</code> → <code>transcribing</code> → <code>summarizing</code> → <code>done</code>. Anything left unfinished at launch is marked done with a note.</td></tr>
+    <tr><td><code>segmentsData</code></td><td><code>[TranscriptSegment]</code>: start, end, text, speaker id (<code>you</code>, <code>others</code>, <code>s1</code>…)</td></tr>
+    <tr><td><code>speakerNamesData</code></td><td>Speaker id → name</td></tr>
+    <tr><td><code>summary</code>, <code>keyPointsData</code>, <code>decisionsData</code>, <code>actionItemsData</code></td><td>The notes; <code>ActionItem</code> has text, owner, due, done</td></tr>
+    <tr><td><code>audioFileName</code>, <code>micTrackFileName</code>, <code>macTrackFileName</code></td><td>Files in the Meetings folder</td></tr>
+    <tr><td><code>note</code>, <code>speechModelName</code>, <code>summaryModelName</code>, <code>transcriptCleaned</code></td><td>Problems worth showing and provenance</td></tr>
+  </table></div>
+</section>
+
+<section class="page" data-page="models" data-group="Reference" data-title="Models" hidden>
+  <div class="eyebrow">Reference</div>
+  <h1>Models</h1>
+  <p class="lead">Open models from Hugging Face, downloaded once and run locally. Pick, download and delete them in the Models page.</p>
+
+  <h2>Speech-to-text</h2>
+  <div class="table-wrap"><table>
+    <tr><th>Model</th><th>Size</th><th>Languages</th><th>Runs on</th><th>Notes</th></tr>
+    <tr><td><b>Parakeet Ultra</b> <span class="tag new">default</span></td><td class="num">~650 MB</td><td>English + 24 European</td><td>GPU, Neural Engine</td><td>Fastest and most accurate for typing; punctuation and capitals built in</td></tr>
+    <tr><td>Parakeet v2 (English)</td><td class="num">~600 MB</td><td>English</td><td>GPU, Neural Engine, MLX</td><td>English-only; on par with Ultra</td></tr>
+    <tr><td>Nemotron Streaming (English)</td><td class="num">~600 MB</td><td>English</td><td>Neural Engine, MLX</td><td>Streams: words appear ~0.5 s after you say them</td></tr>
+    <tr><td>Parakeet Redux (small)</td><td class="num">~220 MB</td><td>English + 24 European</td><td>GPU, Neural Engine</td><td>Smallest; for 8 GB Macs</td></tr>
+    <tr><td>Whisper Large v3 Turbo</td><td class="num">632 MB</td><td>99 languages</td><td>GPU, Neural Engine, MLX</td><td>For Hindi and languages Parakeet doesn't cover; slower</td></tr>
+  </table></div>
+  <p class="muted">Sources: <code>FluidInference/parakeet-ultra-coreml</code>, <code>…/parakeet-tdt-0.6b-v2-coreml</code>, <code>…/nemotron-speech-streaming-en-0.6b-coreml</code>, <code>…/parakeet-redux-coreml</code>, <code>argmaxinc/whisperkit-coreml</code>. Older catalog entries (Parakeet v3, Distil-Whisper, Whisper Small, Whisper Base) are retired: their files are removed and their users moved to the default.</p>
+
+  <h3>Where a speech model runs</h3>
+  <dl class="defs">
+    <dt>GPU (Core ML)</dt><dd>Loads quickly. The default for every model that offers it (Nemotron starts on the Neural Engine, since Core ML on the GPU runs its int8 weights about 10× slower).</dd>
+    <dt>Neural Engine</dt><dd>Least power and leaves the GPU free for the AI; the first load compiles the model and can take a while.</dd>
+    <dt>MLX (GPU)</dt><dd>Apple's MLX; a separate download. Offered only when the mlx-audio package is in the build.</dd>
+  </dl>
+
+  <h2>AI chat models (MLX, 4-bit)</h2>
+  <div class="table-wrap"><table>
+    <tr><th>Model</th><th>Repo</th><th>Size</th><th>Best for</th></tr>
+    <tr><td><b>Qwen3 4B</b> <span class="tag new">default</span></td><td><code>mlx-community/Qwen3-4B-4bit</code></td><td class="num">2.3 GB</td><td>Smart, fast, many languages</td></tr>
+    <tr><td>Gemma 4 E4B</td><td><code>mlx-community/gemma-4-e4b-it-4bit</code></td><td class="num">5.2 GB</td><td>Highest quality; 16 GB Macs</td></tr>
+    <tr><td>Gemma 4 E2B</td><td><code>mlx-community/gemma-4-e2b-it-4bit</code></td><td class="num">3.6 GB</td><td>Balance of quality and speed</td></tr>
+    <tr><td>Llama 3.2 3B</td><td><code>mlx-community/Llama-3.2-3B-Instruct-4bit</code></td><td class="num">1.8 GB</td><td>Quick everyday answers</td></tr>
+    <tr><td>Qwen3 1.7B</td><td><code>mlx-community/Qwen3-1.7B-4bit</code></td><td class="num">1.0 GB</td><td>Smallest; 8 GB Macs</td></tr>
+  </table></div>
+
+  <h2>Voices (Qwen3-TTS via TTSKit)</h2>
+  <div class="table-wrap"><table>
+    <tr><th>Model</th><th>Size</th><th>Notes</th></tr>
+    <tr><td><b>Qwen3 TTS 0.6B</b> <span class="tag new">default</span></td><td class="num">~1 GB</td><td>Natural voice, low delay</td></tr>
+    <tr><td>Qwen3 TTS 1.7B</td><td class="num">~2.2 GB</td><td>Richer, a little slower</td></tr>
+  </table></div>
+
+  <h2>Meeting models</h2>
+  <div class="table-wrap"><table>
+    <tr><th>Model</th><th>From</th><th>Used for</th></tr>
+    <tr><td>Silero VAD v6.2.1 (Core ML)</td><td>FluidAudio, downloaded on first use</td><td>Finding speech in the clean-up pass</td></tr>
+    <tr><td>pyannote segmentation + WeSpeaker v2 + VBx</td><td>FluidAudio offline diarizer, ~30 MB</td><td>Who spoke when</td></tr>
+  </table></div>
+
+  <h2>Custom models</h2>
+  <p>Models › Add custom model accepts a Hugging Face WhisperKit variant (speech) or an MLX repo (chat), or a local folder / .zip link. They're stored as <code>CustomModelRecord</code> in UserDefaults and appear next to the built-in ones. Chat models can optionally keep “thinking” on.</p>
+
+  <h2>Memory and loading</h2>
+  <ul>
+    <li>2 s after launch the speech, chat and voice models load one after another.</li>
+    <li>The speech model unloads after 4 idle hours, the chat model after 30 idle minutes; both reload on the next use.</li>
+    <li>Switching a model in Settings or Models unloads the old one immediately.</li>
+  </ul>
+</section>
+
+<section class="page" data-page="settings" data-group="Reference" data-title="Settings" hidden>
+  <div class="eyebrow">Reference</div>
+  <h1>Settings</h1>
+  <p class="lead">Every setting, its stored key in <code>UserDefaults</code> and its default. Defined in <code>App/Preferences.swift</code>; the meeting sections live in <code>UI/MeetingSettings.swift</code>.</p>
+
+  <h2>Keys and dictation</h2>
+  <div class="table-wrap"><table>
+    <tr><th>Setting</th><th>Key</th><th>Default</th></tr>
+    <tr><td>Hold to dictate</td><td><code>hotkey</code></td><td>Right Option</td></tr>
+    <tr><td>Hold to ask AI</td><td><code>assistantHotkey</code></td><td>Right Command (can be Off)</td></tr>
+    <tr><td>Speech model</td><td><code>selectedModelID</code></td><td>Parakeet Ultra</td></tr>
+    <tr><td>Language</td><td><code>language</code></td><td>Auto-detect (or en, hi, te, ta, kn, mr, bn, es, fr, de, ja, zh)</td></tr>
+    <tr><td>Show what I'm saying while I talk</td><td><code>showLiveTranscript</code></td><td>On</td></tr>
+    <tr><td>Remove filler words</td><td><code>removeFillers</code></td><td>On</td></tr>
+    <tr><td>Restore my clipboard after pasting</td><td><code>restoreClipboard</code></td><td>On</td></tr>
+    <tr><td>Play start and stop sounds</td><td><code>playSounds</code></td><td>On</td></tr>
+    <tr><td>Keep history</td><td><code>historyRetentionDays</code></td><td>Forever (0); 30, 7, or −1 for don't save</td></tr>
+    <tr><td>Launch at login</td><td><code>SMAppService.mainApp</code></td><td>Turned on by onboarding</td></tr>
+  </table></div>
+
+  <h2>AI assistant and Mac commands</h2>
+  <div class="table-wrap"><table>
+    <tr><th>Setting</th><th>Key</th><th>Default</th></tr>
+    <tr><td>AI model</td><td><code>chatModelID</code></td><td>Qwen3 4B</td></tr>
+    <tr><td>Voice model / speaker</td><td><code>voiceModelID</code>, <code>voice</code></td><td>Qwen3 TTS 0.6B, Ryan</td></tr>
+    <tr><td>Answers</td><td><code>replyStyle</code></td><td>Show and speak</td></tr>
+    <tr><td>Let the AI key control my Mac</td><td><code>macCommandsEnabled</code></td><td>On</td></tr>
+    <tr><td>Understand commands phrased any way</td><td><code>aiCommandsEnabled</code></td><td>On</td></tr>
+    <tr><td>Ask before risky actions</td><td><code>confirmRiskyCommands</code></td><td>Off</td></tr>
+  </table></div>
+
+  <h2>Meetings · Recording</h2>
+  <div class="table-wrap"><table>
+    <tr><th>Setting</th><th>Key</th><th>Default</th></tr>
+    <tr><td>Double-tap to record a meeting</td><td><code>meetingDoubleTap</code></td><td>On</td></tr>
+    <tr><td>Record the Mac's audio</td><td><code>meetingCaptureSystemAudio</code></td><td>On</td></tr>
+    <tr><td>Reduce background noise and echo on my mic</td><td><code>meetingVoiceProcessing</code></td><td>On</td></tr>
+    <tr><td>Meeting language</td><td><code>meetingLanguage</code></td><td>Same as dictation (<code>same</code>)</td></tr>
+    <tr><td>Show the transcript while the meeting is going</td><td><code>meetingLiveTranscript</code></td><td>On (forced on when clean-up is off)</td></tr>
+    <tr><td>Stop recording automatically after</td><td><code>meetingMaxHours</code></td><td>4 hours (1, 2, 4, 8)</td></tr>
+  </table></div>
+
+  <h2>Meetings · Transcript &amp; speakers</h2>
+  <div class="table-wrap"><table>
+    <tr><th>Setting</th><th>Key</th><th>Default</th></tr>
+    <tr><td>Clean up the transcript after the meeting</td><td><code>meetingCleanupPass</code></td><td>On</td></tr>
+    <tr><td>Speech model for the clean-up</td><td><code>meetingFinalModelID</code></td><td>Same as dictation (empty)</td></tr>
+    <tr><td>Speech detection</td><td><code>meetingSpeechSensitivity</code></td><td>Normal (Low / Normal / High)</td></tr>
+    <tr><td>Remove the call's echo from my mic</td><td><code>meetingRemoveEcho</code></td><td>On</td></tr>
+    <tr><td>Show who said what</td><td><code>meetingIdentifySpeakers</code></td><td>On</td></tr>
+    <tr><td>People in the meeting</td><td><code>meetingSpeakerCount</code></td><td>Automatic (0), or 2–10</td></tr>
+  </table></div>
+
+  <h2>Meetings · Notes and storage</h2>
+  <div class="table-wrap"><table>
+    <tr><th>Setting</th><th>Key</th><th>Default</th></tr>
+    <tr><td>Write a summary and to-dos when a meeting ends</td><td><code>meetingWriteNotes</code></td><td>On</td></tr>
+    <tr><td>AI model for notes</td><td><code>meetingNotesModelID</code></td><td>Same as AI assistant (empty)</td></tr>
+    <tr><td>Notes detail</td><td><code>meetingNotesDetail</code></td><td>Standard (Brief / Standard / Detailed)</td></tr>
+    <tr><td>Keep meeting audio for playback</td><td><code>meetingKeepAudio</code></td><td>On</td></tr>
+  </table></div>
+  <p class="muted">Internal flags: <code>onboarded</code>, <code>seenLearn</code>, <code>migratedToParakeet</code>, <code>meetingsMovedToOwnStore</code>, <code>modelRuntimes</code> (per-model runtime), plus custom model records.</p>
+</section>
+
+<section class="page" data-page="privacy" data-group="Reference" data-title="Permissions & privacy" hidden>
+  <div class="eyebrow">Reference</div>
+  <h1>Permissions &amp; privacy</h1>
+  <p class="lead">What macOS asks for, why, and what never leaves the Mac.</p>
+
+  <div class="table-wrap"><table>
+    <tr><th>Permission</th><th>Why</th><th>When asked</th></tr>
+    <tr><td>Microphone</td><td>Recording while a key is held or a meeting runs</td><td>Onboarding</td></tr>
+    <tr><td>Accessibility</td><td>Seeing the hotkeys in other apps; inserting text</td><td>Onboarding</td></tr>
+    <tr><td>Post keyboard events</td><td>Sending ⌘V and media keys (usually granted with Accessibility)</td><td>First paste</td></tr>
+    <tr><td>Screen &amp; System Audio Recording</td><td>Meetings: the Mac's audio (other people on a call). The picture is ignored.</td><td>First meeting; optional</td></tr>
+    <tr><td>Automation (Apple Events)</td><td>Dark mode, Empty Trash, restart/shut down/log out</td><td>First such command</td></tr>
+    <tr><td>Notifications</td><td>Timers and reminders</td><td>First timer</td></tr>
+  </table></div>
+
+  <h2>Entitlements and Info.plist</h2>
+  <ul>
+    <li><code>com.apple.security.device.audio-input</code> and <code>com.apple.security.automation.apple-events</code>, with the hardened runtime on.</li>
+    <li><code>NSMicrophoneUsageDescription</code>: “AK Assistant listens only while you hold a hotkey or record a meeting you started, and transcribes on this Mac.”</li>
+    <li><code>NSAppleEventsUsageDescription</code> explains the System Events, Finder and loginwindow use.</li>
+    <li>Not sandboxed: the App Sandbox blocks synthetic key events into other apps. Distribute with a Developer ID certificate and notarization, outside the Mac App Store.</li>
+  </ul>
+
+  <h2>What stays on the Mac</h2>
+  <ul>
+    <li>All audio, transcripts, questions, answers, meeting recordings and notes. They're processed by local models and stored in the locations listed under <a href="#architecture">Architecture</a>.</li>
+    <li>The network is used only to download models from Hugging Face (and FluidAudio's model repos).</li>
+    <li>Dictation audio is kept in memory only. Meeting audio is written to disk only for meetings, and can be deleted per meeting or not kept at all.</li>
+  </ul>
+  <div class="note"><b>Permissions belong to one copy of the app</b>macOS grants Accessibility to a specific signed build. After rebuilding or moving the app, a row can look on in System Settings but not apply. Remove AK Assistant there with –, then add the current copy with +. Settings › Permissions shows the path of the running copy.</div>
+</section>
+
+<section class="page" data-page="files" data-group="Reference" data-title="Project files" hidden>
+  <div class="eyebrow">Reference</div>
+  <h1>Project files</h1>
+  <p class="lead">Every source file and what it's for. All code is under <code>AKAssistant/</code> (about 12,600 lines of Swift in 43 files).</p>
+
+  <pre class="tree">AK Assistant/
+├── AKAssistant.xcodeproj     the Xcode project
+├── README.md                 short guide (this handbook goes deeper)
+├── make-dmg.sh               Release build → DMG, optional notarization
+├── AppIcon.svg               icon source
+├── docs/                     this handbook
+└── AKAssistant/              the app (folder-synced with Xcode)</pre>
+
+  <div class="table-wrap"><table>
+    <tr><th>File</th><th class="num">Lines</th><th>Purpose</th></tr>
+    <tr><td><code>AKAssistantApp.swift</code></td><td class="num">64</td><td>Entry point: main window, menu bar extra, app delegate</td></tr>
+    <tr><td><code>App/AppState.swift</code></td><td class="num">984</td><td>The hub: dictation and AI pipelines, commands, meeting routing, warm-up</td></tr>
+    <tr><td><code>App/Preferences.swift</code></td><td class="num">316</td><td>All settings, persisted in UserDefaults; meeting enums</td></tr>
+    <tr><td><code>Hotkey/HotkeyManager.swift</code></td><td class="num">248</td><td>Push-to-talk keys, Esc to cancel, double-tap detection</td></tr>
+    <tr><td><code>Audio/AudioRecorder.swift</code></td><td class="num">128</td><td>Mic to 16 kHz mono Float32 in memory</td></tr>
+    <tr><td><code>Transcription/TranscriptionEngine.swift</code></td><td class="num">195</td><td>Engine protocols; WhisperKit, Parakeet and Nemotron streaming engines</td></tr>
+    <tr><td><code>Transcription/MLXSpeechEngine.swift</code></td><td class="num">89</td><td>Parakeet / Whisper / Nemotron on MLX (when mlx-audio is present)</td></tr>
+    <tr><td><code>Transcription/TranscriptionService.swift</code></td><td class="num">119</td><td>Keeps the selected engine loaded; warm-up; idle unload</td></tr>
+    <tr><td><code>Assistant/LLMService.swift</code></td><td class="num">196</td><td>MLX chat model, conversation, one-off generation</td></tr>
+    <tr><td><code>Assistant/SpeechService.swift</code></td><td class="num">259</td><td>Qwen3-TTS voice, sentence queue, prompt cache</td></tr>
+    <tr><td><code>Insertion/TextInserter.swift</code></td><td class="num">185</td><td>Accessibility insert, ⌘V paste, clipboard restore</td></tr>
+    <tr><td><code>History/DictationRecord.swift</code></td><td class="num">83</td><td>History model, pruning, CSV/text export</td></tr>
+    <tr><td><code>Models/ModelCatalog.swift</code></td><td class="num">129</td><td>Built-in speech models, retired IDs</td></tr>
+    <tr><td><code>Models/AssistantCatalog.swift</code></td><td class="num">144</td><td>Chat models, voice models, speakers, answer styles</td></tr>
+    <tr><td><code>Models/ModelManager.swift</code></td><td class="num">460</td><td>Downloads, states, deletion for every model</td></tr>
+    <tr><td><code>Models/ModelRuntime.swift</code></td><td class="num">94</td><td>GPU / Neural Engine / MLX choice per model</td></tr>
+    <tr><td><code>Models/CustomModels.swift</code></td><td class="num">258</td><td>User-added models</td></tr>
+    <tr><td><code>Tools/CommandParser.swift</code></td><td class="num">561</td><td>Phrase → <code>MacCommand</code></td></tr>
+    <tr><td><code>Tools/MacCommand.swift</code></td><td class="num">264</td><td>Every command, titles, symbols, which are risky</td></tr>
+    <tr><td><code>Tools/CommandRunner.swift</code></td><td class="num">514</td><td>Carries commands out</td></tr>
+    <tr><td><code>Tools/SystemControl.swift</code></td><td class="num">209</td><td>Runs <code>osascript</code>, <code>pmset</code>, <code>mdfind</code>… off the main thread</td></tr>
+    <tr><td><code>Tools/AppFinder.swift</code></td><td class="num">180</td><td>Spoken app name → app, with aliases and fuzzy matching</td></tr>
+    <tr><td><code>Tools/TimerCenter.swift</code></td><td class="num">109</td><td>Timers and reminders, notifications</td></tr>
+    <tr><td><code>Tools/ToolCatalog.swift</code></td><td class="num">168</td><td>The phrase list for Learn and the AI prompt</td></tr>
+    <tr><td><code>Meetings/Meeting.swift</code></td><td class="num">322</td><td>Meeting model, segments, speakers, storage paths, formatting</td></tr>
+    <tr><td><code>Meetings/MeetingRecorder.swift</code></td><td class="num">419</td><td>Mic + Mac audio, mixing, .m4a files, chunking, voice processing</td></tr>
+    <tr><td><code>Meetings/MeetingCoordinator.swift</code></td><td class="num">410</td><td>Start/stop, live transcript, clean-up, notes, recovery</td></tr>
+    <tr><td><code>Meetings/MeetingCleanup.swift</code></td><td class="num">311</td><td>VAD, diarization, echo filter, paragraphs</td></tr>
+    <tr><td><code>Meetings/MeetingSummarizer.swift</code></td><td class="num">171</td><td>Notes prompts, map-reduce, parser</td></tr>
+    <tr><td><code>Support/Permissions.swift</code></td><td class="num">83</td><td>Permission checks and Settings links; start/stop sounds</td></tr>
+    <tr><td><code>Support/PostProcessor.swift</code></td><td class="num">90</td><td>Transcript cleanup, answer cleanup, sentence splitter</td></tr>
+    <tr><td><code>UI/MainWindow.swift</code></td><td class="num">96</td><td>Root view, sidebar, status footer</td></tr>
+    <tr><td><code>UI/FloatingIsland.swift</code></td><td class="num">266</td><td>The popup panel and its capsule</td></tr>
+    <tr><td><code>UI/IslandCards.swift</code></td><td class="num">453</td><td>Transcript and answer cards</td></tr>
+    <tr><td><code>UI/HistoryView.swift</code></td><td class="num">186</td><td>History page</td></tr>
+    <tr><td><code>UI/MeetingsView.swift</code></td><td class="num">963</td><td>Meetings page, tabs, speakers bar, player</td></tr>
+    <tr><td><code>UI/MeetingSettings.swift</code></td><td class="num">193</td><td>The four Meetings sections in Settings</td></tr>
+    <tr><td><code>UI/LearnView.swift</code></td><td class="num">1,350</td><td>Learn page: checklist, commands, features, fixes</td></tr>
+    <tr><td><code>UI/ModelsView.swift</code></td><td class="num">337</td><td>Models page</td></tr>
+    <tr><td><code>UI/AddCustomModelSheet.swift</code></td><td class="num">270</td><td>Add custom model sheet</td></tr>
+    <tr><td><code>UI/SettingsView.swift</code></td><td class="num">237</td><td>Settings page, hotkey picker, answer settings</td></tr>
+    <tr><td><code>UI/OnboardingView.swift</code></td><td class="num">372</td><td>First-launch flow</td></tr>
+    <tr><td><code>UI/MenuBarContent.swift</code></td><td class="num">109</td><td>Menu bar dropdown</td></tr>
+  </table></div>
+
+  <h2>Reading order for learning</h2>
+  <p><code>AKAssistantApp.swift</code> → <code>App/AppState.swift</code> (follow <code>beginRecording</code> and <code>endRecording</code>) → <code>Hotkey/</code> → <code>Audio/</code> → <code>Transcription/</code> → <code>Insertion/</code> → <code>UI/</code>. Then <code>Meetings/</code> in the order Recorder → Coordinator → Cleanup → Summarizer.</p>
+
+  <h2>Modern SwiftUI patterns used</h2>
+  <div class="table-wrap"><table>
+    <tr><th>Pattern</th><th>Where</th><th>Replaces</th></tr>
+    <tr><td><code>@Observable</code></td><td>AppState, Preferences, ModelManager, MeetingCoordinator</td><td><code>ObservableObject</code> + <code>@Published</code></td></tr>
+    <tr><td><code>@State</code> holding a model</td><td>App entry, MeetingPlayer</td><td><code>@StateObject</code></td></tr>
+    <tr><td><code>@Environment(Type.self)</code></td><td>Every view</td><td><code>@EnvironmentObject</code></td></tr>
+    <tr><td><code>@Bindable</code></td><td>Settings</td><td><code>@ObservedObject</code> bindings</td></tr>
+    <tr><td><code>withObservationTracking</code></td><td>AppState, IslandController</td><td>Combine sinks</td></tr>
+    <tr><td>SwiftData <code>@Model</code> + <code>@Query</code></td><td>History, Meetings</td><td>Core Data</td></tr>
+    <tr><td><code>.task</code> loops with <code>Task.sleep</code></td><td>Permission checks</td><td><code>Timer.publish</code></td></tr>
+  </table></div>
+  <p>AppKit is used only where SwiftUI has no API: the non-activating popup panel, global key monitors, and the pasteboard and synthetic keys. The target builds in Swift 5 language mode so third-party packages don't trip strict-concurrency errors.</p>
+</section>
+
+<section class="page" data-page="troubleshooting" data-group="Reference" data-title="Troubleshooting & roadmap" hidden>
+  <div class="eyebrow">Reference</div>
+  <h1>Troubleshooting &amp; roadmap</h1>
+  <p class="lead">Known problems with their fixes, then what's next.</p>
+
+  <div class="table-wrap"><table>
+    <tr><th>Problem</th><th>Fix</th></tr>
+    <tr><td>Hotkey does nothing</td><td>Check Accessibility in Settings › Permissions. After a rebuild, remove the app from Accessibility and add the current copy.</td></tr>
+    <tr><td>Fn opens the emoji picker</td><td>System Settings › Keyboard › “Press 🌐 key to” › Do Nothing.</td></tr>
+    <tr><td>Text isn't pasted in one app</td><td>Password fields and Secure Keyboard Entry block it; the text is on the clipboard. The card says why.</td></tr>
+    <tr><td>First dictation after launch is slow</td><td>The model compiles once on first load. On the Neural Engine this can take minutes; GPU is faster to load.</td></tr>
+    <tr><td>“Download … first”</td><td>Download the selected model in Models.</td></tr>
+    <tr><td>Answers aren't spoken</td><td>Pick Show and speak or Speak only, and download a voice.</td></tr>
+    <tr><td>“Mic error … −10875” when starting a meeting</td><td>Voice processing failed to start (often Bluetooth headphones). Current builds fall back to the plain mic and say “noise reduction off”. Use the built-in mic or wired headphones, or turn the noise setting off.</td></tr>
+    <tr><td>Meeting has only my voice</td><td>Allow Screen &amp; System Audio Recording, then quit and reopen the app.</td></tr>
+    <tr><td>Meetings disappeared after reopening</td><td>An older AK Assistant copy migrated the shared SwiftData file. Fixed by the private <code>Meetings.store</code>; replace old copies.</td></tr>
+    <tr><td>Speakers mixed up</td><td>Set the number of people in Settings › Meetings, then Redo Clean-up and Speakers.</td></tr>
+    <tr><td>Something hangs</td><td>Pause in Xcode while it's stuck and check the main thread in the Debug Navigator. Logs: Console.app, subsystem <code>com.natfirst.akassistant</code>, categories Pipeline, Assistant, Insert, Meeting.</td></tr>
+  </table></div>
+
+  <h2>Status</h2>
+  <ul>
+    <li><span class="tag">done</span> Dictation, history, onboarding, app icon, Mac commands, Learn, DMG script</li>
+    <li><span class="tag new">new</span> AI voice answers, meeting mode, clean-up pass, speaker labels, meeting settings: first builds still settling</li>
+  </ul>
+
+  <h2>Roadmap</h2>
+  <ul>
+    <li>Remember named voices across meetings (speaker embeddings)</li>
+    <li>Per-app paste overrides and a typing fallback toggle (<code>TextInserter.typeText</code> exists)</li>
+    <li>Custom vocabulary (names, jargon) passed to the speech model</li>
+    <li>Trim leading and trailing silence in dictation with VAD</li>
+    <li>“Paste the answer” option for the assistant</li>
+    <li>Developer ID signing, notarization and automatic updates</li>
+    <li>More tools for the assistant: calendar, files, web</li>
+  </ul>
+
+  <h2>Credits</h2>
+  <p class="muted">WhisperKit and TTSKit by Argmax (MIT) · MLX Swift LM by Apple (MIT) · Swift Hugging Face and Swift Transformers by Hugging Face (Apache 2.0) · FluidAudio by FluidInference (Apache 2.0) · KeyboardShortcuts by Sindre Sorhus (MIT). Models: OpenAI Whisper (MIT), NVIDIA Parakeet and Nemotron, Silero VAD (MIT), pyannote, WeSpeaker, Qwen3 and Qwen3-TTS (Apache 2.0), Gemma 4 (Gemma license), Llama 3.2 (Llama 3.2 Community License).</p>
+</section>
+
+  </main>
+</div>
+<script>
+(function () {
+  var pages = Array.prototype.slice.call(document.querySelectorAll('.page'));
+  var nav = document.getElementById('nav');
+  var select = document.getElementById('page-select');
+  var search = document.getElementById('search');
+  var links = {};
+
+  // Build the sidebar and the phone menu from the pages themselves.
+  var groups = {};
+  pages.forEach(function (page) {
+    var g = page.dataset.group;
+    if (!groups[g]) {
+      var wrap = document.createElement('div');
+      wrap.className = 'nav-group';
+      var label = document.createElement('span');
+      label.textContent = g;
+      wrap.appendChild(label);
+      nav.appendChild(wrap);
+      groups[g] = wrap;
+      var og = document.createElement('optgroup');
+      og.label = g;
+      select.appendChild(og);
+      groups[g].optgroup = og;
+    }
+    var a = document.createElement('a');
+    a.href = '#' + page.dataset.page;
+    a.innerHTML = '<span></span><span class="hits"></span>';
+    a.firstChild.textContent = page.dataset.title;
+    groups[g].appendChild(a);
+    links[page.dataset.page] = a;
+    var opt = document.createElement('option');
+    opt.value = page.dataset.page;
+    opt.textContent = page.dataset.title;
+    groups[g].optgroup.appendChild(opt);
+  });
+
+  // Previous / next links at the foot of every page.
+  pages.forEach(function (page, i) {
+    var pager = document.createElement('div');
+    pager.className = 'pager';
+    if (i > 0) pager.appendChild(pagerLink(pages[i - 1], 'Previous', 'prev'));
+    if (i < pages.length - 1) pager.appendChild(pagerLink(pages[i + 1], 'Next', 'next'));
+    page.appendChild(pager);
+  });
+  function pagerLink(page, label, cls) {
+    var a = document.createElement('a');
+    a.className = cls;
+    a.href = '#' + page.dataset.page;
+    a.innerHTML = '<small></small><span></span>';
+    a.firstChild.textContent = label;
+    a.lastChild.textContent = page.dataset.title;
+    return a;
+  }
+
+  function show(id) {
+    var target = pages.find(function (p) { return p.dataset.page === id; }) || pages[0];
+    pages.forEach(function (p) { p.hidden = p !== target; });
+    Object.keys(links).forEach(function (k) {
+      if (k === target.dataset.page) links[k].setAttribute('aria-current', 'page');
+      else links[k].removeAttribute('aria-current');
+    });
+    select.value = target.dataset.page;
+    document.title = target.dataset.page === 'overview' ? 'AK Assistant Handbook' : target.dataset.title + ' · AK Assistant Handbook';
+    window.scrollTo(0, 0);
+  }
+
+  window.addEventListener('hashchange', function () { show(location.hash.slice(1)); });
+  select.addEventListener('change', function () { location.hash = select.value; });
+  show(location.hash.slice(1) || 'overview');
+
+  // Search: count matches per page, dim pages without any, jump to the best one on Enter.
+  var texts = pages.map(function (p) { return p.textContent.toLowerCase(); });
+  search.addEventListener('input', function () {
+    var q = search.value.trim().toLowerCase();
+    pages.forEach(function (p, i) {
+      var link = links[p.dataset.page];
+      var hits = link.querySelector('.hits');
+      if (!q) { hits.textContent = ''; link.style.opacity = ''; return; }
+      var n = texts[i].split(q).length - 1;
+      hits.textContent = n ? n : '';
+      link.style.opacity = n ? '' : '0.4';
+    });
+  });
+  search.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter') return;
+    var q = search.value.trim().toLowerCase();
+    if (!q) return;
+    var best = -1, bestN = 0;
+    texts.forEach(function (t, i) { var n = t.split(q).length - 1; if (n > bestN) { bestN = n; best = i; } });
+    if (best >= 0) location.hash = pages[best].dataset.page;
+  });
+})();
+</script>
+
+</body>
+</html>

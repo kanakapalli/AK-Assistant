@@ -1,271 +1,249 @@
+<div align="center">
+
+<img src="docs/assets/icon.png" width="128" height="128" alt="AK Assistant icon">
+
 # AK Assistant
 
-Hold a key, speak, let go: AK Assistant turns your speech into text and pastes it into whatever text field has focus on your Mac. Hold a second key to ask a local AI a question and get the answer on screen and read aloud. Everything runs **entirely on-device** with open-source models from Hugging Face. Your audio and questions never leave the Mac.
+**Hold a key. Talk. It's typed.**
 
-- **Push-to-talk:** hold the hotkey to record, release to transcribe and paste. Press **Esc** while holding to cancel.
-- **AI assistant:** hold the AI hotkey (default Right Command), ask anything, release. A local chat model answers in a floating panel and, if you like, a local voice reads it aloud. Follow-ups within 5 minutes continue the conversation.
-- **Mac commands:** the AI hotkey also does things: "open Xcode", "search YouTube for lofi music", "set a timer for 10 minutes", "remind me at 5 pm to call mom", "volume 30", "take a screenshot", "lock my screen", "what's my battery?". See **Mac commands** below.
-- **Meetings:** double-tap the dictation key to record a meeting; press it again (or double-tap) to stop. You get a live transcript, then a summary, key points, decisions and a to-do list written by the local AI. See **Meetings** below.
-- **Learn:** a section in the app that explains every feature and lists everything you can say, with Try buttons.
-- **Works in any app:** dictation runs in the background. AK Assistant doesn't need to be in front.
-- **Dock and menu bar:** open the app from the Dock or the menu bar icon to see your history, manage models and change settings.
-- **History:** every dictation is saved locally with the time, the app it went into, and the model used. Search, copy, export or delete it.
-- **Onboarding:** first launch walks you through permissions, the speech model, the AI and voice models, how answers come back, and both hotkeys.
+A private voice assistant for the Mac: dictation in any app, a local AI that answers out loud and runs your Mac,<br>
+meeting notes with speaker labels, and one-key writing tools. Every model runs on your Mac.
 
-## Requirements
+[![macOS 15+](https://img.shields.io/badge/macOS-15%2B-6440ec?logo=apple&logoColor=white)](#requirements)
+[![Apple silicon](https://img.shields.io/badge/Apple%20silicon-M1%20or%20newer-6440ec)](#requirements)
+[![Swift](https://img.shields.io/badge/SwiftUI-Swift%206.2-F05138?logo=swift&logoColor=white)](#build-from-source)
+[![On-device](https://img.shields.io/badge/runs-100%25%20on--device-0f9f8f)](#privacy)
+
+[**Download**](https://github.com/kanakapalli/AK-Assistant/releases/latest) ·
+[**Website**](https://kanakapalli.github.io/AK-Assistant/) ·
+[**Handbook**](https://kanakapalli.github.io/AK-Assistant/handbook.html) ·
+[**Demo video**](AK-Assistant-Demo.mp4)
+
+</div>
+
+---
+
+## Four keys, four jobs
+
+| Key | What it does |
+| --- | --- |
+| Hold **Right ⌥** | **Dictate.** Talk, let go, and your words are typed at the cursor in any app. |
+| Hold **Right ⌘** | **Ask the AI.** A local model answers in the popup and reads it aloud, or runs a Mac command. |
+| Double-tap **Right ⌥** | **Record a meeting.** Transcript, speaker labels, summary, decisions and to-dos. |
+| **⌘G** · **⌘E** · **⌘P** · **⌘R** | **Writing tools.** Fix grammar, write as email, make it professional, make it rude, or your own. |
+
+Every key can be changed in **Settings**.
+
+## Features
+
+### 🎙 Dictation
+- Words appear in a popup at the top of the screen as you speak; the final text is pasted where your cursor is.
+- Parakeet models on the Neural Engine add punctuation and capitals. Whisper covers Hindi and 90+ other languages.
+- Filler words ("um", "uh") are removed, your clipboard is put back after pasting, and your speakers are muted while you talk.
+- Press **Esc** while holding the key to cancel.
+
+### ✨ AI assistant and Mac commands
+- Ask anything; a chat model running on MLX answers in a few seconds and a natural voice (Qwen3-TTS) reads it out.
+- Follow-up questions within 5 minutes keep the conversation.
+- The same key runs your Mac: *"open Xcode"*, *"set a timer for 25 minutes"*, *"remind me at 5 pm to call mom"*, *"volume 30"*, *"take a screenshot"*, *"what's my battery?"*.
+- Phrased differently or in another language (*"xcode kholo"*)? The AI works out which command you mean.
+- Risky actions (quit, lock, shut down…) can ask before running.
+
+### 👥 Meetings
+- Records your mic **and** the Mac's audio, so Zoom, Meet and Teams calls are captured even with headphones on.
+- Noise and echo reduction, then a clean-up pass when the meeting ends.
+- Speaker labels ("You", "Speaker 1"…). Name a speaker once and the transcript, summary and to-dos update.
+- Summary, key points, decisions and a to-do list written by the local AI. Play the audio from any line or export as Markdown.
+
+### ✍️ Writing tools
+- Click into a text field and press a shortcut. AK Assistant selects the text, copies it, rewrites it with the local AI and pastes it back.
+
+  | Action | Shortcut | Default prompt |
+  | --- | --- | --- |
+  | Fix grammar and typos | ⌘G | Fixes mistakes only, keeps your wording and formatting |
+  | Write as email | ⌘E | Greeting, short paragraphs, sign-off; keeps every fact |
+  | Write as professional | ⌘P | Polite, confident, concise |
+  | Make it rude | ⌘R | Blunt and sarcastic, no slurs or threats |
+  | Your own | any | Add as many as you like, e.g. "Translate to Hindi" |
+
+- Every prompt and shortcut is editable in **Settings › Grammar**.
+- While an action is on, its shortcut belongs to AK Assistant (⌘P won't print). Change it or switch the action off if you need it.
+
+### 🕘 History, search and Learn
+- Dictations, AI questions and rewrites are saved on your Mac, grouped by day, with before/after for rewrites. Search, filter, copy or export as CSV or text.
+- Optional **Smart search & memory** (EmbeddingGemma) finds things by meaning and matches commands in any language.
+- The **Learn** screen explains every feature and lists everything you can say, with Try buttons.
+
+## Privacy
+
+Speech-to-text, the AI, the voice, meeting notes, rewrites and search all run on your Mac. There's no account and no server.
 
 | | |
 | --- | --- |
-| Mac | Apple Silicon (M1 or newer) |
-| macOS | 15 Sequoia or newer (the voice engine needs it) |
-| Xcode | 26 or newer (the MLX package needs Swift 6.2) |
-| Memory | 16 GB recommended with the AI assistant on; on 8 GB pick Qwen3 1.7B and Whisper Small |
-| Disk | 150 MB – 650 MB per speech model, 1–5 GB per AI model, 1–2 GB per voice |
+| Your voice, recordings, questions, answers, transcripts and rewritten text | Stay on your Mac |
+| Downloading models from Hugging Face | Uses the internet |
+| Websites and searches you ask to open | Uses the internet |
 
-## Getting started
+## Install
 
-This is a standard Xcode project, like one made with File → New → Project → macOS → App.
+1. Download the latest **AK-Assistant-x.y.z.dmg** from [Releases](https://github.com/kanakapalli/AK-Assistant/releases/latest).
+2. Drag **AK Assistant** into Applications and open it.
+3. The first time, macOS blocks it because it isn't notarized: open **System Settings › Privacy & Security** and click **Open Anyway**.
+4. Follow onboarding: allow the Microphone and Accessibility, pick your keys and download a speech model.
 
-1. Double-click **`AKAssistant.xcodeproj`** in the `AK Assistant` folder on your Desktop.
-2. Xcode downloads the Swift packages: Argmax (WhisperKit + TTSKit), FluidAudio, KeyboardShortcuts, MLX Swift LM, Swift Hugging Face and Swift Transformers. Watch the progress at the top of the window; the first time takes several minutes.
-   - If Xcode asks to **Trust & Enable** the `MLXHuggingFaceMacros` macros, allow it. The app uses them to load AI models.
-   - If Xcode says the **Metal Toolchain** is missing (MLX needs it), install it from Xcode → Settings → Components.
-3. Click the **AKAssistant** project in the left sidebar → **AKAssistant** target → **Signing & Capabilities**, and pick your Team (your Apple ID works for running locally).
-4. Press **⌘R** to build and run. Onboarding opens on first launch.
+### Requirements
 
-**Where things are set in Xcode** (useful while learning):
-
-| What | Where in Xcode |
+| | |
 | --- | --- |
-| App name, bundle ID, version | Target → **General** |
-| Microphone permission text | Target → **Info** (or Build Settings → search "Microphone") |
-| Entitlements, signing, hardened runtime | Target → **Signing & Capabilities** |
-| Swift packages | Project → **Package Dependencies** |
-| App icon, accent colour | `Assets.xcassets` |
-
-The project uses Xcode 16 folder syncing: any file you add to the `AKAssistant` folder, in Finder or in Xcode, becomes part of the app automatically.
-
-> **Accessibility permission and rebuilds:** macOS ties the Accessibility grant to the app's code signature. If the hotkey stops working after a rebuild, remove AK Assistant from System Settings → Privacy & Security → Accessibility and add it again. Keeping the same signing team avoids most of this.
-
-## Meetings
-
-Double-tap the dictation key (Right Option by default) to start recording a meeting. A red **Meeting** capsule with a timer appears at the top of the screen. Press the key once, or double-tap it, to stop. You can also start and stop from the menu bar or the **Meetings** screen.
-
-- **What's recorded:** your microphone plus the Mac's own audio (via ScreenCaptureKit), so the other people on Zoom, Meet or Teams are captured even with headphones on. The two are mixed into one 16 kHz track. If Screen & System Audio Recording isn't allowed, the meeting continues with the mic only and says so.
-- **Less noise:** the mic uses Apple's voice processing (noise suppression + echo cancellation, as in FaceTime). Your mic and the Mac's audio are also saved as separate tracks (`<id>-mic.m4a`, `<id>-mac.m4a`) on the same timeline, next to the mix used for playback.
-- **Clean-up pass:** when the meeting ends, the transcript is redone from the separate tracks (`Meetings/MeetingCleanup.swift`): Silero VAD (FluidAudio) cuts each track at real pauses and skips silence/noise, each piece is transcribed (optionally with a bigger model picked in Settings › Meetings), mic lines that merely repeat the call (speaker echo) are dropped, and lines are joined into paragraphs. If it fails, the live transcript stays.
-- **Who said what:** FluidAudio's offline diarizer (pyannote segmentation + WeSpeaker embeddings + VBx, on-device, ~30 MB downloaded the first time) splits the Mac's audio into Speaker 1, 2, 3…; the mic is "You". For an in-person meeting (mic only), the mic track is split instead. Click a speaker chip in the Transcript tab to rename them everywhere — transcript, summary and to-dos. Notes are written with the names, so owners on to-dos come out right. **Redo Clean-up and Speakers** in the ⋯ menu reruns it from the kept tracks.
-- **Live transcript:** every 15–28 seconds, cut at a pause where possible, a piece goes through the selected speech model. Lines appear in Meetings while the meeting is running.
-- **Notes:** when you stop, the selected AI model writes a title, summary, key points, decisions and action items (task · owner · due date). Long meetings are summarised part by part first, so an hour-long transcript fits a small model. **Rewrite Summary and To-dos** in the ⋯ menu runs it again; to-dos you ticked are kept.
-- **Meetings screen:** list on the left; on the right Summary, To-dos (tick, edit, add, delete) and Transcript (search, click a time to play from there). Export a meeting as Markdown or copy the notes.
-- **Audio:** kept as `~/Library/Application Support/AK Assistant/Meetings/<id>.m4a` (AAC, ~15 MB/hour) plus the two tracks (~30 MB/hour), unless turned off in Settings › Meetings (then the tracks are deleted right after the clean-up). Deleting a meeting deletes its audio.
-- **Safety:** recordings stop on their own after 4 hours. If the app quits mid-meeting, what was transcribed is kept.
-- **Double-tap rules:** both taps must be shorter than 0.3 s, at most 0.4 s apart, with no other key pressed in between, so ⌥← word jumps don't start a meeting. Turn it off in Settings › Meetings.
-
-Code: `Meetings/MeetingRecorder.swift` (mic + system audio, mixing, chunking, .m4a), `Meetings/MeetingCoordinator.swift` (start/stop, live transcription, notes), `Meetings/MeetingSummarizer.swift` (prompts + parsing), `Meetings/Meeting.swift` (SwiftData model), `UI/MeetingsView.swift`.
-
-## Mac commands
-
-Hold the AI hotkey and say a command instead of a question. The full list, with Try buttons, is in the app under **Learn**.
-
-| Group | Examples |
-| --- | --- |
-| Apps & windows | open Xcode, switch to Finder, quit Slack, hide other apps, minimize, new tab, full screen |
-| Websites & search | open YouTube, go to github.com, search YouTube for…, google…, look up … on Wikipedia, directions to… |
-| Files, folders, settings | open Downloads, find files named invoice, open file budget, open Wi-Fi settings, run shortcut … |
-| Sound & music | set volume to 40, turn it up, mute, pause the music, next song |
-| Screen & system | brightness up, dark mode on, take a screenshot, record my screen, turn off Wi-Fi, keep my Mac awake for 1 hour |
-| Timers & reminders | set a timer for 10 minutes, remind me in 20 minutes to…, set an alarm for 7 am, how much time is left, cancel all timers |
-| Quick info | what time is it, what's my battery, how much space do I have, what's my IP address, which macOS am I on |
-| Typing | type …, copy … to clipboard |
-| Power | lock my screen, turn off the display, go to sleep, empty the trash, restart, shut down, log out |
-
-How it works (`AKAssistant/Tools/`):
-
-- **`CommandParser`** recognises common phrasings with plain pattern matching, so they run instantly, offline, without loading the AI model.
-- Anything it doesn't recognise goes to the AI model. With **Settings › Mac commands › Understand commands phrased any way** on, the model can answer `ACTION: open Xcode` for requests phrased unusually or in another language; AK Assistant then runs that command.
-- **`AppFinder`** matches spoken app names against `/Applications` and the system app folders, with aliases ("vs code", "chrome", "settings") and fuzzy matching ("ex code" → Xcode).
-- **`CommandRunner`** carries commands out with `NSWorkspace`, simulated keys (media keys, ⌘⇧3, ⌃⌘Q), `osascript`, `pmset`, `mdfind`, `networksetup`, `caffeinate` and `shortcuts`.
-- **`TimerCenter`** keeps voice timers and reminders and posts macOS notifications.
-- **Risky actions** (quit, close window/tab, lock, sleep, empty Trash, Wi-Fi off, restart, shut down, log out) run immediately by default. Turn on **Ask before risky actions** to get Run / Cancel in the popup (or say "yes"). Restart, shut down and log out always show macOS's own confirmation.
-- **Permissions:** dark mode, Empty Trash and restart/shut down/log out use Apple Events, so macOS asks once to let AK Assistant control System Events, Finder or loginwindow (entitlement `com.apple.security.automation.apple-events` and `NSAppleEventsUsageDescription`). Timers ask for notification permission the first time.
+| Mac | Apple silicon (M1 or newer) |
+| macOS | 15 Sequoia or later |
+| Memory | 16 GB recommended with the AI on; 8 GB works with Qwen3 1.7B and Parakeet Redux |
+| Disk | About 1–5 GB, depending on the models you choose |
 
 ## Models
 
-All five are Core ML builds that run on the Neural Engine. They download during onboarding (or later from the **Models** tab) into `~/Library/Application Support/AK Assistant/Models`.
+All open source, downloaded once from Hugging Face, and managed in **Settings** next to the feature that uses them (speech in *Dictation*, AI and voice in *AI Assistant*).
 
-| Model | Hugging Face source | Size | Languages | Best for |
-| --- | --- | --- | --- | --- |
-| **Whisper Large v3 Turbo** (default) | [argmaxinc/whisperkit-coreml](https://huggingface.co/argmaxinc/whisperkit-coreml) `openai_whisper-large-v3-v20240930_turbo_632MB` | 632 MB | 99 | Best accuracy; Indian English, Hindi, mixed languages |
-| Parakeet TDT 0.6B v3 | [FluidInference/parakeet-tdt-0.6b-v3-coreml](https://huggingface.co/FluidInference/parakeet-tdt-0.6b-v3-coreml) | ~600 MB | 25 European + Japanese | Fastest; built-in punctuation |
-| Distil-Whisper Large v3 Turbo | [argmaxinc/whisperkit-coreml](https://huggingface.co/argmaxinc/whisperkit-coreml) `distil-whisper_distil-large-v3_turbo_600MB` | 600 MB | English | Lower-latency English |
-| Whisper Small | [argmaxinc/whisperkit-coreml](https://huggingface.co/argmaxinc/whisperkit-coreml) `openai_whisper-small_216MB` | 216 MB | 99 | 8 GB Macs, quick setup |
-| Whisper Base (English) | [argmaxinc/whisperkit-coreml](https://huggingface.co/argmaxinc/whisperkit-coreml) `openai_whisper-base.en` | ~150 MB | English | Smallest; low-power fallback |
+<table>
+<tr><th>Speech to text</th><th>AI (MLX)</th><th>Voice and search</th></tr>
+<tr valign="top"><td>
 
-Parakeet is managed by FluidAudio and is cached in `~/Library/Application Support/FluidAudio/Models`.
+| Model | Size |
+| --- | --- |
+| **Parakeet Ultra** (default) | ~650 MB |
+| Nemotron Streaming (EN) | ~600 MB |
+| Parakeet v2 (EN) | ~600 MB |
+| Parakeet Redux | ~220 MB |
+| Whisper Large v3 Turbo | 632 MB |
 
-To add a model, append a `SpeechModel` to `ModelCatalog.all` in `AKAssistant/Models/ModelCatalog.swift`. Any WhisperKit variant folder from the `argmaxinc/whisperkit-coreml` repo works.
+</td><td>
 
-### AI assistant models
+| Model | Size |
+| --- | --- |
+| **Qwen3 4B** (default) | 2.3 GB |
+| Gemma 4 E4B | 5.2 GB |
+| Gemma 4 E2B | 3.6 GB |
+| Llama 3.2 3B | 1.8 GB |
+| Qwen3 1.7B | 1.0 GB |
 
-Chat models run with Apple's [MLX](https://github.com/ml-explore/mlx-swift-lm) on the GPU. They download into the standard Hugging Face cache, `~/.cache/huggingface/hub`.
+</td><td>
 
-| Model | Hugging Face repo | Size | Best for |
-| --- | --- | --- | --- |
-| **Qwen3 4B** (default) | [mlx-community/Qwen3-4B-4bit](https://huggingface.co/mlx-community/Qwen3-4B-4bit) | 2.3 GB | Smart, fast, multilingual |
-| Gemma 4 E4B | [mlx-community/gemma-4-e4b-it-4bit](https://huggingface.co/mlx-community/gemma-4-e4b-it-4bit) | 5.2 GB | Highest quality (16 GB Macs) |
-| Gemma 4 E2B | [mlx-community/gemma-4-e2b-it-4bit](https://huggingface.co/mlx-community/gemma-4-e2b-it-4bit) | 3.6 GB | Balance of quality and speed |
-| Llama 3.2 3B | [mlx-community/Llama-3.2-3B-Instruct-4bit](https://huggingface.co/mlx-community/Llama-3.2-3B-Instruct-4bit) | 1.8 GB | Quick everyday answers |
-| Qwen3 1.7B | [mlx-community/Qwen3-1.7B-4bit](https://huggingface.co/mlx-community/Qwen3-1.7B-4bit) | 1.0 GB | Smallest; 8 GB Macs |
+| Model | Size |
+| --- | --- |
+| **Qwen3 TTS 0.6B** | ~1 GB |
+| Qwen3 TTS 1.7B | ~2.2 GB |
+| EmbeddingGemma 300M | ~330 MB |
 
-Qwen3's "thinking" mode is turned off so answers come back quickly.
+</td></tr>
+</table>
 
-### Voice models
+You can also add your own speech or chat model from Hugging Face, a download link or a folder (**Add custom model…**), and choose per model whether it runs on the GPU, the Neural Engine or MLX.
 
-Answers are spoken by [Qwen3-TTS](https://huggingface.co/argmaxinc/ttskit-coreml) through Argmax's TTSKit (Core ML). Files go in `~/Library/Application Support/AK Assistant/Models/Voice`.
+## Build from source
 
-| Model | Size | Notes |
-| --- | --- | --- |
-| **Qwen3 TTS 0.6B** (default) | ~1 GB | Natural voice, low delay |
-| Qwen3 TTS 1.7B | ~2.2 GB | Richer voice, a bit slower |
-
-Nine built-in speakers (Ryan, Aiden, Eric, Dylan, Serena, Vivian, Ono Anna, Sohee, Uncle Fu), chosen in Settings → AI assistant. The voice speaks 10 languages (English, Chinese, Japanese, Korean, German, French, Russian, Portuguese, Spanish, Italian); other languages fall back to English.
-
-## How it works
-
-```
-Hold hotkey ─▶ Recorder ─▶ STT engine ─▶ Post-process ─▶ Text inserter ─▶ focused text field
- (Right ⌥)     16 kHz mono   WhisperKit /    fillers,        clipboard + ⌘V,
-               in memory     FluidAudio      spacing          clipboard restored
-                                  ▲               │
-                           Model Manager     History (SwiftData)
-                           (Hugging Face)
+```bash
+git clone https://github.com/kanakapalli/AK-Assistant.git
+cd AK-Assistant
+open AKAssistant.xcodeproj
 ```
 
-1. **Hotkey** (`Hotkey/HotkeyManager.swift`): watches key down and key up anywhere in the system. Modifier-only keys (Right Option, Right Command, Right Control, Fn) use `NSEvent` flagsChanged monitors. Custom combos use [KeyboardShortcuts](https://github.com/sindresorhus/KeyboardShortcuts).
-2. **Recorder** (`Audio/AudioRecorder.swift`): `AVAudioEngine` converts the mic to 16 kHz mono Float32 in memory. Nothing is written to disk.
-3. **Transcription** (`Transcription/`): one `TranscriptionEngine` protocol with two backends, [WhisperKit](https://github.com/argmaxinc/argmax-oss-swift) and [FluidAudio](https://github.com/FluidInference/FluidAudio). The model starts loading as soon as you press the key, stays loaded between dictations, and unloads after 10 idle minutes.
-4. **Post-process** (`Support/PostProcessor.swift`): strips Whisper artefacts like `[BLANK_AUDIO]`, removes fillers (optional), fixes spacing and capitalisation.
-5. **Insert** (`Insertion/TextInserter.swift`): saves your clipboard, pastes with a synthetic ⌘V, then restores the clipboard. If nothing has focus, the text is left on the clipboard and the pill says "Copied to clipboard".
-6. **History** (`History/DictationRecord.swift`): SwiftData store with retention settings (forever, 30 days, 7 days, off) and CSV/text export.
+1. Xcode 26 or later downloads the Swift packages on first open (several minutes). Allow **Trust & Enable** for the `MLXHuggingFaceMacros` macros, and install the **Metal Toolchain** from Xcode › Settings › Components if asked.
+2. Pick your Team under the **AKAssistant** target › **Signing & Capabilities**.
+3. Press **⌘R**.
 
-Clips shorter than 0.3 s or near-silent are skipped, so Whisper doesn't invent text from silence. Recordings stop automatically after 2 minutes.
+To make a DMG to share:
 
-## Project layout
-
-```
-AK Assistant/
-├── AKAssistant.xcodeproj       Open this in Xcode
-├── README.md
-└── AKAssistant/                All app code (synced with Xcode)
-    ├── AKAssistantApp.swift    App entry point (@main): main window + menu bar icon
-    ├── Assets.xcassets         App icon and accent colour
-    ├── AKAssistant.entitlements  Microphone access under the hardened runtime
-    ├── App/                    AppState (the dictation pipeline), Preferences
-    ├── Audio/                  AudioRecorder
-    ├── Hotkey/                 HotkeyManager, hotkey choices
-    ├── Transcription/          Engine protocol, WhisperKit + Parakeet engines, TranscriptionService
-    ├── Assistant/              LLMService (local chat model), SpeechService (voice)
-    ├── Models/                 ModelCatalog (speech models), AssistantCatalog (AI + voice models), ModelManager (download/delete)
-    ├── Insertion/              TextInserter (paste + clipboard restore, typing fallback)
-    ├── History/                DictationRecord (SwiftData), pruning, export
-    ├── Meetings/               Meeting mode: recorder (mic + Mac audio), coordinator, AI summariser, SwiftData model
-    ├── Support/                Permissions, sounds, post-processing
-    └── UI/                     Main window, History, Models, Settings, Onboarding, menu bar, recording pill
+```bash
+./make-dmg.sh                    # → dist/AK-Assistant-<version>.dmg
+NOTARY_PROFILE=ak ./make-dmg.sh  # also notarize (needs a Developer ID certificate)
 ```
 
-A good reading order for learning: `AKAssistantApp.swift` → `App/AppState.swift` (follow `beginRecording` and `endRecording`) → `Hotkey/` → `Audio/` → `Transcription/` → `Insertion/` → `UI/`.
+> **Accessibility after rebuilds:** macOS ties the permission to the app's signature. If the hotkey stops working after a rebuild, remove AK Assistant from System Settings › Privacy & Security › Accessibility and add it again.
 
-### The AI assistant flow
+<details>
+<summary><b>How it works</b></summary>
 
 ```
-Hold AI key ─▶ Recorder ─▶ Whisper ─▶ LLMService (MLX chat model) ─▶ answer panel (streams in)
-                                              │                            │
-                                      short conversation              SpeechService (Qwen3-TTS)
-                                      (resets after 5 min)            reads it aloud
+Hold key ─▶ Recorder ─▶ Speech-to-text ─▶ Clean-up ─▶ Text inserter ─▶ focused text field
+            16 kHz mono   Parakeet / Whisper  fillers,     Accessibility or ⌘V,
+            in memory     (streams while       spacing      clipboard restored
+                          you talk)
 ```
 
-- `Assistant/LLMService.swift` loads the chat model with `#huggingFaceLoadModelContainer` and keeps a `ChatSession`, so follow-up questions have context. It unloads after 10 idle minutes.
-- `Assistant/SpeechService.swift` loads Qwen3-TTS with `TTSKit` and plays the answer sentence by sentence as it's generated.
-- `UI/AnswerPanel.swift` is the floating panel: copy, speak again or stop, and "New chat" to forget the conversation.
-- Answers are saved in History with the question.
-- Pressing a hotkey while an answer is being spoken stops the voice, so the mic only hears you.
+- **Hotkeys** (`Hotkey/HotkeyManager.swift`): modifier-only keys use `NSEvent` monitors; combos and writing-tool shortcuts use [KeyboardShortcuts](https://github.com/sindresorhus/KeyboardShortcuts).
+- **Recording** (`Audio/`): `AVAudioEngine` to 16 kHz mono in memory; nothing is written to disk for dictation.
+- **Transcription** (`Transcription/`): one engine protocol with WhisperKit, FluidAudio (Parakeet, Nemotron) and MLX backends. Models load when you press the key and stay warm.
+- **AI** (`Assistant/LLMService.swift`): MLX chat models with a short conversation; `SpeechService` speaks sentence by sentence as the answer streams.
+- **Mac commands** (`Tools/`): `CommandParser` recognises common phrasings instantly; anything else can come back from the AI as `ACTION: …`. `CommandRunner` carries it out.
+- **Writing tools** (`Assistant/TextActions.swift`, `GrammarFixer.swift`): ⌘A + ⌘C, rewrite with the action's prompt, paste back, restore the clipboard.
+- **Meetings** (`Meetings/`): mic + ScreenCaptureKit system audio, VAD-based clean-up pass, offline speaker diarization, AI notes.
+- **History** (`History/`): SwiftData, with retention settings and export.
 
-## Modern SwiftUI patterns used
+</details>
 
-The app uses current SwiftUI and Swift APIs (macOS 14+), so you're learning today's patterns:
+<details>
+<summary><b>Project layout</b></summary>
 
-| Pattern | Where | What it replaces |
-| --- | --- | --- |
-| `@Observable` classes | `AppState`, `Preferences`, `ModelManager` | `ObservableObject` + `@Published` |
-| `@State` holding an observable model | `AKAssistantApp` | `@StateObject` |
-| `.environment(object)` + `@Environment(Type.self)` | App entry, every view | `.environmentObject` + `@EnvironmentObject` |
-| `@Bindable` for `$bindings` | `SettingsView`, `HotkeyPicker` | `$object.property` on `@ObservedObject` |
-| `withObservationTracking` | `AppState.observePreferences()` | Combine `$property.sink` |
-| SwiftData `@Model` + `@Query` | `DictationRecord`, `HistoryView`, menu bar | Core Data |
-| `.task { … Task.sleep … }` loops | Settings and onboarding permission checks | `Timer.publish` + `.onReceive` |
-| `MenuBarExtra`, `Window`, `NavigationSplitView`, `ContentUnavailableView` | UI | AppKit status items and windows |
+```
+AKAssistant/
+├── AKAssistantApp.swift   App entry: main window + menu bar
+├── App/                   AppState (all pipelines), Preferences
+├── Audio/                 Recorder, speaker muting
+├── Hotkey/                Push-to-talk keys
+├── Transcription/         Speech engines and service
+├── Assistant/             Chat model, voice, writing tools
+├── Tools/                 Mac commands, app finder, timers
+├── Meetings/              Recorder, clean-up, speakers, notes
+├── Memory/                EmbeddingGemma search and command matching
+├── Models/                Model catalogs, downloads, custom models
+├── Insertion/             Pasting into other apps
+├── History/               SwiftData records, export
+├── Support/               Permissions, sounds, text clean-up
+└── UI/                    Popup, History, Meetings, Learn, Settings, onboarding
+```
 
-AppKit is used only where SwiftUI has no API: the floating "Listening…" pill (`NSPanel`), watching keys in other apps (`NSEvent` monitors), and pasting (`NSPasteboard` plus a synthetic ⌘V).
+A good reading order: `AKAssistantApp.swift` → `App/AppState.swift` (follow `beginRecording` and `endRecording`) → `Hotkey/` → `Audio/` → `Transcription/` → `Insertion/` → `UI/`. The full walkthrough is in the [Handbook](https://kanakapalli.github.io/AK-Assistant/handbook.html).
 
-The target builds in the Swift 5 language mode, so the third-party packages don't trigger strict-concurrency errors. Switch to Swift 6 later under Build Settings → Swift Language Version.
+</details>
 
-## Permissions
+<details>
+<summary><b>Permissions</b></summary>
 
 | Permission | Why |
 | --- | --- |
-| Microphone | Recording while the hotkey is held |
-| Accessibility | Seeing the hotkey in other apps and pasting into them |
-| Screen & System Audio Recording | Meetings only: recording the Mac's audio (other people on a call). The picture is ignored. Optional. |
-| Network | Only to download models from Hugging Face. Questions and answers stay on the Mac. |
+| Microphone | Recording while a key is held, and meetings |
+| Accessibility | Seeing the keys in other apps and pasting into them |
+| Screen & System Audio Recording | Meetings only: the Mac's audio (the picture is ignored). Optional. |
+| Automation | Dark mode, Empty Trash, restart/shut down (asked once) |
+| Notifications | Timers and reminders |
 
-The app isn't sandboxed, because the App Sandbox blocks synthetic key events into other apps. Distribute it outside the Mac App Store with a Developer ID certificate and notarization.
+The app isn't sandboxed, because the App Sandbox blocks simulated key presses into other apps. Distribute it outside the Mac App Store.
 
-## Settings
-
-- **Push-to-talk key:** Right Option (default), Right Command, Right Control, Fn/Globe, or any custom shortcut.
-- **Language:** auto-detect, or pin one (English, Hindi, Telugu, Tamil, Kannada, Marathi, Bengali, Spanish, French, German, Japanese, Chinese). Parakeet ignores this setting.
-- Remove filler words, restore the clipboard after pasting, start/stop sounds, launch at login.
-- History retention and permission status.
-- **Meetings** (`UI/MeetingSettings.swift`, also reachable from the Meetings toolbar):
-  - *Recording:* double-tap to start, record the Mac's audio, mic noise/echo reduction, meeting language (or same as dictation), live transcript on/off, auto-stop after 1/2/4/8 hours.
-  - *Transcript & speakers:* clean-up pass on/off, speech model for the clean-up, speech detection sensitivity (Low for noisy rooms, High for soft voices), remove call echo, speaker labels on/off, number of people (automatic or 2–10).
-  - *Notes:* write notes automatically, AI model for notes, detail (Brief / Standard / Detailed).
-  - *Storage:* keep audio, space used, Show in Finder.
-
-## Status and next steps
-
-Dictation builds and runs. The AI assistant (chat model + voice) is new and hasn't been compiled yet, so expect a round of small fixes on the first build, mostly where the MLX and TTSKit APIs meet the app.
-
-- [x] Dictation, history, onboarding, app icon
-- [ ] First build and fix-ups for the AI assistant
-- [ ] First build and fix-ups for Meetings (new, not compiled yet)
-- [ ] Meetings: remember named voices across meetings (FluidAudio speaker embeddings)
-- [ ] Per-app paste overrides and a typing fallback toggle (`TextInserter.typeText` is already in place)
-- [ ] Custom vocabulary (names, jargon) passed to Whisper as a prompt
-- [ ] Voice-activity detection to trim leading and trailing silence
-- [ ] "Paste the answer" option for the assistant
-- [ ] Developer ID signing, notarization, Sparkle updates, DMG
-- [ ] Later: tools (calendar, files, web) and commands, toward the full local assistant
+</details>
 
 ## Troubleshooting
 
 | Problem | Fix |
 | --- | --- |
-| Hotkey does nothing | Check Accessibility in Settings → Permissions. After a rebuild, remove the app from Accessibility and add it again. |
-| Fn opens the emoji picker | System Settings → Keyboard → "Press 🌐 key to" → Do Nothing |
-| Text isn't pasted in one app | Some fields block synthetic paste (password fields, some terminals). The text is still on the clipboard. |
-| First dictation is slow | Core ML compiles the model the first time it loads. Onboarding does this for you; switching models repeats it once. |
-| "Download … first" | Download the selected model in the Models tab. |
-| AI hotkey does nothing | Check Settings → AI assistant: the key isn't "Off", and the AI model shows **Ready** in Models. |
-| Answers aren't spoken | Pick "Show and speak" or "Speak only", and download a voice in Models → Voice. |
-| First AI answer is slow | The chat model loads when you first press the AI key (a few seconds). Later questions are fast until it unloads after 10 idle minutes. |
+| The key does nothing | Check **Settings › Permissions** and the Hotkey check there. After a rebuild, re-add the app under Accessibility. |
+| Fn opens the emoji picker | System Settings › Keyboard › "Press 🌐 key to" › Do Nothing |
+| Text isn't pasted | Password fields and Terminal's Secure Keyboard Entry block it; the text is on your clipboard, press ⌘V. |
+| ⌘P / ⌘R don't work in other apps | A writing tool is using them. Change its shortcut or turn it off in **Settings › Grammar**. |
+| "Download … first" | Download the model on the matching Settings page (Dictation or AI Assistant). |
+| First AI answer is slow | The model loads once (a few seconds), then stays ready. On 8 GB Macs pick a smaller one. |
+
+## Roadmap
+
+- [ ] Remember named voices across meetings
+- [ ] Custom vocabulary (names, jargon) for speech-to-text
+- [ ] Per-app paste settings
+- [ ] Developer ID signing, notarization and automatic updates
 
 ## Credits
 
 - [WhisperKit and TTSKit](https://github.com/argmaxinc/argmax-oss-swift) by Argmax (MIT)
 - [MLX Swift LM](https://github.com/ml-explore/mlx-swift-lm) by Apple (MIT)
-- [Swift Hugging Face](https://github.com/huggingface/swift-huggingface) and [Swift Transformers](https://github.com/huggingface/swift-transformers) by Hugging Face (Apache 2.0)
 - [FluidAudio](https://github.com/FluidInference/FluidAudio) by FluidInference (Apache 2.0)
+- [Swift Hugging Face](https://github.com/huggingface/swift-huggingface) and [Swift Transformers](https://github.com/huggingface/swift-transformers) by Hugging Face (Apache 2.0)
 - [KeyboardShortcuts](https://github.com/sindresorhus/KeyboardShortcuts) by Sindre Sorhus (MIT)
-- Models: OpenAI Whisper (MIT), Distil-Whisper (MIT), NVIDIA Parakeet (CC-BY-4.0), Qwen3 and Qwen3-TTS (Apache 2.0), Gemma 4 (Gemma license), Llama 3.2 (Llama 3.2 Community License)
+- Models: NVIDIA Parakeet and Nemotron (CC-BY-4.0), OpenAI Whisper (MIT), Qwen3 and Qwen3-TTS (Apache 2.0), Gemma 4 and EmbeddingGemma (Gemma license), Llama 3.2 (Llama 3.2 Community License)

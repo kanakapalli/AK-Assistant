@@ -3,950 +3,619 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>AK Assistant Handbook</title>
+<title>AK Assistant</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Hold a key, talk, and it's typed. AK Assistant is a private voice assistant for the Mac: dictation, a local AI, meetings and writing tools, all on-device.">
+<link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAWfmNhQlgAABZ+anVtYgAAAB5qdW1kYzJwYQARABCAAACqADibcQNjMnBhAAAAFlhqdW1iAAAAR2p1bWRjMm1hABEAEIAAAKoAOJtxA3VybjpjMnBhOmY2YTE5ZGYwLTNjYTItNDA0OC05MmI4LWM3NjMwZmY2YTRmOAAAAAOTanVtYgAAAClqdW1kYzJhcwARABCAAACqADibcQNjMnBhLmFzc2VydGlvbnMAAAAAuGp1bWIAAABEanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5pbmdyZWRpZW50LnYzAAAAABhjMnNoaX4NZqKFg0MoI5g4seefRgAAAGxjYm9yo2lkYzpmb3JtYXRpaW1hZ2UvcG5namluc3RhbmNlSUR4LHhtcDppaWQ6ZDlmNjA4YjktNzhlOS00OTk4LWJiZTAtZTc1MDFiNmQ1YmQ4bHJlbGF0aW9uc2hpcGhwYXJlbnRPZgAAAeJqdW1iAAAAQWp1bWRjYm9yABEAEIAAAKoAOJtxE2MycGEuYWN0aW9ucy52MgAAAAAYYzJzaL3JJbSrXknw7Z0EHdGtgCAAAAGZY2JvcqJnYWN0aW9uc4KiZmFjdGlvbmtjMnBhLm9wZW5lZGpwYXJhbWV0ZXJzoWtpbmdyZWRpZW50c4GiY3VybHgtc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5pbmdyZWRpZW50LnYzZGhhc2hYIBRALojebzOgEv2WAl1GHCnBS0XfcIxiiK1FnMuhjrtlpGZhY3Rpb254HWNvbS5hbnRocm9waWMuY2xhdWRlLnByb3ZpZGVkanBhcmFtZXRlcnOheB9jb20uYW50aHJvcGljLm9yaWdpbi1jb25maWRlbmNlZ3Vua25vd25rZGVzY3JpcHRpb254ZkNsYXVkZSBwcm92aWRlZCB0aGlzIGZpbGUgYXQgdGhlIHJlcXVlc3Qgb2YgYSB1c2VyIGFuZCBtYXkgaGF2ZSBjcmVhdGVkIG9yIG1vZGlmaWVkIHRoZSBmaWxlIGNvbnRlbnRzLm1zb2Z0d2FyZUFnZW50oWRuYW1lZkNsYXVkZXJhbGxBY3Rpb25zSW5jbHVkZWT1AAAAyGp1bWIAAABAanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5oYXNoLmRhdGEAAAAAGGMyc2hVeLtMJsmhLMGTwM85AAVyAAAAgGNib3KlY2FsZ2ZzaGEyNTZjcGFkTQAAAAAAAAAAAAAAAABkaGFzaFggsHkib7ktxW1iUFh7sPE5I4ERwVAXYfBLnrdWj+P6tbZkbmFtZW5qdW1iZiBtYW5pZmVzdGpleGNsdXNpb25zgaJlc3RhcnQYIWZsZW5ndGgZFooAAAI+anVtYgAAACdqdW1kYzJjbAARABCAAACqADibcQNjMnBhLmNsYWltLnYyAAAAAg9jYm9ypWNhbGdmc2hhMjU2aXNpZ25hdHVyZXhNc2VsZiNqdW1iZj0vYzJwYS91cm46YzJwYTpmNmExOWRmMC0zY2EyLTQwNDgtOTJiOC1jNzYzMGZmNmE0ZjgvYzJwYS5zaWduYXR1cmVqaW5zdGFuY2VJRHgseG1wOmlpZDoxMjQ2ZjUxMS1jOGJmLTQwOTktOGU2My0zNjlhZTMxN2I4MDNyY3JlYXRlZF9hc3NlcnRpb25zg6JjdXJseC1zZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmluZ3JlZGllbnQudjNkaGFzaFggFEAuiN5vM6AS/ZYCXUYcKcFLRd9wjGKIrUWcy6GOu2WiY3VybHgqc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5hY3Rpb25zLnYyZGhhc2hYIDZ6322HxPmHLxPdT1nLh947XyvBVRHtl0uHhfCU9ufyomN1cmx4KXNlbGYjanVtYmY9YzJwYS5hc3NlcnRpb25zL2MycGEuaGFzaC5kYXRhZGhhc2hYIDegJ0unex3+e/gKOhU0+CAuS3fnkSxu+/wZp5W8+EA5dGNsYWltX2dlbmVyYXRvcl9pbmZvo2RuYW1lb0FudGhyb3BpYyBGaWxlc2d2ZXJzaW9uZTEuMC4wa3NwZWNWZXJzaW9uZTIuNC4wAAAQOGp1bWIAAAAoanVtZGMyY3MAEQAQgAAAqgA4m3EDYzJwYS5zaWduYXR1cmUAAAAQCGNib3LShFkCEqIBJhghWQIKMIICBjCCAY2gAwIBAgIUQOWgCu7COdC+uIP6BkIFPWdVEwAwCgYIKoZIzj0EAwMwSTEXMBUGA1UEChMOQW50aHJvcGljLCBQQkMxLjAsBgNVBAMTJUFudGhyb3BpYyBDb250ZW50IENyZWRlbnRpYWxzIFJvb3QgQ0EwHhcNMjYwODA3MTg0MzU2WhcNMjgwODA2MTk0MzU2WjBEMRcwFQYDVQQKEw5BbnRocm9waWMsIFBCQzEpMCcGA1UEAxMgQW50aHJvcGljIENsYXVkZSBDb250ZW50IFNpZ25pbmcwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAASYegpry1AYBRTVNL1CpTlbROnY3dey+UrsF9C3phYrATN3ZHf93Mo8RQN0KOUuOn19P4oWNFWe5n2/She9N7eTo1gwVjAOBgNVHQ8BAf8EBAMCB4AwFQYDVR0lBA4wDAYKKwYBBAGD6F4CATAMBgNVHRMBAf8EAjAAMB8GA1UdIwQYMBaAFM5R4gSBTmRbI/jjxM+aPpzB11zCMAoGCCqGSM49BAMDA2cAMGQCMDFzHRSeAXrSy1WOzkbhPZ6Km2wGTmZ/2gK18k8BQGXyqz88Rdrz6CTX9flAnYNVxgIwcF9c3fVhqmJKpi+UhasNUMko69cyX6STPfta3Q8EjyzDjzoyrol46FP6VFHhvUcJoWNwYWRZDZ4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Schibsted+Grotesk:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap">
 <style>
-/* Layout: a sticky sidebar of pages beside one reading column; each page is a section swapped by #hash. */
+/* Layout: a single column that alternates wide "keyboard" bands and narrow reading sections; the notch popup is the hero. */
 :root {
-  --bg: #F5F6F9;
-  --surface: #FFFFFF;
-  --ink: #151922;
-  --muted: #586174;
-  --line: #DCE0E8;
-  --accent: #2F55C4;
-  --accent-soft: #E6ECFB;
-  --rec: #D1372A;
-  --rec-soft: #FBE7E4;
-  --ok: #1E7F4F;
-  --warn: #9A5B00;
-  --warn-soft: #FFF2DC;
-  --code-bg: #EDF0F5;
-  --key-top: #FFFFFF;
-  --key-edge: #C4CAD6;
-  --font-display: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
-  --font-body: "IBM Plex Sans", -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --bg: #f4f4f9;          /* cool paper with a violet bias */
+  --surface: #ffffff;
+  --ink: #16131f;
+  --muted: #5d5872;
+  --line: #e1def0;
+  --violet: #6440ec;      /* the app icon */
+  --violet-soft: #ece7ff;
+  --on-accent: #ffffff;
+  --cursor: #12b5c8;      /* the icon's text cursor, darkened for light backgrounds */
+  --dictate: #2f6bff;
+  --ai: #8a3ff0;
+  --meet: #e5484d;
+  --write: #0f9f8f;
+  --key: #fbfbfe;
+  --key-edge: #cfcbe2;
+  --island: #0b0a10;
+  --island-ink: #f3f1ff;
+  --font-display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --font-body: "Instrument Sans", -apple-system, "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --radius: 14px;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0F1217; --surface: #161A22; --ink: #E6E9EF; --muted: #9AA3B3; --line: #2A303B;
-    --accent: #84A2FF; --accent-soft: #1E2843; --rec: #FF6F61; --rec-soft: #3A1E1C;
-    --ok: #57C98E; --warn: #F0B45A; --warn-soft: #34291A; --code-bg: #1C2129;
-    --key-top: #232935; --key-edge: #3A4250; color-scheme: dark;
+    --bg: #110f18; --surface: #1a1724; --ink: #f1eefc; --muted: #a59fbe; --line: #2c2840;
+    --violet: #9b85ff; --violet-soft: #241d42; --on-accent: #140c33; --cursor: #5fe6f2;
+    --dictate: #6f9bff; --ai: #b98bff; --meet: #ff6b6f; --write: #3fd6c3;
+    --key: #221e2f; --key-edge: #3a3550; --island: #000000; --island-ink: #f3f1ff;
+    color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0F1217; --surface: #161A22; --ink: #E6E9EF; --muted: #9AA3B3; --line: #2A303B;
-  --accent: #84A2FF; --accent-soft: #1E2843; --rec: #FF6F61; --rec-soft: #3A1E1C;
-  --ok: #57C98E; --warn: #F0B45A; --warn-soft: #34291A; --code-bg: #1C2129;
-  --key-top: #232935; --key-edge: #3A4250; color-scheme: dark;
+  --bg: #110f18; --surface: #1a1724; --ink: #f1eefc; --muted: #a59fbe; --line: #2c2840;
+  --violet: #9b85ff; --violet-soft: #241d42; --on-accent: #140c33; --cursor: #5fe6f2;
+  --dictate: #6f9bff; --ai: #b98bff; --meet: #ff6b6f; --write: #3fd6c3;
+  --key: #221e2f; --key-edge: #3a3550; --island: #000000; --island-ink: #f3f1ff;
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15.5px; line-height: 1.62; }
-a { color: var(--accent); text-underline-offset: 2px; }
-a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
-code, pre, kbd { font-family: var(--font-mono); font-size: 0.86em; }
-code { background: var(--code-bg); padding: 0.1em 0.38em; border-radius: 4px; overflow-wrap: anywhere; }
-
-.shell { display: grid; grid-template-columns: 272px minmax(0, 1fr); min-height: 100vh; }
-
-/* Sidebar */
-.side { position: sticky; top: env(safe-area-inset-top, 0px); height: 100vh; overflow-y: auto; border-right: 1px solid var(--line); background: var(--surface); padding: 22px 18px 28px; display: flex; flex-direction: column; gap: 18px; }
-.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
-.brand-mark { display: flex; align-items: center; gap: 2px; height: 26px; padding: 0 7px; border-radius: 7px; background: var(--ink); }
-.brand-mark i { display: block; width: 3px; border-radius: 2px; background: var(--bg); }
-.brand-mark i:nth-child(1){height:8px}.brand-mark i:nth-child(2){height:16px}.brand-mark i:nth-child(3){height:11px}.brand-mark i:nth-child(4){height:19px}.brand-mark i:nth-child(5){height:7px}
-.brand b { font-family: var(--font-display); font-size: 17px; letter-spacing: -0.01em; }
-.brand small { display: block; color: var(--muted); font-size: 12px; font-weight: 400; }
-.search { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: inherit; font-size: 14px; }
-.nav { display: flex; flex-direction: column; gap: 14px; }
-.nav-group > span { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 8px 4px; }
-.nav a { display: flex; justify-content: space-between; gap: 8px; padding: 5px 8px; border-radius: 6px; color: var(--ink); text-decoration: none; font-size: 14.5px; }
-.nav a:hover { background: var(--code-bg); }
-.nav a[aria-current="page"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
-.nav a .hits { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.side-foot { margin-top: auto; font-size: 12px; color: var(--muted); }
-.mobile-nav { display: none; }
-
-/* Content */
-main { padding-block: 40px 80px; padding-inline: clamp(16px, 5vw, 64px); min-width: 0; }
-.page { max-width: 820px; }
-.eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
-h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; letter-spacing: -0.015em; line-height: 1.2; }
-h1 { font-size: clamp(30px, 4.2vw, 42px); margin: 6px 0 12px; font-weight: 800; }
-h2 { font-size: 23px; margin: 42px 0 10px; padding-top: 6px; }
-h3 { font-size: 17px; margin: 26px 0 6px; }
-.lead { font-size: 18px; color: var(--muted); max-width: 64ch; margin: 0 0 8px; }
-p, li { max-width: 68ch; }
-ul, ol { padding-left: 1.3em; }
-li + li { margin-top: 4px; }
-.muted { color: var(--muted); }
-
-/* Keycaps */
-kbd { display: inline-block; min-width: 1.9em; text-align: center; padding: 0.08em 0.5em 0.12em; border: 1px solid var(--key-edge); border-bottom-width: 3px; border-radius: 6px; background: var(--key-top); color: var(--ink); font-size: 0.82em; font-weight: 500; white-space: nowrap; }
-
-/* Tables */
-.table-wrap { overflow-x: auto; margin: 14px 0 6px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); }
-th { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); background: var(--bg); white-space: nowrap; }
-tr:last-child td { border-bottom: 0; }
-td code { white-space: nowrap; }
-td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
-
-/* Pipeline diagram: real stages, real order */
-.flow { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; margin: 16px 0; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
-.stage { flex: 1 1 130px; min-width: 0; padding: 10px 12px; border-radius: 8px; background: var(--bg); border: 1px solid var(--line); }
-.stage b { display: block; font-size: 13.5px; }
-.stage span { display: block; font-size: 12.5px; color: var(--muted); line-height: 1.4; margin-top: 2px; }
-.stage code { font-size: 11.5px; }
-.arrow { align-self: center; color: var(--muted); font-size: 18px; flex: 0 0 auto; }
-.stage.hot { border-color: var(--accent); background: var(--accent-soft); }
-.stage.rec { border-color: var(--rec); background: var(--rec-soft); }
-.flow-cap { font-size: 12.5px; color: var(--muted); margin-top: -8px; }
-
-/* Callouts */
-.note { margin: 16px 0; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 14.5px; }
-.note.warn { border-color: var(--warn); background: var(--warn-soft); }
-.note b:first-child { display: block; margin-bottom: 2px; }
-
-/* Feature grid */
-.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 16px 0; }
-.card { padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); min-width: 0; }
-.card h3 { margin: 0 0 4px; font-size: 16px; }
-.card p { margin: 0; font-size: 14px; color: var(--muted); }
-.card .how { margin-top: 8px; font-size: 13px; }
-
-.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); margin: 18px 0; overflow: hidden; }
-.facts div { padding: 12px 14px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); margin: -1px -1px 0 0; }
-.facts dt { font-size: 11.5px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
-.facts dd { margin: 2px 0 0; font-weight: 600; font-size: 15px; }
-
-pre.tree, pre.code { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; line-height: 1.55; font-size: 13px; }
-.tag { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 1px 7px; border-radius: 999px; background: var(--code-bg); color: var(--muted); white-space: nowrap; }
-.tag.new { background: var(--accent-soft); color: var(--accent); }
-.tag.rec { background: var(--rec-soft); color: var(--rec); }
-.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--rec); margin-right: 6px; vertical-align: 1px; }
-
-.pager { display: flex; justify-content: space-between; gap: 12px; margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line); }
-.pager a { display: block; max-width: 48%; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; text-decoration: none; background: var(--surface); }
-.pager a small { display: block; color: var(--muted); font-size: 12px; }
-.pager a.next { margin-left: auto; text-align: right; }
-
-dl.defs { display: grid; grid-template-columns: minmax(120px, 210px) minmax(0, 1fr); gap: 8px 18px; margin: 14px 0; }
-dl.defs dt { font-weight: 600; }
-dl.defs dd { margin: 0; color: var(--muted); min-width: 0; }
-
-@media (max-width: 860px) {
-  .shell { grid-template-columns: minmax(0, 1fr); }
-  .side { display: none; }
-  .mobile-nav { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--line); background: var(--surface); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 2; }
-  .mobile-nav select { font: inherit; padding: 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
-  main { padding-block: 24px 64px; }
-  dl.defs { grid-template-columns: minmax(0, 1fr); gap: 2px 0; }
-  dl.defs dd { margin-bottom: 10px; }
-  .arrow { transform: rotate(90deg); flex-basis: 100%; text-align: center; }
-  .stage { flex-basis: 100%; }
+html, body { margin: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+.hero-grid > *, .feature > *, .privacy-grid > *, .install-grid > * { min-width: 0; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  background: var(--bg); color: var(--ink);
+  font: 400 17px/1.6 var(--font-body);
+  -webkit-font-smoothing: antialiased;
 }
-@media (prefers-reduced-motion: no-preference) { .page:not([hidden]) { animation: fade .18s ease-out; } }
-@keyframes fade { from { opacity: .4; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+a { color: inherit; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--violet); outline-offset: 3px; border-radius: 6px; }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.05; margin: 0; text-wrap: balance; letter-spacing: -0.02em; }
+p { margin: 0; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
+.eyebrow { font: 700 12px/1 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--violet); }
+.lede { color: var(--muted); font-size: 19px; max-width: 60ch; }
+
+/* Keycaps: the page's signature detail */
+.kbd {
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+  min-width: 2.1em; padding: 0.18em 0.55em; border-radius: 7px;
+  font: 700 0.82em/1.4 var(--font-mono); color: var(--ink);
+  background: var(--key); border: 1px solid var(--key-edge);
+  box-shadow: 0 2px 0 var(--key-edge);
+  white-space: nowrap; vertical-align: 0.08em;
+}
+
+/* Nav */
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--bg); }
+.nav .wrap { display: flex; align-items: center; gap: 24px; padding-block: 12px; }
+.brand { display: flex; align-items: center; gap: 10px; font: 700 18px var(--font-display); text-decoration: none; }
+.brand img { width: 30px; height: 30px; }
+.nav-links { display: flex; gap: 22px; margin-left: auto; font-size: 15px; }
+.nav-links a { text-decoration: none; color: var(--muted); }
+.nav-links a:hover { color: var(--ink); }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+  font: 600 15px/1 var(--font-body); padding: 12px 18px; border-radius: 10px;
+  border: 1px solid transparent; transition: transform .15s ease, background .15s ease;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn-primary { background: var(--violet); color: var(--on-accent); }
+.btn-ghost { border-color: var(--line); background: var(--surface); }
+.nav .btn { padding: 9px 14px; font-size: 14px; }
+@media (max-width: 760px) { .nav-links { display: none; } .nav .btn { margin-left: auto; } }
+
+/* Hero */
+.hero { padding-block: 72px 56px; }
+.hero-grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 48px; align-items: center; }
+.hero h1 { font-size: clamp(44px, 7vw, 84px); font-weight: 800; }
+.hero h1 .caret { display: inline-block; width: 0.07em; height: 0.82em; background: var(--cursor); margin-left: 0.06em; vertical-align: -0.04em; border-radius: 2px; animation: blink 1.1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.hero .lede { margin-top: 22px; }
+.hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+.hero-meta { margin-top: 18px; font: 500 13px var(--font-mono); color: var(--muted); }
+
+.stage {
+  position: relative; border-radius: 22px; overflow: hidden; min-width: 0;
+  background:
+    radial-gradient(120% 90% at 80% 0%, color-mix(in srgb, var(--violet) 22%, transparent), transparent 60%),
+    linear-gradient(160deg, color-mix(in srgb, var(--violet) 10%, var(--surface)), var(--surface));
+  border: 1px solid var(--line);
+  aspect-ratio: 5 / 4; max-width: 100%;
+}
+.menubar { height: 30px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; font: 600 12px var(--font-body); color: var(--muted); background: color-mix(in srgb, var(--surface) 70%, transparent); border-bottom: 1px solid var(--line); }
+.menubar span:last-child { font-family: var(--font-mono); }
+.island {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  background: var(--island); color: var(--island-ink);
+  border-radius: 0 0 22px 22px; padding: 10px 18px 14px; min-width: 64%;
+  box-shadow: 0 18px 40px -18px rgba(20, 10, 60, .55);
+  font-size: 14px;
+}
+.island-row { display: flex; align-items: center; gap: 10px; min-height: 26px; }
+.island-label { font-weight: 600; }
+.island-time { margin-left: auto; font: 500 12px var(--font-mono); opacity: .6; }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: #ff4d4f; flex: none; }
+.bars { display: flex; align-items: center; gap: 3px; height: 18px; }
+.bars i { width: 3px; border-radius: 2px; background: var(--island-ink); height: 30%; animation: wave 0.9s ease-in-out infinite; }
+.bars i:nth-child(2) { animation-delay: .1s } .bars i:nth-child(3) { animation-delay: .2s } .bars i:nth-child(4) { animation-delay: .3s } .bars i:nth-child(5) { animation-delay: .15s } .bars i:nth-child(6) { animation-delay: .05s }
+@keyframes wave { 0%,100% { height: 25%; } 50% { height: 100%; } }
+.island-text { margin-top: 8px; font-size: 15px; line-height: 1.45; color: #d9d4f5; min-height: 2.9em; }
+.island-text b { color: #fff; font-weight: 600; }
+.doc {
+  position: absolute; left: 7%; right: 7%; bottom: 7%; top: 44%;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px;
+  box-shadow: 0 20px 50px -30px rgba(30, 20, 80, .35);
+}
+.doc-head { display: flex; gap: 6px; margin-bottom: 12px; }
+.doc-head i { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
+.doc-to { font: 500 12px var(--font-mono); color: var(--muted); }
+.doc-body { margin-top: 8px; font-size: 15px; }
+.doc-body .typed::after { content: ""; display: inline-block; width: 2px; height: 1.1em; background: var(--cursor); margin-left: 2px; vertical-align: -0.2em; animation: blink 1.1s steps(1) infinite; }
+.hold { position: absolute; right: 7%; top: calc(44% - 46px); font-size: 13px; color: var(--muted); display: flex; gap: 8px; align-items: center; }
+@media (max-width: 900px) { .hero-grid { grid-template-columns: 1fr; } .hero { padding-block: 48px 40px; } }
+@media (max-width: 480px) { .stage { aspect-ratio: 4 / 5; } .island { min-width: 86%; } .doc { top: 48%; } .hold { top: calc(48% - 40px); } }
+@media (prefers-reduced-motion: reduce) { .bars i, .caret, .typed::after { animation: none !important; } }
+
+/* Keys band */
+.band { background: var(--surface); border-block: 1px solid var(--line); }
+.keys { padding-block: 64px; }
+.keys h2 { font-size: clamp(30px, 4vw, 44px); }
+.key-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-top: 32px; }
+.key-card { border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; background: var(--bg); display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.key-card .combo { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 20px; min-height: 40px; }
+.key-card .combo small { font: 500 12px var(--font-mono); color: var(--muted); }
+.key-card h3 { font-size: 22px; }
+.key-card p { color: var(--muted); font-size: 15px; }
+.tag { align-self: flex-start; font: 700 11px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; padding: 5px 8px; border-radius: 6px; }
+.t-dictate { color: var(--dictate); background: color-mix(in srgb, var(--dictate) 12%, transparent); }
+.t-ai { color: var(--ai); background: color-mix(in srgb, var(--ai) 12%, transparent); }
+.t-meet { color: var(--meet); background: color-mix(in srgb, var(--meet) 12%, transparent); }
+.t-write { color: var(--write); background: color-mix(in srgb, var(--write) 12%, transparent); }
+@media (max-width: 960px) { .key-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .key-grid { grid-template-columns: 1fr; } }
+
+/* Feature sections */
+.feature { padding-block: 80px; display: grid; grid-template-columns: 1fr 1.1fr; gap: 56px; align-items: center; }
+.feature.flip > :first-child { order: 2; }
+.feature h2 { font-size: clamp(32px, 4.4vw, 50px); margin-top: 12px; }
+.feature .lede { margin-top: 16px; font-size: 18px; }
+.points { list-style: none; padding: 0; margin: 22px 0 0; display: grid; gap: 10px; }
+.points li { padding-left: 22px; position: relative; color: var(--ink); }
+.points li::before { content: ""; position: absolute; left: 0; top: 0.62em; width: 10px; height: 2px; background: var(--violet); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 22px; min-width: 0; }
+@media (max-width: 900px) { .feature { grid-template-columns: 1fr; gap: 32px; padding-block: 56px; } .feature.flip > :first-child { order: 0; } }
+
+/* AI: chat + command chips */
+.qa { display: grid; gap: 12px; }
+.q { justify-self: end; background: var(--violet-soft); color: var(--ink); padding: 10px 14px; border-radius: 14px 14px 4px 14px; max-width: 85%; }
+.a { background: var(--bg); border: 1px solid var(--line); padding: 12px 14px; border-radius: 14px 14px 14px 4px; max-width: 92%; }
+.a .who { font: 700 11px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ai); display: block; margin-bottom: 4px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.chip { font: 500 13px var(--font-mono); padding: 7px 10px; border-radius: 8px; border: 1px dashed var(--key-edge); color: var(--muted); }
+
+/* Meetings card */
+.meet-head { display: flex; align-items: center; gap: 10px; }
+.meet-head .rec { font: 700 12px var(--font-mono); color: var(--meet); display: flex; gap: 6px; align-items: center; }
+.meet-head .rec::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--meet); }
+.meet-head span:last-child { margin-left: auto; font: 500 12px var(--font-mono); color: var(--muted); }
+.lines { margin-top: 14px; display: grid; gap: 10px; font-size: 15px; }
+.lines div { display: grid; grid-template-columns: 84px 1fr; gap: 10px; }
+.lines b { font: 700 12px/1.9 var(--font-mono); color: var(--muted); }
+.lines b.you { color: var(--violet); }
+.todo { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); display: grid; gap: 8px; font-size: 15px; }
+.todo h4 { margin: 0 0 4px; font: 700 12px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.todo label { display: flex; gap: 10px; align-items: baseline; }
+.todo input { accent-color: var(--violet); }
+
+/* Writing tools demo */
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+.tab {
+  font: 600 14px var(--font-body); cursor: pointer; padding: 8px 12px; border-radius: 9px;
+  border: 1px solid var(--line); background: var(--bg); color: var(--muted);
+  display: inline-flex; gap: 8px; align-items: center;
+}
+.tab .kbd { font-size: 11px; }
+.tab[aria-selected="true"] { background: var(--write); border-color: var(--write); color: var(--on-accent); }
+.tab[aria-selected="true"] .kbd { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.35); box-shadow: none; color: var(--on-accent); }
+.rewrite { margin-top: 18px; display: grid; gap: 10px; }
+.label { font: 700 11px var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.before { color: var(--muted); }
+.after { border-left: 3px solid var(--write); background: color-mix(in srgb, var(--write) 7%, transparent); padding: 12px 14px; border-radius: 0 10px 10px 0; white-space: pre-line; min-height: 7.2em; }
+.example-note { margin-top: 12px; font-size: 13px; color: var(--muted); }
+
+/* Privacy */
+.privacy { padding-block: 72px; }
+.privacy-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 48px; align-items: start; }
+.privacy h2 { font-size: clamp(34px, 5vw, 58px); }
+.net { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--bg); }
+.net div { display: flex; justify-content: space-between; gap: 16px; padding: 14px 18px; border-bottom: 1px solid var(--line); font-size: 15px; }
+.net div:last-child { border-bottom: 0; }
+.net span:last-child { font: 700 12px var(--font-mono); white-space: nowrap; }
+.yes { color: var(--write); } .no { color: var(--muted); }
+@media (max-width: 860px) { .privacy-grid { grid-template-columns: 1fr; } }
+
+/* Models */
+.models { padding-block: 80px; }
+.models h2 { font-size: clamp(30px, 4vw, 44px); }
+.model-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 28px; }
+.model-col { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; min-width: 0; }
+.model-col h3 { font-size: 20px; }
+.model-col p { color: var(--muted); font-size: 14px; margin-top: 4px; }
+.model-col ul { list-style: none; margin: 14px 0 0; padding: 0; }
+.model-col li { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); font-size: 15px; }
+.model-col li span:last-child { font: 500 13px var(--font-mono); color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+@media (max-width: 900px) { .model-cols { grid-template-columns: 1fr; } }
+
+/* Install */
+.install { padding-block: 72px; }
+.install-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
+.install h2 { font-size: clamp(30px, 4vw, 44px); }
+.steps { counter-reset: step; list-style: none; padding: 0; margin: 24px 0 0; display: grid; gap: 16px; }
+.steps li { counter-increment: step; display: grid; grid-template-columns: 36px 1fr; gap: 12px; }
+.steps li::before { content: counter(step); font: 700 15px/36px var(--font-mono); text-align: center; width: 36px; height: 36px; border-radius: 9px; background: var(--violet-soft); color: var(--violet); }
+.steps b { display: block; }
+.steps span { color: var(--muted); font-size: 15px; }
+.req { border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); }
+.req div { display: grid; grid-template-columns: 110px 1fr; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--line); font-size: 15px; }
+.req div:last-child { border-bottom: 0; }
+.req b { font: 700 12px/1.9 var(--font-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.code { margin-top: 14px; font: 500 13px/1.6 var(--font-mono); background: var(--island); color: var(--island-ink); padding: 14px 16px; border-radius: 10px; overflow-x: auto; white-space: pre; }
+@media (max-width: 860px) { .install-grid { grid-template-columns: 1fr; } }
+
+footer { border-top: 1px solid var(--line); padding-block: 36px; color: var(--muted); font-size: 14px; }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 16px 28px; align-items: center; }
+footer .brand { color: var(--ink); }
+footer nav { display: flex; gap: 18px; margin-left: auto; flex-wrap: wrap; }
 </style>
+
 </head>
 <body>
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAWfmNhQlgAABZ+anVtYgAAAB5qdW1kYzJwYQARABCAAACqADibcQNjMnBhAAAAFlhqdW1iAAAAR2p1bWRjMm1hABEAEIAAAKoAOJtxA3VybjpjMnBhOmY2YTE5ZGYwLTNjYTItNDA0OC05MmI4LWM3NjMwZmY2YTRmOAAAAAOTanVtYgAAAClqdW1kYzJhcwARABCAAACqADibcQNjMnBhLmFzc2VydGlvbnMAAAAAuGp1bWIAAABEanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5pbmdyZWRpZW50LnYzAAAAABhjMnNoaX4NZqKFg0MoI5g4seefRgAAAGxjYm9yo2lkYzpmb3JtYXRpaW1hZ2UvcG5namluc3RhbmNlSUR4LHhtcDppaWQ6ZDlmNjA4YjktNzhlOS00OTk4LWJiZTAtZTc1MDFiNmQ1YmQ4bHJlbGF0aW9uc2hpcGhwYXJlbnRPZgAAAeJqdW1iAAAAQWp1bWRjYm9yABEAEIAAAKoAOJtxE2MycGEuYWN0aW9ucy52MgAAAAAYYzJzaL3JJbSrXknw7Z0EHdGtgCAAAAGZY2JvcqJnYWN0aW9uc4KiZmFjdGlvbmtjMnBhLm9wZW5lZGpwYXJhbWV0ZXJzoWtpbmdyZWRpZW50c4GiY3VybHgtc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5pbmdyZWRpZW50LnYzZGhhc2hYIBRALojebzOgEv2WAl1GHCnBS0XfcIxiiK1FnMuhjrtlpGZhY3Rpb254HWNvbS5hbnRocm9waWMuY2xhdWRlLnByb3ZpZGVkanBhcmFtZXRlcnOheB9jb20uYW50aHJvcGljLm9yaWdpbi1jb25maWRlbmNlZ3Vua25vd25rZGVzY3JpcHRpb254ZkNsYXVkZSBwcm92aWRlZCB0aGlzIGZpbGUgYXQgdGhlIHJlcXVlc3Qgb2YgYSB1c2VyIGFuZCBtYXkgaGF2ZSBjcmVhdGVkIG9yIG1vZGlmaWVkIHRoZSBmaWxlIGNvbnRlbnRzLm1zb2Z0d2FyZUFnZW50oWRuYW1lZkNsYXVkZXJhbGxBY3Rpb25zSW5jbHVkZWT1AAAAyGp1bWIAAABAanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5oYXNoLmRhdGEAAAAAGGMyc2hVeLtMJsmhLMGTwM85AAVyAAAAgGNib3KlY2FsZ2ZzaGEyNTZjcGFkTQAAAAAAAAAAAAAAAABkaGFzaFggsHkib7ktxW1iUFh7sPE5I4ERwVAXYfBLnrdWj+P6tbZkbmFtZW5qdW1iZiBtYW5pZmVzdGpleGNsdXNpb25zgaJlc3RhcnQYIWZsZW5ndGgZFooAAAI+anVtYgAAACdqdW1kYzJjbAARABCAAACqADibcQNjMnBhLmNsYWltLnYyAAAAAg9jYm9ypWNhbGdmc2hhMjU2aXNpZ25hdHVyZXhNc2VsZiNqdW1iZj0vYzJwYS91cm46YzJwYTpmNmExOWRmMC0zY2EyLTQwNDgtOTJiOC1jNzYzMGZmNmE0ZjgvYzJwYS5zaWduYXR1cmVqaW5zdGFuY2VJRHgseG1wOmlpZDoxMjQ2ZjUxMS1jOGJmLTQwOTktOGU2My0zNjlhZTMxN2I4MDNyY3JlYXRlZF9hc3NlcnRpb25zg6JjdXJseC1zZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmluZ3JlZGllbnQudjNkaGFzaFggFEAuiN5vM6AS/ZYCXUYcKcFLRd9wjGKIrUWcy6GOu2WiY3VybHgqc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5hY3Rpb25zLnYyZGhhc2hYIDZ6322HxPmHLxPdT1nLh947XyvBVRHtl0uHhfCU9ufyomN1cmx4KXNlbGYjanVtYmY9YzJwYS5hc3NlcnRpb25zL2MycGEuaGFzaC5kYXRhZGhhc2hYIDegJ0unex3+e/gKOhU0+CAuS3fnkSxu+/wZp5W8+EA5dGNsYWltX2dlbmVyYXRvcl9pbmZvo2RuYW1lb0FudGhyb3BpYyBGaWxlc2d2ZXJzaW9uZTEuMC4wa3NwZWNWZXJzaW9uZTIuNC4wAAAQOGp1bWIAAAAoanVtZGMyY3MAEQAQgAAAqgA4m3EDYzJwYS5zaWduYXR1cmUAAAAQCGNib3LShFkCEqIBJhghWQIKMIICBjCCAY2gAwIBAgIUQOWgCu7COdC+uIP6BkIFPWdVEwAwCgYIKoZIzj0EAwMwSTEXMBUGA1UEChMOQW50aHJvcGljLCBQQkMxLjAsBgNVBAMTJUFudGhyb3BpYyBDb250ZW50IENyZWRlbnRpYWxzIFJvb3QgQ0EwHhcNMjYwODA3MTg0MzU2WhcNMjgwODA2MTk0MzU2WjBEMRcwFQYDVQQKEw5BbnRocm9waWMsIFBCQzEpMCcGA1UEAxMgQW50aHJvcGljIENsYXVkZSBDb250ZW50IFNpZ25pbmcwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAASYegpry1AYBRTVNL1CpTlbROnY3dey+UrsF9C3phYrATN3ZHf93Mo8RQN0KOUuOn19P4oWNFWe5n2/She9N7eTo1gwVjAOBgNVHQ8BAf8EBAMCB4AwFQYDVR0lBA4wDAYKKwYBBAGD6F4CATAMBgNVHRMBAf8EAjAAMB8GA1UdIwQYMBaAFM5R4gSBTmRbI/jjxM+aPpzB11zCMAoGCCqGSM49BAMDA2cAMGQCMDFzHRSeAXrSy1WOzkbhPZ6Km2wGTmZ/2gK18k8BQGXyqz88Rdrz6CTX9flAnYNVxgIwcF9c3fVhqmJKpi+UhasNUMko69cyX6STPfta3Q8EjyzDjzoyrol46FP6VFHhvUcJoWNwYWRZDZ4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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" alt="">AK Assistant</a>
+    <nav class="nav-links" aria-label="Sections">
+      <a href="#keys">Keys</a>
+      <a href="#writing">Writing tools</a>
+      <a href="#meetings">Meetings</a>
+      <a href="#privacy">Privacy</a>
+      <a href="https://github.com/kanakapalli/AK-Assistant">GitHub</a>
+    </nav>
+    <a class="btn btn-primary" href="https://github.com/kanakapalli/AK-Assistant/releases/latest">Download</a>
+  </div>
+</header>
 
+<main id="top">
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow">Private voice assistant for the Mac</p>
+        <h1 style="margin-top:16px">Hold a key. Talk. It's typed.<span class="caret" aria-hidden="true"></span></h1>
+        <p class="lede">AK Assistant turns your voice into text in any app, answers questions, runs your Mac, takes meeting notes and rewrites what you've written. Every model runs on your Mac, so nothing you say is uploaded.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="https://github.com/kanakapalli/AK-Assistant/releases/latest">Download for Mac</a>
+          <a class="btn btn-ghost" href="https://github.com/kanakapalli/AK-Assistant">View the source</a>
+        </div>
+        <p class="hero-meta">Apple silicon · macOS 15 or later · runs offline</p>
+      </div>
 
-<div class="shell">
-  <aside class="side" aria-label="Documentation">
-    <a class="brand" href="#overview">
-      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-      <span><b>AK Assistant</b><small>Handbook · v0.1.0</small></span>
-    </a>
-    <input class="search" id="search" type="search" placeholder="Search the docs…" aria-label="Search the docs">
-    <nav class="nav" id="nav"></nav>
-    <div class="side-foot">macOS 15+ · Apple Silicon · everything on-device<br>Bundle ID <code>com.natfirst.akassistant</code></div>
-  </aside>
+      <div class="stage" aria-label="Example: dictating a Slack message">
+        <div class="menubar"><span>Slack</span><span>10:42</span></div>
+        <div class="island" id="island">
+          <div class="island-row">
+            <span class="dot" id="islandDot"></span>
+            <span class="bars" id="islandBars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="island-label" id="islandLabel">Listening…</span>
+            <span class="island-time" id="islandTime">0:03</span>
+          </div>
+          <p class="island-text" id="islandText">can you push the release notes to the channel before the standup</p>
+        </div>
+        <div class="hold"><span>Holding</span><span class="kbd">right ⌥</span></div>
+        <div class="doc">
+          <div class="doc-head"><i></i><i></i><i></i></div>
+          <div class="doc-to"># product-launch</div>
+          <p class="doc-body"><span class="typed" id="typed">Can you push the release notes to the channel before the standup?</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  <div class="mobile-nav">
-    <a class="brand" href="#overview"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><b>AK Assistant Handbook</b></a>
-    <label class="muted" for="page-select" style="font-size:12px">Page</label>
-    <select id="page-select"></select>
+  <section class="band" id="keys">
+    <div class="wrap keys">
+      <p class="eyebrow">Four ways in</p>
+      <h2 style="margin-top:12px">Everything starts from the keyboard</h2>
+      <div class="key-grid">
+        <article class="key-card">
+          <span class="tag t-dictate">Dictate</span>
+          <div class="combo"><span class="kbd">right ⌥</span><small>hold</small></div>
+          <h3>Speak into any app</h3>
+          <p>Hold, talk, let go. Your words are typed at the cursor in Slack, Mail, Xcode, the browser, anywhere.</p>
+        </article>
+        <article class="key-card">
+          <span class="tag t-ai">Ask</span>
+          <div class="combo"><span class="kbd">right ⌘</span><small>hold</small></div>
+          <h3>Ask the local AI</h3>
+          <p>Ask a question and the answer appears in the popup and is read aloud. Or tell your Mac what to do.</p>
+        </article>
+        <article class="key-card">
+          <span class="tag t-meet">Meet</span>
+          <div class="combo"><span class="kbd">⌥</span><span class="kbd">⌥</span><small>double-tap</small></div>
+          <h3>Record a meeting</h3>
+          <p>Get the transcript with who said what, a summary, decisions and a to-do list when it ends.</p>
+        </article>
+        <article class="key-card">
+          <span class="tag t-write">Rewrite</span>
+          <div class="combo"><span class="kbd">⌘G</span><span class="kbd">⌘E</span><span class="kbd">⌘P</span><span class="kbd">⌘R</span></div>
+          <h3>Fix or rewrite text</h3>
+          <p>Fix grammar, turn a note into an email, make it professional, or add your own actions with your own prompts.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <section class="feature" id="dictation">
+      <div>
+        <p class="eyebrow">Dictation</p>
+        <h2>Faster than typing, and it fixes the ums</h2>
+        <p class="lede">Words appear in the popup as you speak. When you let go, the final text is pasted where your cursor is, and your clipboard is put back.</p>
+        <ul class="points">
+          <li>Parakeet models on the Neural Engine add punctuation and capitals for you</li>
+          <li>25 languages, plus Whisper for Hindi, Telugu, Tamil and 90+ more</li>
+          <li>Filler words like “um” and “uh” are removed</li>
+          <li>Your speakers are muted while you talk, so videos and calls don't end up in the text</li>
+          <li>Every dictation is saved in a searchable History on your Mac</li>
+        </ul>
+      </div>
+      <div class="panel" aria-label="Example history entries">
+        <div class="qa">
+          <div class="a"><span class="who" style="color:var(--dictate)">Dictation · Mail</span>Hi Priya, thanks for the quick turnaround. The numbers look right to me, so let's send it to finance today.</div>
+          <div class="a"><span class="who" style="color:var(--dictate)">Dictation · Xcode</span>TODO: retry the download once if the first attempt times out.</div>
+          <div class="a"><span class="who" style="color:var(--dictate)">Dictation · Notes</span>Groceries for Sunday: tomatoes, curd, coriander, two packets of idli rava.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="feature flip" id="assistant">
+      <div>
+        <p class="eyebrow">AI assistant</p>
+        <h2>A private AI that answers out loud and runs your Mac</h2>
+        <p class="lede">Hold the AI key and ask anything. A chat model on your Mac answers in a few seconds and a natural voice reads it out. Follow-up questions keep the context.</p>
+        <div class="chips" aria-label="Things you can say">
+          <span class="chip">open Xcode</span>
+          <span class="chip">set a timer for 25 minutes</span>
+          <span class="chip">remind me at 5 pm to call mom</span>
+          <span class="chip">volume 30</span>
+          <span class="chip">search YouTube for lofi</span>
+          <span class="chip">what's my battery?</span>
+          <span class="chip">xcode kholo</span>
+        </div>
+        <ul class="points">
+          <li>Common commands run instantly, even before the AI model loads</li>
+          <li>Say it any way, in any language: the model works out which command you mean</li>
+          <li>Risky actions like quitting apps or shutting down can ask before running</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <div class="qa">
+          <div class="q">What's a good way to say no to a meeting politely?</div>
+          <div class="a"><span class="who">AK Assistant</span>Thank them, say you can't make it, and offer something useful instead: “Thanks for including me. I can't join this one, but I'll read the notes and reply by tomorrow.”</div>
+          <div class="q">open Calendar</div>
+          <div class="a"><span class="who">Mac command</span>Opened Calendar.</div>
+        </div>
+      </div>
+    </section>
   </div>
 
-  <main id="main">
+  <section class="band" id="writing">
+    <div class="wrap feature">
+      <div>
+        <p class="eyebrow">Writing tools</p>
+        <h2>Select nothing. Press a key. It's rewritten.</h2>
+        <p class="lede">Click into a text field and press a shortcut. AK Assistant copies the text, rewrites it with the local AI and pastes the result back in place.</p>
+        <ul class="points">
+          <li>Four built in: fix grammar, write as email, professional, and rude</li>
+          <li>Every prompt and shortcut can be changed</li>
+          <li>Add your own actions, like “Translate to Hindi” or “Make it shorter”</li>
+          <li>Before and after are kept in History</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <div class="tabs" role="tablist" aria-label="Writing tools">
+          <button class="tab" role="tab" id="tab-grammar" aria-selected="true" data-k="grammar">Fix grammar <span class="kbd">⌘G</span></button>
+          <button class="tab" role="tab" id="tab-email" aria-selected="false" data-k="email">Email <span class="kbd">⌘E</span></button>
+          <button class="tab" role="tab" id="tab-pro" aria-selected="false" data-k="pro">Professional <span class="kbd">⌘P</span></button>
+          <button class="tab" role="tab" id="tab-rude" aria-selected="false" data-k="rude">Rude <span class="kbd">⌘R</span></button>
+        </div>
+        <div class="rewrite" role="tabpanel" aria-live="polite">
+          <span class="label">Before</span>
+          <p class="before">hey can u send me the report by friday, need it for the client meeting thx</p>
+          <span class="label">After</span>
+          <p class="after" id="after">Hey, can you send me the report by Friday? I need it for the client meeting. Thanks!</p>
+        </div>
+        <p class="example-note">Example output. Results depend on the AI model you pick.</p>
+      </div>
+    </div>
+  </section>
 
-<section class="page" data-page="overview" data-group="Start here" data-title="Overview">
-  <div class="eyebrow">Start here</div>
-  <h1>AK Assistant</h1>
-  <p class="lead">A macOS app that turns your voice into text, answers, Mac actions and meeting notes. Every model runs on the Mac itself; audio, questions and meetings never leave it.</p>
-
-  <dl class="facts">
-    <div><dt>Platform</dt><dd>macOS 15+, Apple Silicon</dd></div>
-    <div><dt>Built with</dt><dd>Swift, SwiftUI, SwiftData</dd></div>
-    <div><dt>Version</dt><dd>0.1.0</dd></div>
-    <div><dt>Network use</dt><dd>Model downloads only</dd></div>
-  </dl>
-
-  <h2>What it does</h2>
-  <div class="grid">
-    <div class="card"><h3>Dictation</h3><p>Hold a key, speak, let go. The text is typed into whatever field has focus, in any app.</p><div class="how">Hold <kbd>Right ⌥</kbd></div></div>
-    <div class="card"><h3>Ask the AI</h3><p>A local chat model answers in a floating card and can read the answer aloud.</p><div class="how">Hold <kbd>Right ⌘</kbd></div></div>
-    <div class="card"><h3>Mac commands</h3><p>“Open Xcode”, “set a timer for 10 minutes”, “volume 30”, “lock my screen”.</p><div class="how">Hold <kbd>Right ⌘</kbd> and say it</div></div>
-    <div class="card"><h3>Meetings</h3><p>Records your mic and the call, transcribes with speaker labels, then writes a summary and to-dos.</p><div class="how">Double-tap <kbd>Right ⌥</kbd></div></div>
-    <div class="card"><h3>History</h3><p>Every dictation and question, searchable and exportable as CSV or text.</p><div class="how">Main window › History</div></div>
-    <div class="card"><h3>Learn</h3><p>An in-app guide to every feature and every phrase, with Try buttons.</p><div class="how">Main window › Learn</div></div>
+  <div class="wrap">
+    <section class="feature" id="meetings">
+      <div>
+        <p class="eyebrow">Meetings</p>
+        <h2>Notes, to-dos and who said what</h2>
+        <p class="lede">Double-tap the dictation key when a call starts. Your mic and the Mac's audio are recorded, even with headphones on, so Zoom, Meet and Teams calls are covered.</p>
+        <ul class="points">
+          <li>Background noise and speaker echo are reduced</li>
+          <li>Speakers are labelled; name them once and the notes update</li>
+          <li>Summary, key points, decisions and to-dos written by the local AI</li>
+          <li>Play the audio from any line, or export everything as Markdown</li>
+        </ul>
+      </div>
+      <div class="panel" aria-label="Example meeting">
+        <div class="meet-head"><span class="rec">Meeting</span><strong>Launch sync</strong><span>24:18</span></div>
+        <div class="lines">
+          <div><b class="you">You</b><span>Can we move the beta to Thursday so QA has two full days?</span></div>
+          <div><b>Ravi</b><span>Thursday works. I'll update the release checklist tonight.</span></div>
+          <div><b>Meera</b><span>Then I'll send the invite list to support by Wednesday.</span></div>
+        </div>
+        <div class="todo">
+          <h4>To-dos</h4>
+          <label><input type="checkbox" id="todo1" checked> Move beta to Thursday · You</label>
+          <label><input type="checkbox" id="todo2"> Update the release checklist · Ravi</label>
+          <label><input type="checkbox" id="todo3"> Send the invite list to support · Meera</label>
+        </div>
+      </div>
+    </section>
   </div>
 
-  <h2>Design principles</h2>
-  <ul>
-    <li><b>Private by construction.</b> Speech-to-text, the chat model, the voice, speaker detection and summaries are local models. The only network traffic is downloading those models from Hugging Face.</li>
-    <li><b>Works from anywhere.</b> The app lives in the menu bar and the Dock, starts at login, and its hotkeys work while any other app is in front.</li>
-    <li><b>Fast by default.</b> Models are loaded in the background at launch and kept warm; speech is transcribed while you are still talking; answers are spoken sentence by sentence as they are written.</li>
-    <li><b>Standard Xcode project.</b> Plain SwiftUI and the current observation APIs, no generated tooling, so it doubles as a learning project.</li>
-  </ul>
+  <section class="band" id="privacy">
+    <div class="wrap privacy">
+      <div class="privacy-grid">
+        <div>
+          <p class="eyebrow">Privacy</p>
+          <h2 style="margin-top:12px">Nothing you say leaves this Mac</h2>
+          <p class="lede" style="margin-top:18px">Speech-to-text, the AI, the voice, meeting notes and search all run on your Mac's Neural Engine and GPU. There's no account, no server and no subscription.</p>
+        </div>
+        <div class="net" aria-label="What uses the internet">
+          <div><span>Your voice and recordings</span><span class="no">stays on Mac</span></div>
+          <div><span>Questions and AI answers</span><span class="no">stays on Mac</span></div>
+          <div><span>Meeting transcripts and notes</span><span class="no">stays on Mac</span></div>
+          <div><span>Text you rewrite</span><span class="no">stays on Mac</span></div>
+          <div><span>Downloading models from Hugging Face</span><span class="yes">uses internet</span></div>
+          <div><span>Websites and searches you ask to open</span><span class="yes">uses internet</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  <h2>How to read these docs</h2>
-  <p>Start with <a href="#getting-started">Getting started</a> to build it, then <a href="#using">Using the app</a>. The Inside section explains each pipeline down to the file and the numbers in the code. Reference pages list every model, setting, permission and file.</p>
-  <div class="note"><b>Status</b>Dictation, history, onboarding and Mac commands are in daily use. The AI voice, meeting mode, the clean-up pass and speaker labels are the newest parts and the ones most likely to need fixes after a build. See <a href="#troubleshooting">Troubleshooting &amp; roadmap</a>.</div>
-</section>
-
-<section class="page" data-page="getting-started" data-group="Start here" data-title="Getting started" hidden>
-  <div class="eyebrow">Start here</div>
-  <h1>Getting started</h1>
-  <p class="lead">Open the project in Xcode, let it fetch the Swift packages, pick a signing team and run.</p>
-
-  <h2>Requirements</h2>
-  <div class="table-wrap"><table>
-    <tr><th>Item</th><th>Needed</th></tr>
-    <tr><td>Mac</td><td>Apple Silicon (M1 or newer)</td></tr>
-    <tr><td>macOS</td><td>15 Sequoia or newer (deployment target 15.0; the voice engine needs it)</td></tr>
-    <tr><td>Xcode</td><td>26 or newer (MLX Swift LM needs Swift 6.2 tools; the app target itself builds in Swift 5 mode)</td></tr>
-    <tr><td>Memory</td><td>16 GB recommended with the AI assistant on. On 8 GB use Qwen3 1.7B and Parakeet Redux.</td></tr>
-    <tr><td>Disk</td><td>~220–650 MB per speech model, 1–5.2 GB per AI model, 1–2.2 GB per voice, ~45 MB per hour of kept meeting audio</td></tr>
-  </table></div>
-
-  <h2>Build and run</h2>
-  <ol>
-    <li>Open <code>AKAssistant.xcodeproj</code> in the <code>AK Assistant</code> folder on the Desktop.</li>
-    <li>Wait for Xcode to resolve the Swift packages (first time: several minutes). If it asks to <b>Trust &amp; Enable</b> the <code>MLXHuggingFaceMacros</code> macros, allow it. If it reports a missing <b>Metal Toolchain</b>, install it from Xcode › Settings › Components.</li>
-    <li>Select the <b>AKAssistant</b> target › <b>Signing &amp; Capabilities</b> and choose your team.</li>
-    <li>Press <kbd>⌘R</kbd>. Onboarding opens on the first launch.</li>
-  </ol>
-  <p>The project uses Xcode 16+ folder syncing (<code>PBXFileSystemSynchronizedRootGroup</code>): any file added to the <code>AKAssistant</code> folder, in Finder or Xcode, is part of the app automatically.</p>
-
-  <h2>Swift packages</h2>
-  <div class="table-wrap"><table>
-    <tr><th>Package</th><th>Version</th><th>Used for</th></tr>
-    <tr><td><a href="https://github.com/argmaxinc/argmax-oss-swift">argmax-oss-swift</a></td><td class="num">1.1.0</td><td>WhisperKit (speech-to-text) and TTSKit (Qwen3-TTS voice)</td></tr>
-    <tr><td><a href="https://github.com/FluidInference/FluidAudio">FluidAudio</a></td><td class="num">0.17.4</td><td>Parakeet and Nemotron speech models, Silero VAD, offline speaker diarization</td></tr>
-    <tr><td><a href="https://github.com/ml-explore/mlx-swift-lm">mlx-swift-lm</a></td><td class="num">3.31.4</td><td>Running the AI chat models with MLX</td></tr>
-    <tr><td><a href="https://github.com/ml-explore/mlx-swift">mlx-swift</a></td><td class="num">0.31.6</td><td>MLX array framework (dependency of the above)</td></tr>
-    <tr><td><a href="https://github.com/huggingface/swift-huggingface">swift-huggingface</a></td><td class="num">0.11.0</td><td>Hugging Face downloads, <code>#huggingFaceLoadModelContainer</code></td></tr>
-    <tr><td><a href="https://github.com/huggingface/swift-transformers">swift-transformers</a></td><td class="num">1.3.4</td><td>Tokenizers for the chat models</td></tr>
-    <tr><td><a href="https://github.com/sindresorhus/KeyboardShortcuts">KeyboardShortcuts</a></td><td class="num">2.4.0</td><td>Custom hotkey combos and the shortcut recorder</td></tr>
-  </table></div>
-  <p class="muted">Pulled in indirectly: swift-jinja, swift-collections, swift-crypto, swift-asn1, swift-numerics, swift-syntax, swift-argument-parser, eventsource, yyjson.</p>
-
-  <h2>Where things are set in Xcode</h2>
-  <div class="table-wrap"><table>
-    <tr><th>What</th><th>Where</th></tr>
-    <tr><td>App name, bundle ID (<code>com.natfirst.akassistant</code>), version</td><td>Target › General</td></tr>
-    <tr><td>Microphone and Apple Events permission texts</td><td>Target › Info, or Build Settings › <code>INFOPLIST_KEY_*</code></td></tr>
-    <tr><td>Entitlements, signing, hardened runtime</td><td>Target › Signing &amp; Capabilities (<code>AKAssistant.entitlements</code>)</td></tr>
-    <tr><td>Swift packages</td><td>Project › Package Dependencies</td></tr>
-    <tr><td>App icon, accent colour</td><td><code>Assets.xcassets</code> (source art: <code>AppIcon.svg</code>)</td></tr>
-  </table></div>
-
-  <h2>Making a DMG to share</h2>
-  <p><code>make-dmg.sh</code> in the project folder archives a Release build and packages it as a drag-to-Applications disk image in <code>dist/AK-Assistant-&lt;version&gt;.dmg</code>.</p>
-  <pre class="code">./make-dmg.sh                       # build + DMG, signed the way Xcode signs
-NOTARY_PROFILE=ak ./make-dmg.sh     # also notarize, so other Macs open it without warnings</pre>
-  <div class="note warn"><b>Replace old copies when you update</b>An older copy left in Applications (it starts at login) keeps its own hotkeys running alongside the new build. Before meetings moved to their own database file, an old copy could also wipe the meetings table. Quit or replace old copies after each update.</div>
-</section>
-
-<section class="page" data-page="using" data-group="Start here" data-title="Using the app" hidden>
-  <div class="eyebrow">Start here</div>
-  <h1>Using the app</h1>
-  <p class="lead">Three keys do almost everything. The window is for history, meetings, models and settings.</p>
-
-  <h2>Keys</h2>
-  <div class="table-wrap"><table>
-    <tr><th>Do this</th><th>Default key</th><th>What happens</th></tr>
-    <tr><td>Hold and talk, then let go</td><td><kbd>Right ⌥</kbd></td><td>Dictation: the text is typed into the focused field</td></tr>
-    <tr><td>Hold and ask, then let go</td><td><kbd>Right ⌘</kbd></td><td>AI answer or Mac command</td></tr>
-    <tr><td>Double-tap</td><td><kbd>Right ⌥</kbd> <kbd>Right ⌥</kbd></td><td>Start recording a meeting</td></tr>
-    <tr><td>Press once (or double-tap) during a meeting</td><td><kbd>Right ⌥</kbd></td><td>Stop the meeting and write the notes</td></tr>
-    <tr><td>Press while still holding</td><td><kbd>Esc</kbd></td><td>Cancel the current recording</td></tr>
-  </table></div>
-  <p>Either key can be Right Option, Right Command, Right Control, Fn/Globe or a custom combination. The AI key can also be Off. The two can never be the same key; picking the other key's key swaps them.</p>
-
-  <h2>The floating popup</h2>
-  <p>One borderless panel at the top centre of the screen changes shape with what is happening. It never takes focus, so the field you are typing in stays active.</p>
-  <dl class="defs">
-    <dt>Capsule</dt><dd>“Listening…”, “Transcribing…”, “Thinking…”, short messages. Grows to show the live transcript while you talk.</dd>
-    <dt>Transcript card</dt><dd>After dictation: what was typed and where. Stays 4–15 s depending on length, longer while the pointer is over it.</dd>
-    <dt>Answer card</dt><dd>Your question and the AI answer as it streams in, with copy, speak again, new chat and close.</dd>
-    <dt>Meeting capsule</dt><dd><span class="dot"></span>“Meeting · press ⌥ to stop” with a level meter and timer while a meeting records.</dd>
-  </dl>
-
-  <h2>Main window</h2>
-  <div class="table-wrap"><table>
-    <tr><th>Page</th><th>What it shows</th></tr>
-    <tr><td>History</td><td>Dictations and AI questions with time, app, model and word count. Search, filter, copy, export (CSV or text), clear.</td></tr>
-    <tr><td>Meetings</td><td>Recorded meetings: Summary, To-dos and Transcript tabs, audio player, speaker names. See <a href="#meetings">Meetings</a>.</td></tr>
-    <tr><td>Learn</td><td>Get started checklist, every command phrase with Try buttons, feature guides, tips and fixes.</td></tr>
-    <tr><td>Models</td><td>Download, delete and pick speech, AI and voice models; choose where each speech model runs; add custom models.</td></tr>
-    <tr><td>Settings</td><td>Keys, AI answers, Mac commands, Meetings (four sections), transcription, general, history, permissions.</td></tr>
-  </table></div>
-  <p>Closing the window leaves the app running. The menu bar icon shows status, the last five dictations (click to copy), timers, meeting start/stop and quick links.</p>
-
-  <h2>First launch</h2>
-  <p>Onboarding runs once, in seven steps: <b>Welcome</b> → <b>Microphone</b> → <b>Accessibility</b> → <b>Speech model</b> (downloads and warms it) → <b>AI assistant</b> (chat model, voice, how answers come back) → <b>Keys</b> → <b>Try it</b>. Launch at login is turned on. If the window is closed on the last step but everything is granted and downloaded, onboarding is marked done anyway.</p>
-</section>
-
-<section class="page" data-page="architecture" data-group="Inside" data-title="Architecture" hidden>
-  <div class="eyebrow">Inside</div>
-  <h1>Architecture</h1>
-  <p class="lead">One observable hub, <code>AppState</code>, owns every pipeline. Services do the work; SwiftUI views only read state and call methods.</p>
-
-  <h2>The layers</h2>
-  <div class="flow" aria-label="Layers from input to storage">
-    <div class="stage"><b>Input</b><span><code>HotkeyManager</code>, <code>AudioRecorder</code>, <code>MeetingRecorder</code></span></div>
-    <div class="arrow" aria-hidden="true">→</div>
-    <div class="stage hot"><b>AppState</b><span>status, popup mode, routing; owns all services</span></div>
-    <div class="arrow" aria-hidden="true">→</div>
-    <div class="stage"><b>Services</b><span>Transcription, LLM, Speech, Commands, Meetings</span></div>
-    <div class="arrow" aria-hidden="true">→</div>
-    <div class="stage"><b>Output</b><span><code>TextInserter</code>, popup, voice, SwiftData</span></div>
+  <div class="wrap">
+    <section class="models" id="models">
+      <p class="eyebrow">Open-source models</p>
+      <h2 style="margin-top:12px">Pick the models that suit your Mac</h2>
+      <p class="lede" style="margin-top:14px">Download, switch and delete them in Settings, next to the feature that uses them. Smaller ones work well on 8 GB Macs.</p>
+      <div class="model-cols">
+        <div class="model-col">
+          <h3>Speech to text</h3>
+          <p>For dictation, questions and meetings</p>
+          <ul>
+            <li><span>Parakeet Ultra</span><span>~650 MB</span></li>
+            <li><span>Nemotron Streaming</span><span>~600 MB</span></li>
+            <li><span>Parakeet v2 (English)</span><span>~600 MB</span></li>
+            <li><span>Parakeet Redux</span><span>~220 MB</span></li>
+            <li><span>Whisper Large v3 Turbo</span><span>632 MB</span></li>
+          </ul>
+        </div>
+        <div class="model-col">
+          <h3>AI</h3>
+          <p>Answers, commands, rewrites and notes, on MLX</p>
+          <ul>
+            <li><span>Qwen3 4B</span><span>2.3 GB</span></li>
+            <li><span>Gemma 4 E4B</span><span>5.2 GB</span></li>
+            <li><span>Gemma 4 E2B</span><span>3.6 GB</span></li>
+            <li><span>Llama 3.2 3B</span><span>1.8 GB</span></li>
+            <li><span>Qwen3 1.7B</span><span>1.0 GB</span></li>
+          </ul>
+        </div>
+        <div class="model-col">
+          <h3>Voice and search</h3>
+          <p>Reading answers aloud, and search by meaning</p>
+          <ul>
+            <li><span>Qwen3 TTS 0.6B</span><span>~1 GB</span></li>
+            <li><span>Qwen3 TTS 1.7B</span><span>~2.2 GB</span></li>
+            <li><span>EmbeddingGemma 300M</span><span>~330 MB</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
   </div>
 
-  <h2>Key types</h2>
-  <div class="table-wrap"><table>
-    <tr><th>Type</th><th>File</th><th>Role</th></tr>
-    <tr><td><code>AKAssistantApp</code>, <code>AppDelegate</code></td><td><code>AKAssistantApp.swift</code></td><td><code>@main</code>. Main <code>Window</code>, <code>MenuBarExtra</code>, Dock icon, saves data on quit. Window is suppressed at launch once onboarded.</td></tr>
-    <tr><td><code>AppState</code></td><td><code>App/AppState.swift</code></td><td><code>@MainActor @Observable</code> singleton. Dictation and assistant pipelines, Mac commands, meeting routing, model warm-up, history saving.</td></tr>
-    <tr><td><code>Preferences</code></td><td><code>App/Preferences.swift</code></td><td>Every setting, persisted in <code>UserDefaults</code> through <code>didSet</code>.</td></tr>
-    <tr><td><code>ModelManager</code></td><td><code>Models/ModelManager.swift</code></td><td>Downloads, tracks and deletes speech, chat and voice models.</td></tr>
-    <tr><td><code>TranscriptionService</code></td><td><code>Transcription/</code></td><td>Keeps one speech engine loaded; reuses in-flight loads; unloads after 4 idle hours.</td></tr>
-    <tr><td><code>LLMService</code></td><td><code>Assistant/LLMService.swift</code></td><td>Loads an MLX chat model, holds the conversation, one-off generation for meeting notes.</td></tr>
-    <tr><td><code>SpeechService</code></td><td><code>Assistant/SpeechService.swift</code></td><td>Qwen3-TTS through TTSKit; speaks sentence by sentence.</td></tr>
-    <tr><td><code>CommandRunner</code></td><td><code>Tools/</code></td><td>Parses and runs Mac commands, timers and reminders.</td></tr>
-    <tr><td><code>MeetingCoordinator</code></td><td><code>Meetings/</code></td><td>Meeting mode: recording, live transcript, clean-up pass, notes.</td></tr>
-    <tr><td><code>IslandController</code></td><td><code>UI/FloatingIsland.swift</code></td><td>The non-activating <code>NSPanel</code> that follows <code>AppState.islandMode</code>.</td></tr>
-  </table></div>
+  <section class="band" id="install">
+    <div class="wrap install">
+      <div class="install-grid">
+        <div>
+          <p class="eyebrow">Get started</p>
+          <h2 style="margin-top:12px">Install in a minute</h2>
+          <ol class="steps">
+            <li><div><b>Download the DMG</b><span>From the latest release on GitHub.</span></div></li>
+            <li><div><b>Drag it to Applications and open it</b><span>The first time, macOS asks: open System Settings › Privacy &amp; Security and click Open Anyway.</span></div></li>
+            <li><div><b>Follow the short setup</b><span>Allow the microphone and Accessibility, pick your keys, and download a speech model.</span></div></li>
+            <li><div><b>Hold <span class="kbd">right ⌥</span> and talk</b><span>The Learn screen in the app shows everything else you can do.</span></div></li>
+          </ol>
+        </div>
+        <div>
+          <div class="req">
+            <div><b>Mac</b><span>Apple silicon (M1 or newer)</span></div>
+            <div><b>macOS</b><span>15 Sequoia or later</span></div>
+            <div><b>Memory</b><span>16 GB recommended with the AI on; 8 GB works with the small models</span></div>
+            <div><b>Disk</b><span>About 1 to 5 GB, depending on the models you choose</span></div>
+          </div>
+          <p style="margin-top:22px;color:var(--muted);font-size:15px">Building from source? Open the project in Xcode 26 and press ⌘R, or make your own DMG:</p>
+          <div class="code">git clone https://github.com/kanakapalli/AK-Assistant.git
+cd AK-Assistant &amp;&amp; ./make-dmg.sh</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
 
-  <h2>State and observation</h2>
-  <ul>
-    <li><code>AppState</code>, <code>Preferences</code>, <code>ModelManager</code> and <code>MeetingCoordinator</code> are <code>@Observable</code>. Views read them through <code>@Environment(Type.self)</code>; only views that read a changed property redraw.</li>
-    <li>Plumbing that isn't UI state (tasks, recorder handles) is <code>@ObservationIgnored</code>.</li>
-    <li><code>AppState.observePreferences()</code> uses <code>withObservationTracking</code> to react to settings changes (new hotkeys, a different model) from anywhere in the UI.</li>
-    <li>The popup follows <code>islandMode</code>, computed from <code>status</code>, the dictation result, the AI reply and whether a meeting is recording.</li>
-  </ul>
-
-  <h2>Threads</h2>
-  <dl class="defs">
-    <dt>Main actor</dt><dd>All app state, services' bookkeeping, SwiftData's main context, UI.</dd>
-    <dt>Audio thread</dt><dd>Microphone taps convert to 16 kHz mono and append under an <code>NSLock</code>; levels hop to the main actor.</dd>
-    <dt>Mixer queue</dt><dd>Meetings: a serial <code>DispatchQueue</code> mixes mic and Mac audio every 0.25 s, writes the .m4a files and cuts transcript chunks.</dd>
-    <dt>ScreenCaptureKit queue</dt><dd>Delivers the Mac's audio buffers for meetings.</dd>
-    <dt>Model inference</dt><dd>Core ML, MLX and FluidAudio run their own work off the main thread; the services <code>await</code> them.</dd>
-  </dl>
-
-  <h2>Where data lives</h2>
-  <div class="table-wrap"><table>
-    <tr><th>Data</th><th>Location</th><th>Format</th></tr>
-    <tr><td>Dictation and AI history</td><td><code>~/Library/Application Support/default.store</code></td><td>SwiftData (<code>DictationRecord</code>)</td></tr>
-    <tr><td>Meetings</td><td><code>~/Library/Application Support/AK Assistant/Meetings.store</code></td><td>SwiftData (<code>Meeting</code>), private to the app</td></tr>
-    <tr><td>Meeting audio</td><td><code>…/AK Assistant/Meetings/&lt;id&gt;.m4a</code>, <code>-mic.m4a</code>, <code>-mac.m4a</code></td><td>AAC, 16 kHz mono, 32 kbps</td></tr>
-    <tr><td>Settings, custom models, runtimes</td><td><code>UserDefaults</code> (<code>com.natfirst.akassistant</code>)</td><td>Property list</td></tr>
-    <tr><td>WhisperKit models, voices</td><td><code>…/AK Assistant/Models</code> (voices in <code>Models/Voice</code>)</td><td>Core ML</td></tr>
-    <tr><td>Parakeet, Nemotron, VAD, diarizer</td><td><code>~/Library/Application Support/FluidAudio/Models</code></td><td>Core ML (managed by FluidAudio)</td></tr>
-    <tr><td>Chat models</td><td><code>~/.cache/huggingface/hub</code></td><td>MLX safetensors</td></tr>
-  </table></div>
-  <div class="note"><b>Why meetings have their own store</b>SwiftData's default file is shared by every non-sandboxed app that uses the default configuration. An older AK Assistant build without the <code>Meeting</code> entity would migrate that file and drop the meetings table. Meetings moved to <code>Meetings.store</code>; on first launch of that version, meetings left in the shared file are copied over once.</div>
-</section>
-
-<section class="page" data-page="dictation" data-group="Inside" data-title="Dictation pipeline" hidden>
-  <div class="eyebrow">Inside</div>
-  <h1>Dictation pipeline</h1>
-  <p class="lead">From key down to text in another app, with the model already warm and the transcript mostly done before you let go.</p>
-
-  <div class="flow" aria-label="Dictation pipeline">
-    <div class="stage"><b>Key down</b><span><code>HotkeyManager</code> flagsChanged monitor</span></div>
-    <div class="arrow" aria-hidden="true">→</div>
-    <div class="stage"><b>Record</b><span><code>AudioRecorder</code>, 16 kHz mono in memory</span></div>
-    <div class="arrow" aria-hidden="true">→</div>
-    <div class="stage hot"><b>Transcribe</b><span>streaming or final pass</span></div>
-    <div class="arrow" aria-hidden="true">→</div>
-    <div class="stage"><b>Clean</b><span><code>PostProcessor</code></span></div>
-    <div class="arrow" aria-hidden="true">→</div>
-    <div class="stage"><b>Insert</b><span><code>TextInserter</code></span></div>
-    <div class="arrow" aria-hidden="true">→</div>
-    <div class="stage"><b>Save</b><span>History, transcript card</span></div>
+<footer>
+  <div class="wrap">
+    <a class="brand" href="#top"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAWfmNhQlgAABZ+anVtYgAAAB5qdW1kYzJwYQARABCAAACqADibcQNjMnBhAAAAFlhqdW1iAAAAR2p1bWRjMm1hABEAEIAAAKoAOJtxA3VybjpjMnBhOmY2YTE5ZGYwLTNjYTItNDA0OC05MmI4LWM3NjMwZmY2YTRmOAAAAAOTanVtYgAAAClqdW1kYzJhcwARABCAAACqADibcQNjMnBhLmFzc2VydGlvbnMAAAAAuGp1bWIAAABEanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5pbmdyZWRpZW50LnYzAAAAABhjMnNoaX4NZqKFg0MoI5g4seefRgAAAGxjYm9yo2lkYzpmb3JtYXRpaW1hZ2UvcG5namluc3RhbmNlSUR4LHhtcDppaWQ6ZDlmNjA4YjktNzhlOS00OTk4LWJiZTAtZTc1MDFiNmQ1YmQ4bHJlbGF0aW9uc2hpcGhwYXJlbnRPZgAAAeJqdW1iAAAAQWp1bWRjYm9yABEAEIAAAKoAOJtxE2MycGEuYWN0aW9ucy52MgAAAAAYYzJzaL3JJbSrXknw7Z0EHdGtgCAAAAGZY2JvcqJnYWN0aW9uc4KiZmFjdGlvbmtjMnBhLm9wZW5lZGpwYXJhbWV0ZXJzoWtpbmdyZWRpZW50c4GiY3VybHgtc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5pbmdyZWRpZW50LnYzZGhhc2hYIBRALojebzOgEv2WAl1GHCnBS0XfcIxiiK1FnMuhjrtlpGZhY3Rpb254HWNvbS5hbnRocm9waWMuY2xhdWRlLnByb3ZpZGVkanBhcmFtZXRlcnOheB9jb20uYW50aHJvcGljLm9yaWdpbi1jb25maWRlbmNlZ3Vua25vd25rZGVzY3JpcHRpb254ZkNsYXVkZSBwcm92aWRlZCB0aGlzIGZpbGUgYXQgdGhlIHJlcXVlc3Qgb2YgYSB1c2VyIGFuZCBtYXkgaGF2ZSBjcmVhdGVkIG9yIG1vZGlmaWVkIHRoZSBmaWxlIGNvbnRlbnRzLm1zb2Z0d2FyZUFnZW50oWRuYW1lZkNsYXVkZXJhbGxBY3Rpb25zSW5jbHVkZWT1AAAAyGp1bWIAAABAanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5oYXNoLmRhdGEAAAAAGGMyc2hVeLtMJsmhLMGTwM85AAVyAAAAgGNib3KlY2FsZ2ZzaGEyNTZjcGFkTQAAAAAAAAAAAAAAAABkaGFzaFggsHkib7ktxW1iUFh7sPE5I4ERwVAXYfBLnrdWj+P6tbZkbmFtZW5qdW1iZiBtYW5pZmVzdGpleGNsdXNpb25zgaJlc3RhcnQYIWZsZW5ndGgZFooAAAI+anVtYgAAACdqdW1kYzJjbAARABCAAACqADibcQNjMnBhLmNsYWltLnYyAAAAAg9jYm9ypWNhbGdmc2hhMjU2aXNpZ25hdHVyZXhNc2VsZiNqdW1iZj0vYzJwYS91cm46YzJwYTpmNmExOWRmMC0zY2EyLTQwNDgtOTJiOC1jNzYzMGZmNmE0ZjgvYzJwYS5zaWduYXR1cmVqaW5zdGFuY2VJRHgseG1wOmlpZDoxMjQ2ZjUxMS1jOGJmLTQwOTktOGU2My0zNjlhZTMxN2I4MDNyY3JlYXRlZF9hc3NlcnRpb25zg6JjdXJseC1zZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmluZ3JlZGllbnQudjNkaGFzaFggFEAuiN5vM6AS/ZYCXUYcKcFLRd9wjGKIrUWcy6GOu2WiY3VybHgqc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5hY3Rpb25zLnYyZGhhc2hYIDZ6322HxPmHLxPdT1nLh947XyvBVRHtl0uHhfCU9ufyomN1cmx4KXNlbGYjanVtYmY9YzJwYS5hc3NlcnRpb25zL2MycGEuaGFzaC5kYXRhZGhhc2hYIDegJ0unex3+e/gKOhU0+CAuS3fnkSxu+/wZp5W8+EA5dGNsYWltX2dlbmVyYXRvcl9pbmZvo2RuYW1lb0FudGhyb3BpYyBGaWxlc2d2ZXJzaW9uZTEuMC4wa3NwZWNWZXJzaW9uZTIuNC4wAAAQOGp1bWIAAAAoanVtZGMyY3MAEQAQgAAAqgA4m3EDYzJwYS5zaWduYXR1cmUAAAAQCGNib3LShFkCEqIBJhghWQIKMIICBjCCAY2gAwIBAgIUQOWgCu7COdC+uIP6BkIFPWdVEwAwCgYIKoZIzj0EAwMwSTEXMBUGA1UEChMOQW50aHJvcGljLCBQQkMxLjAsBgNVBAMTJUFudGhyb3BpYyBDb250ZW50IENyZWRlbnRpYWxzIFJvb3QgQ0EwHhcNMjYwODA3MTg0MzU2WhcNMjgwODA2MTk0MzU2WjBEMRcwFQYDVQQKEw5BbnRocm9waWMsIFBCQzEpMCcGA1UEAxMgQW50aHJvcGljIENsYXVkZSBDb250ZW50IFNpZ25pbmcwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAASYegpry1AYBRTVNL1CpTlbROnY3dey+UrsF9C3phYrATN3ZHf93Mo8RQN0KOUuOn19P4oWNFWe5n2/She9N7eTo1gwVjAOBgNVHQ8BAf8EBAMCB4AwFQYDVR0lBA4wDAYKKwYBBAGD6F4CATAMBgNVHRMBAf8EAjAAMB8GA1UdIwQYMBaAFM5R4gSBTmRbI/jjxM+aPpzB11zCMAoGCCqGSM49BAMDA2cAMGQCMDFzHRSeAXrSy1WOzkbhPZ6Km2wGTmZ/2gK18k8BQGXyqz88Rdrz6CTX9flAnYNVxgIwcF9c3fVhqmJKpi+UhasNUMko69cyX6STPfta3Q8EjyzDjzoyrol46FP6VFHhvUcJoWNwYWRZDZ4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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" alt="">AK Assistant</a>
+    <span>Built with WhisperKit, FluidAudio, MLX and open models from Hugging Face.</span>
+    <nav aria-label="Footer">
+      <a href="https://github.com/kanakapalli/AK-Assistant">GitHub</a>
+      <a href="https://github.com/kanakapalli/AK-Assistant/releases/latest">Releases</a>
+      <a href="https://github.com/kanakapalli/AK-Assistant/issues">Report an issue</a>
+    </nav>
   </div>
+</footer>
 
-  <h2>1. The key</h2>
-  <p>Modifier-only keys (Right ⌥ 61, Right ⌘ 54, Right ⌃ 62, Fn 63) are watched with global and local <code>NSEvent</code> <code>.flagsChanged</code> monitors, which need Accessibility. Custom combos use KeyboardShortcuts' key-down and key-up handlers. <kbd>Esc</kbd> while recording cancels. Double-tap detection for meetings lives here too (see <a href="#meetings">Meetings</a>).</p>
-
-  <h2>2. Recording</h2>
-  <ul>
-    <li><code>AVAudioEngine</code> taps the mic and converts each buffer to 16 kHz mono Float32 with <code>AVAudioConverter</code>. Nothing is written to disk.</li>
-    <li>The app you were typing in is remembered so it can be brought back to the front before pasting.</li>
-    <li>The speech model's load starts the moment the key goes down, in case it was unloaded.</li>
-    <li>Recordings stop on their own after <b>120 s</b>.</li>
-  </ul>
-
-  <h2>3. Transcribing</h2>
-  <dl class="defs">
-    <dt>Streaming models</dt><dd>Nemotron Streaming gets audio in ~0.1 s pieces while you talk; its running transcript is the live text, and only the last fraction of a second remains when you let go.</dd>
-    <dt>Other models</dt><dd>A live preview re-transcribes the recent audio about every 0.25 s (Parakeet, 20 s window) or 0.6 s (Whisper, 30 s window). When you let go, the whole clip is transcribed once more for the final text.</dd>
-    <dt>Skipped clips</dt><dd>Shorter than 0.3 s or with RMS below 0.004 (near silence), so Whisper can't invent “Thank you.” from nothing.</dd>
-  </dl>
-  <p>Engines implement one protocol, <code>TranscriptionEngine</code> (<code>transcribe(samples, language)</code>), with <code>StreamingTranscriptionEngine</code> adding <code>beginStream / feed / finishStream</code>. Backends: <code>WhisperKitEngine</code>, <code>ParakeetEngine</code>, <code>NemotronStreamingEngine</code> and, when the mlx-audio package is present, MLX engines. Each new load runs one second of silence through the model to compile its kernels before real use.</p>
-
-  <h2>4. Cleaning up</h2>
-  <p><code>PostProcessor.clean</code> strips model artefacts such as <code>[BLANK_AUDIO]</code>, removes filler words (“um”, “uh”) when that setting is on, collapses whitespace, fixes spaces before punctuation and capitalises the first letter.</p>
-
-  <h2>5. Inserting</h2>
-  <ol>
-    <li>Checks Accessibility and permission to post key events, and Secure Keyboard Entry (password fields, Terminal). If blocked, the text goes to the clipboard with the reason shown on the card.</li>
-    <li><b>Accessibility insert:</b> writes straight into the focused element of native apps and verifies the value changed. No clipboard involved.</li>
-    <li><b>Clipboard + ⌘V:</b> for browsers, Electron, Office and the rest. Waits for the hotkey's modifier to be released first so it can't combine with ⌘V. The previous clipboard is restored afterwards (after a delay, so slow apps read the new text first).</li>
-  </ol>
-  <p>The result (<code>inserted</code>, <code>pasted(focusConfirmed:)</code> or <code>copiedOnly(reason)</code>) decides what the transcript card says.</p>
-
-  <h2>6. History</h2>
-  <p>Each dictation is saved as a <code>DictationRecord</code> (text, duration, model, app name and bundle ID). Retention: forever, 30 days, 7 days or don't save; old entries are pruned at launch and when the setting changes. Export as CSV or plain text.</p>
-</section>
-
-<section class="page" data-page="assistant" data-group="Inside" data-title="AI assistant" hidden>
-  <div class="eyebrow">Inside</div>
-  <h1>AI assistant</h1>
-  <p class="lead">Hold the AI key, ask, let go. A local chat model streams the answer into the popup while a local voice reads each sentence as soon as it's written.</p>
-
-  <div class="flow" aria-label="AI assistant pipeline">
-    <div class="stage"><b>Speech-to-text</b><span>same pipeline as dictation</span></div>
-    <div class="arrow" aria-hidden="true">→</div>
-    <div class="stage"><b>Command?</b><span><code>CommandParser</code> first</span></div>
-    <div class="arrow" aria-hidden="true">→</div>
-    <div class="stage hot"><b>Chat model</b><span><code>LLMService</code>, MLX, streamed</span></div>
-    <div class="arrow" aria-hidden="true">→</div>
-    <div class="stage"><b>Sentences</b><span><code>SentenceSplitter</code></span></div>
-    <div class="arrow" aria-hidden="true">→</div>
-    <div class="stage"><b>Voice</b><span><code>SpeechService</code>, Qwen3-TTS</span></div>
-  </div>
-
-  <h2>The chat model</h2>
-  <ul>
-    <li>Loaded with <code>#huggingFaceLoadModelContainer</code> into an MLX <code>ModelContainer</code>; a <code>ChatSession</code> keeps the conversation.</li>
-    <li>Follow-ups within <b>5 minutes</b> continue the same conversation; “New chat” or a longer pause starts fresh.</li>
-    <li>Generation: up to 500 tokens, temperature 0.7. Qwen3's thinking mode is turned off so answers start quickly.</li>
-    <li>The system prompt asks for short, spoken-style answers without markdown, since they may be read aloud.</li>
-    <li>The model loads in the background 2 s after launch (speech model first, then chat, then voice, one after another to avoid a memory spike) and unloads after 30 idle minutes.</li>
-  </ul>
-
-  <h2>The voice</h2>
-  <ul>
-    <li>Qwen3-TTS through Argmax TTSKit (Core ML). Nine speakers: Ryan, Aiden, Eric, Dylan, Serena, Vivian, Ono Anna, Sohee, Uncle Fu.</li>
-    <li>The voice opens before the answer arrives; each finished sentence is queued while the previous one plays, in one audio session so there are no gaps.</li>
-    <li>The speaker/language prompt prefix is cached on disk, which removes most per-sentence start-up work.</li>
-    <li>Pressing either hotkey while it's speaking stops the voice so the mic only hears you.</li>
-  </ul>
-
-  <h2>Answer styles</h2>
-  <div class="table-wrap"><table>
-    <tr><th>Setting</th><th>Behaviour</th></tr>
-    <tr><td>Show and speak (default)</td><td>Answer card plus voice</td></tr>
-    <tr><td>Show only</td><td>Answer card, nothing spoken</td></tr>
-    <tr><td>Speak only</td><td>Voice only; the capsule says “Answering…”. Still saved in History.</td></tr>
-  </table></div>
-  <p>Questions and answers are saved in History as <code>kind = "assistant"</code> records.</p>
-</section>
-
-<section class="page" data-page="commands" data-group="Inside" data-title="Mac commands" hidden>
-  <div class="eyebrow">Inside</div>
-  <h1>Mac commands</h1>
-  <p class="lead">The AI key also acts on the Mac. Common phrasings are matched instantly and offline; anything else can still be turned into a command by the AI model.</p>
-
-  <h2>How a phrase becomes an action</h2>
-  <ol>
-    <li><code>CommandParser.parse</code> matches the transcript against known phrasings and returns a <code>MacCommand</code>. No model needed.</li>
-    <li>If nothing matches and <b>Understand commands phrased any way</b> is on, the chat model is told it may reply <code>ACTION: &lt;short English command&gt;</code>. The app holds back the streamed text until it can tell an action from an answer, then parses that phrase. This handles “fire up Apple's coding app” or “xcode kholo”.</li>
-    <li><code>CommandRunner</code> carries it out and returns <code>done</code>, <code>answer</code> (shown and optionally spoken), <code>failed</code> or <code>notHandled</code> (falls back to a normal AI answer).</li>
-  </ol>
-
-  <h2>What you can say</h2>
-  <div class="table-wrap"><table>
-    <tr><th>Group</th><th>Examples</th></tr>
-    <tr><td>Apps &amp; windows</td><td>open Xcode, switch to Finder, quit Slack, hide other apps, minimize, new tab, full screen, run shortcut …</td></tr>
-    <tr><td>Websites &amp; search</td><td>open YouTube, go to github.com, search YouTube for …, google …; Google, YouTube, Images, Wikipedia, Amazon, GitHub, Reddit, Stack Overflow, Maps, News; directions to …</td></tr>
-    <tr><td>Files, folders &amp; settings</td><td>open Downloads, find files named invoice, open file budget, open Wi-Fi settings</td></tr>
-    <tr><td>Sound &amp; music</td><td>set volume to 40, turn it up, mute, pause the music, next song</td></tr>
-    <tr><td>Screen &amp; system</td><td>brightness up, dark mode on, take a screenshot, screenshot a selection, record my screen, turn off Wi-Fi, keep my Mac awake for 1 hour</td></tr>
-    <tr><td>Timers &amp; reminders</td><td>set a timer for 10 minutes, remind me in 20 minutes to …, remind me at 5 pm to …, how much time is left, cancel all timers</td></tr>
-    <tr><td>Quick info</td><td>time, date, battery, storage, memory, uptime, macOS version, IP address, clipboard, front app</td></tr>
-    <tr><td>Typing &amp; clipboard</td><td>type …, copy … to clipboard</td></tr>
-    <tr><td>Lock, sleep &amp; power</td><td>lock my screen, turn off the display, go to sleep, screen saver, empty the trash, restart, shut down, log out</td></tr>
-  </table></div>
-
-  <h2>Building blocks</h2>
-  <dl class="defs">
-    <dt><code>AppFinder</code></dt><dd>Matches spoken app names against installed and running apps, with aliases (“vs code”, “chrome”, “settings”) and Levenshtein fuzzy matching (“ex code” → Xcode). Suggests close matches when unsure.</dd>
-    <dt><code>CommandRunner</code></dt><dd>Uses <code>NSWorkspace</code>, synthetic keys (media keys, ⌘⇧3, ⌃⌘Q), and through <code>SystemControl</code> runs <code>osascript</code>, <code>pmset</code>, <code>mdfind</code>, <code>networksetup</code>, <code>caffeinate</code> and <code>shortcuts</code> off the main thread.</dd>
-    <dt><code>TimerCenter</code></dt><dd>Voice timers and reminders; posts macOS notifications, plays a chime and shows a card when one fires. Cancel them from the menu bar.</dd>
-    <dt><code>ToolCatalog</code></dt><dd>The phrase list shown in Learn and given to the AI model as examples.</dd>
-  </dl>
-
-  <h2>Risky actions</h2>
-  <p>Quit an app, close a window or tab, lock, sleep, empty the Trash, Wi-Fi off, restart, shut down and log out. They run immediately by default. With <b>Ask before risky actions</b> on, the popup shows Run / Cancel, or you can hold the AI key and say “yes” or “no”. Restart, shut down and log out always show macOS's own confirmation too.</p>
-  <p>Dark mode, Empty Trash and restart/shut down/log out use Apple Events, so macOS asks once for permission to control System Events, Finder or loginwindow.</p>
-</section>
-
-<section class="page" data-page="meetings" data-group="Inside" data-title="Meetings" hidden>
-  <div class="eyebrow">Inside</div>
-  <h1>Meetings</h1>
-  <p class="lead">Records you and the people on the call, transcribes while it runs, redoes the transcript with speaker labels when it ends, then writes the summary and to-dos. All on the Mac.</p>
-
-  <div class="flow" aria-label="Meeting pipeline">
-    <div class="stage rec"><b>Record</b><span>mic + Mac audio, three .m4a files</span></div>
-    <div class="arrow" aria-hidden="true">→</div>
-    <div class="stage"><b>Live transcript</b><span>pieces of 15–28 s</span></div>
-    <div class="arrow" aria-hidden="true">→</div>
-    <div class="stage hot"><b>Clean-up pass</b><span>VAD, speakers, echo filter</span></div>
-    <div class="arrow" aria-hidden="true">→</div>
-    <div class="stage"><b>Notes</b><span>summary, decisions, to-dos</span></div>
-  </div>
-
-  <h2>Starting and stopping</h2>
-  <ul>
-    <li>Double-tap the dictation key: both taps under <b>0.3 s</b>, the second starting within <b>0.4 s</b> of the first ending, and no other key pressed in between, so ⌥← word jumps never start a meeting.</li>
-    <li>A single press of the dictation key (or a double-tap) stops it. A second tap within 1 s of stopping is ignored, so a double-tap stop can't start a new meeting.</li>
-    <li>Also from the menu bar and the Meetings toolbar. Recording stops by itself after the configured maximum (default 4 hours).</li>
-    <li>While recording, dictation is paused and the AI key shows “Recording a meeting · press … to stop”.</li>
-  </ul>
-
-  <h2>Recording (<code>MeetingRecorder</code>)</h2>
-  <dl class="defs">
-    <dt>Microphone</dt><dd><code>AVAudioEngine</code> with Apple's voice processing (noise suppression and echo cancellation, as in FaceTime), other-audio ducking set to minimum. If macOS can't start it (error −10875, typically Bluetooth headphones or mismatched sample rates), the engine is rebuilt and the plain mic is used; the meeting gets a note.</dd>
-    <dt>The Mac's audio</dt><dd>ScreenCaptureKit stream with <code>capturesAudio</code>, excluding AK Assistant's own sound, 48 kHz stereo converted to 16 kHz mono. Video is set to 2×2 px at 1 fps and ignored. Needs Screen &amp; System Audio Recording; without it the meeting continues mic-only.</dd>
-    <dt>Mixing</dt><dd>Every 0.25 s on a serial queue, the mic samples set the clock; Mac audio is added to them (zero-padded), and its backlog is capped at 1 s to absorb clock drift.</dd>
-    <dt>Files</dt><dd><code>&lt;id&gt;.m4a</code> (mix, for playback), <code>&lt;id&gt;-mic.m4a</code> and <code>&lt;id&gt;-mac.m4a</code> (separate tracks on the same timeline, for the clean-up). AAC, 16 kHz mono, 32 kbps, about 15 MB per hour each, written as they record.</dd>
-    <dt>Chunks</dt><dd>From 18 s on, a piece is cut as soon as the last 0.4 s is quiet; at 28 s it's cut at the quietest 0.2 s between 15 s and 28 s.</dd>
-  </dl>
-
-  <h2>Live transcript</h2>
-  <p>Each piece goes through the selected speech model in order (pieces with RMS below 0.003 are skipped) and is saved straight away as a <code>TranscriptSegment</code>, so the Meetings screen fills in during the meeting and a crash loses at most one piece. It can be turned off to save battery when the clean-up pass is on.</p>
-
-  <h2>Clean-up pass (<code>MeetingCleanup</code>)</h2>
-  <ol>
-    <li><b>Speakers.</b> FluidAudio's offline diarizer (pyannote segmentation, WeSpeaker embeddings, VBx clustering; about 30 MB downloaded the first time) splits the Mac track into Speaker 1, 2, 3… in order of first appearance. The mic track is “You”. With no Mac track (an in-person meeting), the mic track is split instead. An expected number of people can be set; the Mac track then gets that number minus one.</li>
-    <li><b>Speech detection.</b> Silero VAD finds speech in the mic track (and in the Mac track if speakers are off or fail), reading 10 minutes at a time to keep memory flat. Thresholds: Low 0.85, Normal 0.7, High 0.5; minimum speech 0.25 s, minimum silence 0.6 s.</li>
-    <li><b>Transcription.</b> Each piece of up to 25 s (longer turns are split at their pauses) is transcribed from its own track, with the dictation model or a bigger one picked in Settings.</li>
-    <li><b>Echo filter.</b> A “You” line is dropped when over half of it overlaps the others' speech and over 60% of its words also appear in what they said.</li>
-    <li><b>Paragraphs.</b> Consecutive lines from the same speaker less than 1.5 s apart are joined, up to a minute each.</li>
-  </ol>
-  <p>If it fails, the live transcript is kept and the meeting shows why. <b>Redo Clean-up and Speakers</b> reruns it from the kept tracks and keeps names you already gave.</p>
-
-  <h2>Notes (<code>MeetingSummarizer</code>)</h2>
-  <ul>
-    <li>A fresh one-off chat session (temperature 0.3) separate from the spoken conversation.</li>
-    <li>Transcripts over 2,500 words are summarised part by part first (700 tokens of notes each), then the notes are combined, so an hour fits a small model.</li>
-    <li>The model answers in a fixed format: <code>TITLE</code>, <code>SUMMARY</code>, <code>KEY POINTS</code>, <code>DECISIONS</code>, <code>ACTION ITEMS</code> with <code>task | owner | due</code>. The parser tolerates markdown and numbered lists, and keeps the raw text as the summary if the format wasn't followed.</li>
-    <li>Lines carry speaker labels, and the prompt says “You” is the person recording, so to-do owners come out right.</li>
-    <li>Detail: Brief (2–3 sentences, ≤4 points, 700 tokens), Standard (3–6 sentences, ≤8 points, 1,200 tokens), Detailed (2–3 paragraphs, 2,000 tokens).</li>
-    <li>Rewriting keeps to-dos you already ticked. An automatic “Meeting · date” title is replaced by the AI's title; one you typed is kept.</li>
-  </ul>
-
-  <h2>The Meetings screen</h2>
-  <p>A resizable split view: the list (with a red Recording banner while live) and the selected meeting. Its header has an editable title, date, length, word count and a ⋯ menu (Copy Notes, Export as Markdown, Write/Rewrite Summary and To-dos, Redo Clean-up and Speakers, Show Audio in Finder, Delete). Below: the audio player and three tabs.</p>
-  <dl class="defs">
-    <dt>Summary</dt><dd>Summary, key points, decisions and action items, with the model that wrote them.</dd>
-    <dt>To-dos</dt><dd>Tick, edit, add, delete, copy as a checklist.</dd>
-    <dt>Transcript</dt><dd>Search; speaker chips with talk time (click one to rename the speaker everywhere: transcript, summary, key points, decisions, to-do text and owners); click a time to play from there; the playing line is highlighted.</dd>
-  </dl>
-
-  <h2>Data model</h2>
-  <p><code>Meeting</code> is a SwiftData <code>@Model</code>. Lists are stored as JSON <code>Data</code> with computed accessors to keep the schema simple.</p>
-  <div class="table-wrap"><table>
-    <tr><th>Field</th><th>Holds</th></tr>
-    <tr><td><code>id</code>, <code>title</code>, <code>startedAt</code>, <code>duration</code></td><td>Identity and timing; <code>hasDefaultTitle</code> says whether the AI may rename it</td></tr>
-    <tr><td><code>stateRaw</code></td><td><code>recording</code> → <code>transcribing</code> → <code>summarizing</code> → <code>done</code>. Anything left unfinished at launch is marked done with a note.</td></tr>
-    <tr><td><code>segmentsData</code></td><td><code>[TranscriptSegment]</code>: start, end, text, speaker id (<code>you</code>, <code>others</code>, <code>s1</code>…)</td></tr>
-    <tr><td><code>speakerNamesData</code></td><td>Speaker id → name</td></tr>
-    <tr><td><code>summary</code>, <code>keyPointsData</code>, <code>decisionsData</code>, <code>actionItemsData</code></td><td>The notes; <code>ActionItem</code> has text, owner, due, done</td></tr>
-    <tr><td><code>audioFileName</code>, <code>micTrackFileName</code>, <code>macTrackFileName</code></td><td>Files in the Meetings folder</td></tr>
-    <tr><td><code>note</code>, <code>speechModelName</code>, <code>summaryModelName</code>, <code>transcriptCleaned</code></td><td>Problems worth showing and provenance</td></tr>
-  </table></div>
-</section>
-
-<section class="page" data-page="models" data-group="Reference" data-title="Models" hidden>
-  <div class="eyebrow">Reference</div>
-  <h1>Models</h1>
-  <p class="lead">Open models from Hugging Face, downloaded once and run locally. Pick, download and delete them in the Models page.</p>
-
-  <h2>Speech-to-text</h2>
-  <div class="table-wrap"><table>
-    <tr><th>Model</th><th>Size</th><th>Languages</th><th>Runs on</th><th>Notes</th></tr>
-    <tr><td><b>Parakeet Ultra</b> <span class="tag new">default</span></td><td class="num">~650 MB</td><td>English + 24 European</td><td>GPU, Neural Engine</td><td>Fastest and most accurate for typing; punctuation and capitals built in</td></tr>
-    <tr><td>Parakeet v2 (English)</td><td class="num">~600 MB</td><td>English</td><td>GPU, Neural Engine, MLX</td><td>English-only; on par with Ultra</td></tr>
-    <tr><td>Nemotron Streaming (English)</td><td class="num">~600 MB</td><td>English</td><td>Neural Engine, MLX</td><td>Streams: words appear ~0.5 s after you say them</td></tr>
-    <tr><td>Parakeet Redux (small)</td><td class="num">~220 MB</td><td>English + 24 European</td><td>GPU, Neural Engine</td><td>Smallest; for 8 GB Macs</td></tr>
-    <tr><td>Whisper Large v3 Turbo</td><td class="num">632 MB</td><td>99 languages</td><td>GPU, Neural Engine, MLX</td><td>For Hindi and languages Parakeet doesn't cover; slower</td></tr>
-  </table></div>
-  <p class="muted">Sources: <code>FluidInference/parakeet-ultra-coreml</code>, <code>…/parakeet-tdt-0.6b-v2-coreml</code>, <code>…/nemotron-speech-streaming-en-0.6b-coreml</code>, <code>…/parakeet-redux-coreml</code>, <code>argmaxinc/whisperkit-coreml</code>. Older catalog entries (Parakeet v3, Distil-Whisper, Whisper Small, Whisper Base) are retired: their files are removed and their users moved to the default.</p>
-
-  <h3>Where a speech model runs</h3>
-  <dl class="defs">
-    <dt>GPU (Core ML)</dt><dd>Loads quickly. The default for every model that offers it (Nemotron starts on the Neural Engine, since Core ML on the GPU runs its int8 weights about 10× slower).</dd>
-    <dt>Neural Engine</dt><dd>Least power and leaves the GPU free for the AI; the first load compiles the model and can take a while.</dd>
-    <dt>MLX (GPU)</dt><dd>Apple's MLX; a separate download. Offered only when the mlx-audio package is in the build.</dd>
-  </dl>
-
-  <h2>AI chat models (MLX, 4-bit)</h2>
-  <div class="table-wrap"><table>
-    <tr><th>Model</th><th>Repo</th><th>Size</th><th>Best for</th></tr>
-    <tr><td><b>Qwen3 4B</b> <span class="tag new">default</span></td><td><code>mlx-community/Qwen3-4B-4bit</code></td><td class="num">2.3 GB</td><td>Smart, fast, many languages</td></tr>
-    <tr><td>Gemma 4 E4B</td><td><code>mlx-community/gemma-4-e4b-it-4bit</code></td><td class="num">5.2 GB</td><td>Highest quality; 16 GB Macs</td></tr>
-    <tr><td>Gemma 4 E2B</td><td><code>mlx-community/gemma-4-e2b-it-4bit</code></td><td class="num">3.6 GB</td><td>Balance of quality and speed</td></tr>
-    <tr><td>Llama 3.2 3B</td><td><code>mlx-community/Llama-3.2-3B-Instruct-4bit</code></td><td class="num">1.8 GB</td><td>Quick everyday answers</td></tr>
-    <tr><td>Qwen3 1.7B</td><td><code>mlx-community/Qwen3-1.7B-4bit</code></td><td class="num">1.0 GB</td><td>Smallest; 8 GB Macs</td></tr>
-  </table></div>
-
-  <h2>Voices (Qwen3-TTS via TTSKit)</h2>
-  <div class="table-wrap"><table>
-    <tr><th>Model</th><th>Size</th><th>Notes</th></tr>
-    <tr><td><b>Qwen3 TTS 0.6B</b> <span class="tag new">default</span></td><td class="num">~1 GB</td><td>Natural voice, low delay</td></tr>
-    <tr><td>Qwen3 TTS 1.7B</td><td class="num">~2.2 GB</td><td>Richer, a little slower</td></tr>
-  </table></div>
-
-  <h2>Meeting models</h2>
-  <div class="table-wrap"><table>
-    <tr><th>Model</th><th>From</th><th>Used for</th></tr>
-    <tr><td>Silero VAD v6.2.1 (Core ML)</td><td>FluidAudio, downloaded on first use</td><td>Finding speech in the clean-up pass</td></tr>
-    <tr><td>pyannote segmentation + WeSpeaker v2 + VBx</td><td>FluidAudio offline diarizer, ~30 MB</td><td>Who spoke when</td></tr>
-  </table></div>
-
-  <h2>Custom models</h2>
-  <p>Models › Add custom model accepts a Hugging Face WhisperKit variant (speech) or an MLX repo (chat), or a local folder / .zip link. They're stored as <code>CustomModelRecord</code> in UserDefaults and appear next to the built-in ones. Chat models can optionally keep “thinking” on.</p>
-
-  <h2>Memory and loading</h2>
-  <ul>
-    <li>2 s after launch the speech, chat and voice models load one after another.</li>
-    <li>The speech model unloads after 4 idle hours, the chat model after 30 idle minutes; both reload on the next use.</li>
-    <li>Switching a model in Settings or Models unloads the old one immediately.</li>
-  </ul>
-</section>
-
-<section class="page" data-page="settings" data-group="Reference" data-title="Settings" hidden>
-  <div class="eyebrow">Reference</div>
-  <h1>Settings</h1>
-  <p class="lead">Every setting, its stored key in <code>UserDefaults</code> and its default. Defined in <code>App/Preferences.swift</code>; the meeting sections live in <code>UI/MeetingSettings.swift</code>.</p>
-
-  <h2>Keys and dictation</h2>
-  <div class="table-wrap"><table>
-    <tr><th>Setting</th><th>Key</th><th>Default</th></tr>
-    <tr><td>Hold to dictate</td><td><code>hotkey</code></td><td>Right Option</td></tr>
-    <tr><td>Hold to ask AI</td><td><code>assistantHotkey</code></td><td>Right Command (can be Off)</td></tr>
-    <tr><td>Speech model</td><td><code>selectedModelID</code></td><td>Parakeet Ultra</td></tr>
-    <tr><td>Language</td><td><code>language</code></td><td>Auto-detect (or en, hi, te, ta, kn, mr, bn, es, fr, de, ja, zh)</td></tr>
-    <tr><td>Show what I'm saying while I talk</td><td><code>showLiveTranscript</code></td><td>On</td></tr>
-    <tr><td>Remove filler words</td><td><code>removeFillers</code></td><td>On</td></tr>
-    <tr><td>Restore my clipboard after pasting</td><td><code>restoreClipboard</code></td><td>On</td></tr>
-    <tr><td>Play start and stop sounds</td><td><code>playSounds</code></td><td>On</td></tr>
-    <tr><td>Keep history</td><td><code>historyRetentionDays</code></td><td>Forever (0); 30, 7, or −1 for don't save</td></tr>
-    <tr><td>Launch at login</td><td><code>SMAppService.mainApp</code></td><td>Turned on by onboarding</td></tr>
-  </table></div>
-
-  <h2>AI assistant and Mac commands</h2>
-  <div class="table-wrap"><table>
-    <tr><th>Setting</th><th>Key</th><th>Default</th></tr>
-    <tr><td>AI model</td><td><code>chatModelID</code></td><td>Qwen3 4B</td></tr>
-    <tr><td>Voice model / speaker</td><td><code>voiceModelID</code>, <code>voice</code></td><td>Qwen3 TTS 0.6B, Ryan</td></tr>
-    <tr><td>Answers</td><td><code>replyStyle</code></td><td>Show and speak</td></tr>
-    <tr><td>Let the AI key control my Mac</td><td><code>macCommandsEnabled</code></td><td>On</td></tr>
-    <tr><td>Understand commands phrased any way</td><td><code>aiCommandsEnabled</code></td><td>On</td></tr>
-    <tr><td>Ask before risky actions</td><td><code>confirmRiskyCommands</code></td><td>Off</td></tr>
-  </table></div>
-
-  <h2>Meetings · Recording</h2>
-  <div class="table-wrap"><table>
-    <tr><th>Setting</th><th>Key</th><th>Default</th></tr>
-    <tr><td>Double-tap to record a meeting</td><td><code>meetingDoubleTap</code></td><td>On</td></tr>
-    <tr><td>Record the Mac's audio</td><td><code>meetingCaptureSystemAudio</code></td><td>On</td></tr>
-    <tr><td>Reduce background noise and echo on my mic</td><td><code>meetingVoiceProcessing</code></td><td>On</td></tr>
-    <tr><td>Meeting language</td><td><code>meetingLanguage</code></td><td>Same as dictation (<code>same</code>)</td></tr>
-    <tr><td>Show the transcript while the meeting is going</td><td><code>meetingLiveTranscript</code></td><td>On (forced on when clean-up is off)</td></tr>
-    <tr><td>Stop recording automatically after</td><td><code>meetingMaxHours</code></td><td>4 hours (1, 2, 4, 8)</td></tr>
-  </table></div>
-
-  <h2>Meetings · Transcript &amp; speakers</h2>
-  <div class="table-wrap"><table>
-    <tr><th>Setting</th><th>Key</th><th>Default</th></tr>
-    <tr><td>Clean up the transcript after the meeting</td><td><code>meetingCleanupPass</code></td><td>On</td></tr>
-    <tr><td>Speech model for the clean-up</td><td><code>meetingFinalModelID</code></td><td>Same as dictation (empty)</td></tr>
-    <tr><td>Speech detection</td><td><code>meetingSpeechSensitivity</code></td><td>Normal (Low / Normal / High)</td></tr>
-    <tr><td>Remove the call's echo from my mic</td><td><code>meetingRemoveEcho</code></td><td>On</td></tr>
-    <tr><td>Show who said what</td><td><code>meetingIdentifySpeakers</code></td><td>On</td></tr>
-    <tr><td>People in the meeting</td><td><code>meetingSpeakerCount</code></td><td>Automatic (0), or 2–10</td></tr>
-  </table></div>
-
-  <h2>Meetings · Notes and storage</h2>
-  <div class="table-wrap"><table>
-    <tr><th>Setting</th><th>Key</th><th>Default</th></tr>
-    <tr><td>Write a summary and to-dos when a meeting ends</td><td><code>meetingWriteNotes</code></td><td>On</td></tr>
-    <tr><td>AI model for notes</td><td><code>meetingNotesModelID</code></td><td>Same as AI assistant (empty)</td></tr>
-    <tr><td>Notes detail</td><td><code>meetingNotesDetail</code></td><td>Standard (Brief / Standard / Detailed)</td></tr>
-    <tr><td>Keep meeting audio for playback</td><td><code>meetingKeepAudio</code></td><td>On</td></tr>
-  </table></div>
-  <p class="muted">Internal flags: <code>onboarded</code>, <code>seenLearn</code>, <code>migratedToParakeet</code>, <code>meetingsMovedToOwnStore</code>, <code>modelRuntimes</code> (per-model runtime), plus custom model records.</p>
-</section>
-
-<section class="page" data-page="privacy" data-group="Reference" data-title="Permissions & privacy" hidden>
-  <div class="eyebrow">Reference</div>
-  <h1>Permissions &amp; privacy</h1>
-  <p class="lead">What macOS asks for, why, and what never leaves the Mac.</p>
-
-  <div class="table-wrap"><table>
-    <tr><th>Permission</th><th>Why</th><th>When asked</th></tr>
-    <tr><td>Microphone</td><td>Recording while a key is held or a meeting runs</td><td>Onboarding</td></tr>
-    <tr><td>Accessibility</td><td>Seeing the hotkeys in other apps; inserting text</td><td>Onboarding</td></tr>
-    <tr><td>Post keyboard events</td><td>Sending ⌘V and media keys (usually granted with Accessibility)</td><td>First paste</td></tr>
-    <tr><td>Screen &amp; System Audio Recording</td><td>Meetings: the Mac's audio (other people on a call). The picture is ignored.</td><td>First meeting; optional</td></tr>
-    <tr><td>Automation (Apple Events)</td><td>Dark mode, Empty Trash, restart/shut down/log out</td><td>First such command</td></tr>
-    <tr><td>Notifications</td><td>Timers and reminders</td><td>First timer</td></tr>
-  </table></div>
-
-  <h2>Entitlements and Info.plist</h2>
-  <ul>
-    <li><code>com.apple.security.device.audio-input</code> and <code>com.apple.security.automation.apple-events</code>, with the hardened runtime on.</li>
-    <li><code>NSMicrophoneUsageDescription</code>: “AK Assistant listens only while you hold a hotkey or record a meeting you started, and transcribes on this Mac.”</li>
-    <li><code>NSAppleEventsUsageDescription</code> explains the System Events, Finder and loginwindow use.</li>
-    <li>Not sandboxed: the App Sandbox blocks synthetic key events into other apps. Distribute with a Developer ID certificate and notarization, outside the Mac App Store.</li>
-  </ul>
-
-  <h2>What stays on the Mac</h2>
-  <ul>
-    <li>All audio, transcripts, questions, answers, meeting recordings and notes. They're processed by local models and stored in the locations listed under <a href="#architecture">Architecture</a>.</li>
-    <li>The network is used only to download models from Hugging Face (and FluidAudio's model repos).</li>
-    <li>Dictation audio is kept in memory only. Meeting audio is written to disk only for meetings, and can be deleted per meeting or not kept at all.</li>
-  </ul>
-  <div class="note"><b>Permissions belong to one copy of the app</b>macOS grants Accessibility to a specific signed build. After rebuilding or moving the app, a row can look on in System Settings but not apply. Remove AK Assistant there with –, then add the current copy with +. Settings › Permissions shows the path of the running copy.</div>
-</section>
-
-<section class="page" data-page="files" data-group="Reference" data-title="Project files" hidden>
-  <div class="eyebrow">Reference</div>
-  <h1>Project files</h1>
-  <p class="lead">Every source file and what it's for. All code is under <code>AKAssistant/</code> (about 12,600 lines of Swift in 43 files).</p>
-
-  <pre class="tree">AK Assistant/
-├── AKAssistant.xcodeproj     the Xcode project
-├── README.md                 short guide (this handbook goes deeper)
-├── make-dmg.sh               Release build → DMG, optional notarization
-├── AppIcon.svg               icon source
-├── docs/                     this handbook
-└── AKAssistant/              the app (folder-synced with Xcode)</pre>
-
-  <div class="table-wrap"><table>
-    <tr><th>File</th><th class="num">Lines</th><th>Purpose</th></tr>
-    <tr><td><code>AKAssistantApp.swift</code></td><td class="num">64</td><td>Entry point: main window, menu bar extra, app delegate</td></tr>
-    <tr><td><code>App/AppState.swift</code></td><td class="num">984</td><td>The hub: dictation and AI pipelines, commands, meeting routing, warm-up</td></tr>
-    <tr><td><code>App/Preferences.swift</code></td><td class="num">316</td><td>All settings, persisted in UserDefaults; meeting enums</td></tr>
-    <tr><td><code>Hotkey/HotkeyManager.swift</code></td><td class="num">248</td><td>Push-to-talk keys, Esc to cancel, double-tap detection</td></tr>
-    <tr><td><code>Audio/AudioRecorder.swift</code></td><td class="num">128</td><td>Mic to 16 kHz mono Float32 in memory</td></tr>
-    <tr><td><code>Transcription/TranscriptionEngine.swift</code></td><td class="num">195</td><td>Engine protocols; WhisperKit, Parakeet and Nemotron streaming engines</td></tr>
-    <tr><td><code>Transcription/MLXSpeechEngine.swift</code></td><td class="num">89</td><td>Parakeet / Whisper / Nemotron on MLX (when mlx-audio is present)</td></tr>
-    <tr><td><code>Transcription/TranscriptionService.swift</code></td><td class="num">119</td><td>Keeps the selected engine loaded; warm-up; idle unload</td></tr>
-    <tr><td><code>Assistant/LLMService.swift</code></td><td class="num">196</td><td>MLX chat model, conversation, one-off generation</td></tr>
-    <tr><td><code>Assistant/SpeechService.swift</code></td><td class="num">259</td><td>Qwen3-TTS voice, sentence queue, prompt cache</td></tr>
-    <tr><td><code>Insertion/TextInserter.swift</code></td><td class="num">185</td><td>Accessibility insert, ⌘V paste, clipboard restore</td></tr>
-    <tr><td><code>History/DictationRecord.swift</code></td><td class="num">83</td><td>History model, pruning, CSV/text export</td></tr>
-    <tr><td><code>Models/ModelCatalog.swift</code></td><td class="num">129</td><td>Built-in speech models, retired IDs</td></tr>
-    <tr><td><code>Models/AssistantCatalog.swift</code></td><td class="num">144</td><td>Chat models, voice models, speakers, answer styles</td></tr>
-    <tr><td><code>Models/ModelManager.swift</code></td><td class="num">460</td><td>Downloads, states, deletion for every model</td></tr>
-    <tr><td><code>Models/ModelRuntime.swift</code></td><td class="num">94</td><td>GPU / Neural Engine / MLX choice per model</td></tr>
-    <tr><td><code>Models/CustomModels.swift</code></td><td class="num">258</td><td>User-added models</td></tr>
-    <tr><td><code>Tools/CommandParser.swift</code></td><td class="num">561</td><td>Phrase → <code>MacCommand</code></td></tr>
-    <tr><td><code>Tools/MacCommand.swift</code></td><td class="num">264</td><td>Every command, titles, symbols, which are risky</td></tr>
-    <tr><td><code>Tools/CommandRunner.swift</code></td><td class="num">514</td><td>Carries commands out</td></tr>
-    <tr><td><code>Tools/SystemControl.swift</code></td><td class="num">209</td><td>Runs <code>osascript</code>, <code>pmset</code>, <code>mdfind</code>… off the main thread</td></tr>
-    <tr><td><code>Tools/AppFinder.swift</code></td><td class="num">180</td><td>Spoken app name → app, with aliases and fuzzy matching</td></tr>
-    <tr><td><code>Tools/TimerCenter.swift</code></td><td class="num">109</td><td>Timers and reminders, notifications</td></tr>
-    <tr><td><code>Tools/ToolCatalog.swift</code></td><td class="num">168</td><td>The phrase list for Learn and the AI prompt</td></tr>
-    <tr><td><code>Meetings/Meeting.swift</code></td><td class="num">322</td><td>Meeting model, segments, speakers, storage paths, formatting</td></tr>
-    <tr><td><code>Meetings/MeetingRecorder.swift</code></td><td class="num">419</td><td>Mic + Mac audio, mixing, .m4a files, chunking, voice processing</td></tr>
-    <tr><td><code>Meetings/MeetingCoordinator.swift</code></td><td class="num">410</td><td>Start/stop, live transcript, clean-up, notes, recovery</td></tr>
-    <tr><td><code>Meetings/MeetingCleanup.swift</code></td><td class="num">311</td><td>VAD, diarization, echo filter, paragraphs</td></tr>
-    <tr><td><code>Meetings/MeetingSummarizer.swift</code></td><td class="num">171</td><td>Notes prompts, map-reduce, parser</td></tr>
-    <tr><td><code>Support/Permissions.swift</code></td><td class="num">83</td><td>Permission checks and Settings links; start/stop sounds</td></tr>
-    <tr><td><code>Support/PostProcessor.swift</code></td><td class="num">90</td><td>Transcript cleanup, answer cleanup, sentence splitter</td></tr>
-    <tr><td><code>UI/MainWindow.swift</code></td><td class="num">96</td><td>Root view, sidebar, status footer</td></tr>
-    <tr><td><code>UI/FloatingIsland.swift</code></td><td class="num">266</td><td>The popup panel and its capsule</td></tr>
-    <tr><td><code>UI/IslandCards.swift</code></td><td class="num">453</td><td>Transcript and answer cards</td></tr>
-    <tr><td><code>UI/HistoryView.swift</code></td><td class="num">186</td><td>History page</td></tr>
-    <tr><td><code>UI/MeetingsView.swift</code></td><td class="num">963</td><td>Meetings page, tabs, speakers bar, player</td></tr>
-    <tr><td><code>UI/MeetingSettings.swift</code></td><td class="num">193</td><td>The four Meetings sections in Settings</td></tr>
-    <tr><td><code>UI/LearnView.swift</code></td><td class="num">1,350</td><td>Learn page: checklist, commands, features, fixes</td></tr>
-    <tr><td><code>UI/ModelsView.swift</code></td><td class="num">337</td><td>Models page</td></tr>
-    <tr><td><code>UI/AddCustomModelSheet.swift</code></td><td class="num">270</td><td>Add custom model sheet</td></tr>
-    <tr><td><code>UI/SettingsView.swift</code></td><td class="num">237</td><td>Settings page, hotkey picker, answer settings</td></tr>
-    <tr><td><code>UI/OnboardingView.swift</code></td><td class="num">372</td><td>First-launch flow</td></tr>
-    <tr><td><code>UI/MenuBarContent.swift</code></td><td class="num">109</td><td>Menu bar dropdown</td></tr>
-  </table></div>
-
-  <h2>Reading order for learning</h2>
-  <p><code>AKAssistantApp.swift</code> → <code>App/AppState.swift</code> (follow <code>beginRecording</code> and <code>endRecording</code>) → <code>Hotkey/</code> → <code>Audio/</code> → <code>Transcription/</code> → <code>Insertion/</code> → <code>UI/</code>. Then <code>Meetings/</code> in the order Recorder → Coordinator → Cleanup → Summarizer.</p>
-
-  <h2>Modern SwiftUI patterns used</h2>
-  <div class="table-wrap"><table>
-    <tr><th>Pattern</th><th>Where</th><th>Replaces</th></tr>
-    <tr><td><code>@Observable</code></td><td>AppState, Preferences, ModelManager, MeetingCoordinator</td><td><code>ObservableObject</code> + <code>@Published</code></td></tr>
-    <tr><td><code>@State</code> holding a model</td><td>App entry, MeetingPlayer</td><td><code>@StateObject</code></td></tr>
-    <tr><td><code>@Environment(Type.self)</code></td><td>Every view</td><td><code>@EnvironmentObject</code></td></tr>
-    <tr><td><code>@Bindable</code></td><td>Settings</td><td><code>@ObservedObject</code> bindings</td></tr>
-    <tr><td><code>withObservationTracking</code></td><td>AppState, IslandController</td><td>Combine sinks</td></tr>
-    <tr><td>SwiftData <code>@Model</code> + <code>@Query</code></td><td>History, Meetings</td><td>Core Data</td></tr>
-    <tr><td><code>.task</code> loops with <code>Task.sleep</code></td><td>Permission checks</td><td><code>Timer.publish</code></td></tr>
-  </table></div>
-  <p>AppKit is used only where SwiftUI has no API: the non-activating popup panel, global key monitors, and the pasteboard and synthetic keys. The target builds in Swift 5 language mode so third-party packages don't trip strict-concurrency errors.</p>
-</section>
-
-<section class="page" data-page="troubleshooting" data-group="Reference" data-title="Troubleshooting & roadmap" hidden>
-  <div class="eyebrow">Reference</div>
-  <h1>Troubleshooting &amp; roadmap</h1>
-  <p class="lead">Known problems with their fixes, then what's next.</p>
-
-  <div class="table-wrap"><table>
-    <tr><th>Problem</th><th>Fix</th></tr>
-    <tr><td>Hotkey does nothing</td><td>Check Accessibility in Settings › Permissions. After a rebuild, remove the app from Accessibility and add the current copy.</td></tr>
-    <tr><td>Fn opens the emoji picker</td><td>System Settings › Keyboard › “Press 🌐 key to” › Do Nothing.</td></tr>
-    <tr><td>Text isn't pasted in one app</td><td>Password fields and Secure Keyboard Entry block it; the text is on the clipboard. The card says why.</td></tr>
-    <tr><td>First dictation after launch is slow</td><td>The model compiles once on first load. On the Neural Engine this can take minutes; GPU is faster to load.</td></tr>
-    <tr><td>“Download … first”</td><td>Download the selected model in Models.</td></tr>
-    <tr><td>Answers aren't spoken</td><td>Pick Show and speak or Speak only, and download a voice.</td></tr>
-    <tr><td>“Mic error … −10875” when starting a meeting</td><td>Voice processing failed to start (often Bluetooth headphones). Current builds fall back to the plain mic and say “noise reduction off”. Use the built-in mic or wired headphones, or turn the noise setting off.</td></tr>
-    <tr><td>Meeting has only my voice</td><td>Allow Screen &amp; System Audio Recording, then quit and reopen the app.</td></tr>
-    <tr><td>Meetings disappeared after reopening</td><td>An older AK Assistant copy migrated the shared SwiftData file. Fixed by the private <code>Meetings.store</code>; replace old copies.</td></tr>
-    <tr><td>Speakers mixed up</td><td>Set the number of people in Settings › Meetings, then Redo Clean-up and Speakers.</td></tr>
-    <tr><td>Something hangs</td><td>Pause in Xcode while it's stuck and check the main thread in the Debug Navigator. Logs: Console.app, subsystem <code>com.natfirst.akassistant</code>, categories Pipeline, Assistant, Insert, Meeting.</td></tr>
-  </table></div>
-
-  <h2>Status</h2>
-  <ul>
-    <li><span class="tag">done</span> Dictation, history, onboarding, app icon, Mac commands, Learn, DMG script</li>
-    <li><span class="tag new">new</span> AI voice answers, meeting mode, clean-up pass, speaker labels, meeting settings: first builds still settling</li>
-  </ul>
-
-  <h2>Roadmap</h2>
-  <ul>
-    <li>Remember named voices across meetings (speaker embeddings)</li>
-    <li>Per-app paste overrides and a typing fallback toggle (<code>TextInserter.typeText</code> exists)</li>
-    <li>Custom vocabulary (names, jargon) passed to the speech model</li>
-    <li>Trim leading and trailing silence in dictation with VAD</li>
-    <li>“Paste the answer” option for the assistant</li>
-    <li>Developer ID signing, notarization and automatic updates</li>
-    <li>More tools for the assistant: calendar, files, web</li>
-  </ul>
-
-  <h2>Credits</h2>
-  <p class="muted">WhisperKit and TTSKit by Argmax (MIT) · MLX Swift LM by Apple (MIT) · Swift Hugging Face and Swift Transformers by Hugging Face (Apache 2.0) · FluidAudio by FluidInference (Apache 2.0) · KeyboardShortcuts by Sindre Sorhus (MIT). Models: OpenAI Whisper (MIT), NVIDIA Parakeet and Nemotron, Silero VAD (MIT), pyannote, WeSpeaker, Qwen3 and Qwen3-TTS (Apache 2.0), Gemma 4 (Gemma license), Llama 3.2 (Llama 3.2 Community License).</p>
-</section>
-
-  </main>
-</div>
 <script>
 (function () {
-  var pages = Array.prototype.slice.call(document.querySelectorAll('.page'));
-  var nav = document.getElementById('nav');
-  var select = document.getElementById('page-select');
-  var search = document.getElementById('search');
-  var links = {};
+  // Writing tools demo
+  var outputs = {
+    grammar: "Hey, can you send me the report by Friday? I need it for the client meeting. Thanks!",
+    email: "Hi,\n\nCould you send me the report by Friday? I need it for the client meeting.\n\nThanks,",
+    pro: "Could you please send me the report by Friday? I need it for the client meeting. Thank you.",
+    rude: "Send me the report by Friday. I need it for the client meeting, so don't make me ask twice."
+  };
+  var after = document.getElementById("after");
+  var tabs = Array.prototype.slice.call(document.querySelectorAll(".tab"));
+  tabs.forEach(function (tab) {
+    tab.addEventListener("click", function () {
+      tabs.forEach(function (t) { t.setAttribute("aria-selected", String(t === tab)); });
+      after.textContent = outputs[tab.dataset.k];
+    });
+  });
 
-  // Build the sidebar and the phone menu from the pages themselves.
-  var groups = {};
-  pages.forEach(function (page) {
-    var g = page.dataset.group;
-    if (!groups[g]) {
-      var wrap = document.createElement('div');
-      wrap.className = 'nav-group';
-      var label = document.createElement('span');
-      label.textContent = g;
-      wrap.appendChild(label);
-      nav.appendChild(wrap);
-      groups[g] = wrap;
-      var og = document.createElement('optgroup');
-      og.label = g;
-      select.appendChild(og);
-      groups[g].optgroup = og;
+  // Hero popup: Listening → Transcribing → Pasted, on a loop. The resting frame is already complete.
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  var label = document.getElementById("islandLabel");
+  var time = document.getElementById("islandTime");
+  var text = document.getElementById("islandText");
+  var bars = document.getElementById("islandBars");
+  var dot = document.getElementById("islandDot");
+  var typed = document.getElementById("typed");
+  var spoken = "can you push the release notes to the channel before the standup";
+  var final = "Can you push the release notes to the channel before the standup?";
+  var words = spoken.split(" ");
+  function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+  async function loop() {
+    while (true) {
+      label.textContent = "Listening…"; bars.hidden = false; dot.hidden = false; time.hidden = false;
+      typed.textContent = "";
+      for (var i = 1; i <= words.length; i++) {
+        text.textContent = words.slice(0, i).join(" ");
+        time.textContent = "0:0" + Math.min(9, Math.floor(i / 3));
+        await wait(260);
+      }
+      await wait(600);
+      label.textContent = "Transcribing…"; bars.hidden = true; dot.hidden = true; time.hidden = true;
+      await wait(700);
+      label.textContent = "Pasted into Slack";
+      text.textContent = final;
+      for (var c = 1; c <= final.length; c++) { typed.textContent = final.slice(0, c); await wait(14); }
+      await wait(3200);
     }
-    var a = document.createElement('a');
-    a.href = '#' + page.dataset.page;
-    a.innerHTML = '<span></span><span class="hits"></span>';
-    a.firstChild.textContent = page.dataset.title;
-    groups[g].appendChild(a);
-    links[page.dataset.page] = a;
-    var opt = document.createElement('option');
-    opt.value = page.dataset.page;
-    opt.textContent = page.dataset.title;
-    groups[g].optgroup.appendChild(opt);
-  });
-
-  // Previous / next links at the foot of every page.
-  pages.forEach(function (page, i) {
-    var pager = document.createElement('div');
-    pager.className = 'pager';
-    if (i > 0) pager.appendChild(pagerLink(pages[i - 1], 'Previous', 'prev'));
-    if (i < pages.length - 1) pager.appendChild(pagerLink(pages[i + 1], 'Next', 'next'));
-    page.appendChild(pager);
-  });
-  function pagerLink(page, label, cls) {
-    var a = document.createElement('a');
-    a.className = cls;
-    a.href = '#' + page.dataset.page;
-    a.innerHTML = '<small></small><span></span>';
-    a.firstChild.textContent = label;
-    a.lastChild.textContent = page.dataset.title;
-    return a;
   }
-
-  function show(id) {
-    var target = pages.find(function (p) { return p.dataset.page === id; }) || pages[0];
-    pages.forEach(function (p) { p.hidden = p !== target; });
-    Object.keys(links).forEach(function (k) {
-      if (k === target.dataset.page) links[k].setAttribute('aria-current', 'page');
-      else links[k].removeAttribute('aria-current');
-    });
-    select.value = target.dataset.page;
-    document.title = target.dataset.page === 'overview' ? 'AK Assistant Handbook' : target.dataset.title + ' · AK Assistant Handbook';
-    window.scrollTo(0, 0);
-  }
-
-  window.addEventListener('hashchange', function () { show(location.hash.slice(1)); });
-  select.addEventListener('change', function () { location.hash = select.value; });
-  show(location.hash.slice(1) || 'overview');
-
-  // Search: count matches per page, dim pages without any, jump to the best one on Enter.
-  var texts = pages.map(function (p) { return p.textContent.toLowerCase(); });
-  search.addEventListener('input', function () {
-    var q = search.value.trim().toLowerCase();
-    pages.forEach(function (p, i) {
-      var link = links[p.dataset.page];
-      var hits = link.querySelector('.hits');
-      if (!q) { hits.textContent = ''; link.style.opacity = ''; return; }
-      var n = texts[i].split(q).length - 1;
-      hits.textContent = n ? n : '';
-      link.style.opacity = n ? '' : '0.4';
-    });
-  });
-  search.addEventListener('keydown', function (e) {
-    if (e.key !== 'Enter') return;
-    var q = search.value.trim().toLowerCase();
-    if (!q) return;
-    var best = -1, bestN = 0;
-    texts.forEach(function (t, i) { var n = t.split(q).length - 1; if (n > bestN) { bestN = n; best = i; } });
-    if (best >= 0) location.hash = pages[best].dataset.page;
-  });
+  setTimeout(loop, 2500);
 })();
 </script>
 
