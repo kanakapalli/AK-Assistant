@@ -42,7 +42,7 @@ enum Shell {
         await run("/usr/bin/osascript", ["-e", source])
     }
 
-    /// macOS refused to let AK Assistant control another app (Privacy & Security › Automation).
+    /// macOS refused to let Duck Keyboard control another app (Privacy & Security › Automation).
     static func isAutomationDenied(_ result: Result) -> Bool {
         result.error.contains("-1743") || result.error.localizedCaseInsensitiveContains("not authorized")
     }
@@ -54,7 +54,7 @@ enum Shell {
     }
 }
 
-/// Presses keys as if you typed them. Needs the Accessibility permission AK Assistant already has.
+/// Presses keys as if you typed them. Needs the Accessibility permission Duck Keyboard already has.
 enum KeySender {
     static func press(_ key: Int, _ flags: CGEventFlags = []) {
         let source = CGEventSource(stateID: .hidSystemState)

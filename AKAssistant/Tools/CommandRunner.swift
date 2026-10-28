@@ -323,7 +323,7 @@ final class CommandRunner {
         keepAwake?.terminate()
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/caffeinate")
-        // -d display, -i system; -w stops it automatically if AK Assistant quits.
+        // -d display, -i system; -w stops it automatically if Duck Keyboard quits.
         var arguments = ["-di", "-w", String(ProcessInfo.processInfo.processIdentifier)]
         if let seconds { arguments += ["-t", String(Int(seconds))] }
         process.arguments = arguments
@@ -339,7 +339,7 @@ final class CommandRunner {
     private func automationFailure(_ result: Shell.Result, app: String) -> CommandOutcome {
         if Shell.isAutomationDenied(result) {
             Shell.openAutomationSettings()
-            return .failed("macOS blocked AK Assistant from controlling \(app). Turn it on in System Settings › Privacy & Security › Automation (opened for you), then try again.")
+            return .failed("macOS blocked Duck Keyboard from controlling \(app). Turn it on in System Settings › Privacy & Security › Automation (opened for you), then try again.")
         }
         return .failed("That didn't work: \(result.error.isEmpty ? "unknown error" : result.error)")
     }

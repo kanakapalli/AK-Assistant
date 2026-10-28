@@ -22,7 +22,7 @@ struct SpeechModel: Identifiable, Hashable {
     /// Added by the user (see CustomModels.swift) rather than built in.
     var isCustom = false
     /// Where this model can run, in order of preference (the first is the default).
-    var runtimes: [ModelRuntime] = [.gpu, .neuralEngine]
+    var runtimes: [ModelRuntime] = [.gpu, .neuralEngine, .cpu]
     /// The MLX version, if this model offers the MLX runtime.
     var mlx: MLXSpeechSpec? = nil
 
@@ -55,7 +55,7 @@ enum ModelCatalog {
             summary: "Fastest and most accurate for typing. Adds punctuation and capitals, runs on the Neural Engine. Recommended.",
             speed: 5,
             accuracy: 5,
-            runtimes: [.gpu, .neuralEngine]   // no MLX build of Ultra exists yet
+            runtimes: [.gpu, .neuralEngine, .cpu]   // no MLX build of Ultra exists yet
         ),
         SpeechModel(
             id: "parakeet-tdt-0.6b-v2",
@@ -68,7 +68,7 @@ enum ModelCatalog {
             summary: "English-only version, on par with Ultra for English. Try it if you only ever dictate in English.",
             speed: 5,
             accuracy: 5,
-            runtimes: [.gpu, .neuralEngine, .mlx],
+            runtimes: [.gpu, .neuralEngine, .mlx, .cpu],
             mlx: MLXSpeechSpec(repo: "mlx-community/parakeet-tdt-0.6b-v2", family: "parakeet", sizeLabel: "~1.2 GB")
         ),
         SpeechModel(
@@ -97,7 +97,7 @@ enum ModelCatalog {
             summary: "Smallest download, for 8 GB Macs or slow internet. Slightly less accurate than Ultra.",
             speed: 4,
             accuracy: 4,
-            runtimes: [.gpu, .neuralEngine]
+            runtimes: [.gpu, .neuralEngine, .cpu]
         ),
         SpeechModel(
             id: "whisper-large-v3-turbo",
@@ -110,7 +110,7 @@ enum ModelCatalog {
             summary: "For Hindi and other languages Parakeet doesn't cover. Slower than Parakeet.",
             speed: 2,
             accuracy: 4,
-            runtimes: [.gpu, .neuralEngine, .mlx],
+            runtimes: [.gpu, .neuralEngine, .mlx, .cpu],
             mlx: MLXSpeechSpec(repo: "mlx-community/whisper-large-v3-turbo", family: "whisper", sizeLabel: "~1.6 GB")
         ),
     ]

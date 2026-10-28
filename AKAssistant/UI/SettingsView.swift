@@ -4,7 +4,7 @@ import KeyboardShortcuts
 
 /// The pages of Settings, picked with the bar at the top.
 enum SettingsTab: String, CaseIterable, Identifiable {
-    case dictation, assistant, meetings, grammar, general, permissions
+    case dictation, assistant, meetings, grammar, models, general, permissions
 
     var id: String { rawValue }
 
@@ -14,6 +14,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
         case .assistant: return "AI Assistant"
         case .meetings: return "Meetings"
         case .grammar: return "Grammar"
+        case .models: return "Models"
         case .general: return "General"
         case .permissions: return "Permissions"
         }
@@ -25,6 +26,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
         case .assistant: return "sparkles"
         case .meetings: return "person.2.wave.2"
         case .grammar: return "text.badge.checkmark"
+        case .models: return "cpu"
         case .general: return "gearshape"
         case .permissions: return "lock.shield"
         }
@@ -33,12 +35,13 @@ enum SettingsTab: String, CaseIterable, Identifiable {
     /// One line under the bar saying what the page covers.
     var summary: String {
         switch self {
-        case .dictation: return "The push-to-talk key, the speech model, how your speech becomes text, and how it's pasted."
-        case .assistant: return "The AI key, the AI and voice models, how answers come back, Mac commands, and smart search."
+        case .dictation: return "The push-to-talk key, how your speech becomes text, and how it's pasted."
+        case .assistant: return "The AI key, how answers come back, Mac commands, and smart search."
         case .meetings: return "Recording, the transcript and speakers, notes, and storage for meetings."
-        case .grammar: return "Shortcuts that fix or rewrite text in any field (email, professional, rude, your own), their prompts, and the AI model."
-        case .general: return "Startup, sounds, history, and disk space used by models."
-        case .permissions: return "What macOS lets AK Assistant do, and a check for the hotkeys."
+        case .grammar: return "Shortcuts that fix or rewrite text in any field (email, professional, rude, your own) and their prompts."
+        case .models: return "Which model each feature uses, where it runs (GPU, Neural Engine or CPU), downloads, and custom models."
+        case .general: return "Startup, sounds and history."
+        case .permissions: return "What macOS lets Duck Keyboard do, and a check for the hotkeys."
         }
     }
 }
@@ -51,20 +54,32 @@ struct SettingsView: View {
         @Bindable var appState = appState
 
         VStack(spacing: 0) {
-            VStack(spacing: 8) {
-                Picker("Settings page", selection: $appState.settingsTab) {
-                    ForEach(SettingsTab.allCases) { tab in
-                        Label(tab.title, systemImage: tab.symbol).tag(tab)
+            VStack(spacing: 12) {
+                // No ScrollView here: a scroll view at the top of this page made the window's
+                // sidebar slide up when Settings opened. If the bar doesn't fit, use a menu instead.
+                ViewThatFits(in: .horizontal) {
+                    DuckTabBar(tabs: SettingsTab.allCases, selection: $appState.settingsTab,
+                               title: { $0.title }, symbol: { $0.symbol })
+                    Picker("Settings page", selection: $appState.settingsTab) {
+                        ForEach(SettingsTab.allCases) { tab in
+                            Label(tab.title, systemImage: tab.symbol).tag(tab)
+                        }
                     }
+                    .labelsHidden()
+                    .fixedSize()
                 }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                Text(appState.settingsTab.summary)
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
+                .padding(.horizontal, 12)
+                .frame(maxWidth: .infinity)
+
+                PageHeader(title: appState.settingsTab.title,
+                           subtitle: appState.settingsTab.summary,
+                           symbol: appState.settingsTab.symbol)
+                    .padding(.horizontal, 20)
+                    .frame(maxWidth: 760)
+                    .animation(nil, value: appState.settingsTab)
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 12)
+            .padding(.top, 10)
+            .padding(.bottom, 12)
 
             Divider()
 
@@ -74,6 +89,7 @@ struct SettingsView: View {
                 case .assistant: AssistantSettings()
                 case .meetings: Form { MeetingSettingsSections() }.formStyle(.grouped)
                 case .grammar: GrammarSettings()
+                case .models: ModelsSettings()
                 case .general: GeneralSettings()
                 case .permissions: PermissionsSettings()
                 }
@@ -98,7 +114,7 @@ private struct DictationSettings: View {
                 SettingCaption("Hold the key to record. Release it to transcribe and paste. Press Esc while holding to cancel.")
             }
 
-            ModelChoiceSection(kind: .speech, caption: "Turns your voice into text, for dictation, questions to the AI and meetings. Click a model to use it; each one also lets you choose where it runs.")
+            ModelLinkSection(features: [.dictation])
 
             Section("Speech to text") {
                 Picker("Language", selection: $preferences.language) {
@@ -141,14 +157,11 @@ private struct AssistantSettings: View {
                 SettingCaption("Hold the key and ask a question. Release it and a local AI answers. Follow-up questions within 5 minutes continue the same conversation.")
             }
 
-            ModelChoiceSection(kind: .chat, caption: "Answers your questions, understands commands phrased any way, fixes grammar and writes meeting notes. Bigger models answer better but are slower and use more memory.")
+            ModelLinkSection(features: preferences.assistantEnabled && preferences.replyStyle.speaks ? [.assistant, .readAloud] : [.assistant])
 
             if preferences.assistantEnabled {
                 Section("Answers") {
                     ReplySettings()
-                }
-                if preferences.replyStyle.speaks {
-                    ModelChoiceSection(kind: .voice, caption: "Reads the AI's answers aloud.")
                 }
             }
 
@@ -157,7 +170,7 @@ private struct AssistantSettings: View {
                 SettingCaption("Say things like “open Xcode”, “set a timer for 10 minutes” or “volume 30” to the AI key. Common commands run instantly, even without the AI model.")
                 if preferences.macCommandsEnabled {
                     Toggle("Understand commands phrased any way (uses the AI model)", isOn: $preferences.aiCommandsEnabled)
-                    SettingCaption("When a request isn't a command AK Assistant knows, the AI model can still turn it into one, e.g. “fire up Apple's coding app” or “xcode kholo”.")
+                    SettingCaption("When a request isn't a command Duck Keyboard knows, the AI model can still turn it into one, e.g. “fire up Apple's coding app” or “xcode kholo”.")
                     Toggle("Ask before risky actions", isOn: $preferences.confirmRiskyCommands)
                     SettingCaption("Quitting an app, closing a window or tab, lock, sleep, emptying the Trash, turning off Wi-Fi, restart, shut down and log out. When this is off they run right away; restart, shut down and log out still show macOS's own confirmation.")
                     HStack {
@@ -185,9 +198,9 @@ private struct GrammarSettings: View {
         Form {
             Section("Writing tools") {
                 Toggle("Rewrite text with shortcuts", isOn: $preferences.grammarFixEnabled)
-                SettingCaption("Click into any text field and press an action's shortcut. AK Assistant selects all the text (⌘A), copies it (⌘C), rewrites it with the local AI model using that action's prompt, and pastes the result back. Each prompt can be changed.")
+                SettingCaption("Click into any text field and press an action's shortcut. Duck Keyboard selects all the text (⌘A), copies it (⌘C), rewrites it with the local AI model using that action's prompt, and pastes the result back. Each prompt can be changed.")
                 if preferences.grammarFixEnabled {
-                    SettingCaption("While an action is on, its shortcut works only for AK Assistant, so the app's own command (for example ⌘P Print, ⌘R Reload) won't run. Record a different shortcut, or turn the action off, if you need it.")
+                    SettingCaption("While an action is on, its shortcut works only for Duck Keyboard, so the app's own command (for example ⌘P Print, ⌘R Reload) won't run. Record a different shortcut, or turn the action off, if you need it.")
                 }
             }
 
@@ -207,7 +220,7 @@ private struct GrammarSettings: View {
                 }
             }
 
-            ModelChoiceSection(kind: .chat, caption: "The same AI model as the AI assistant: picking one here changes it there too.")
+            ModelLinkSection(features: [.writingTools])
 
             Section("Clipboard") {
                 Toggle("Restore my clipboard afterwards", isOn: $preferences.restoreClipboard)
@@ -239,8 +252,13 @@ private struct TextActionSection: View {
     var body: some View {
         Section {
             Toggle(isOn: binding(\.enabled)) {
-                Label(action.title, systemImage: action.symbol)
-                    .font(.headline)
+                HStack(spacing: 10) {
+                    IconTile(symbol: action.symbol, tint: action.enabled ? Duck.writing : .secondary, size: 26)
+                    Text(action.title).font(.headline)
+                    if action.enabled {
+                        DuckKeycapShortcut(name: action.shortcutName)
+                    }
+                }
             }
             if action.enabled {
                 if !action.builtIn {
@@ -296,7 +314,7 @@ private struct TextActionSection: View {
 
 private struct GeneralSettings: View {
     @Environment(Preferences.self) private var preferences
-    @Environment(ModelManager.self) private var modelManager
+    @Environment(AppState.self) private var appState
     @Environment(\.modelContext) private var context
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
 
@@ -321,9 +339,11 @@ private struct GeneralSettings: View {
                 }
             }
 
-            Section("Storage") {
-                LabeledContent("Disk used by models", value: modelManager.diskUsageLabel)
-                SettingCaption("Download or delete models on the page of the feature that uses them: speech in Dictation, the AI model in AI Assistant or Grammar, the voice in AI Assistant.")
+            Section("Models") {
+                LabeledContent("Download, delete and assign models") {
+                    Button("Open Models") { appState.settingsTab = .models }
+                }
+                SettingCaption("Everything about models lives in Settings › Models: which model each feature uses, where it runs, disk space, and custom models.")
             }
 
             Section {
@@ -384,7 +404,7 @@ private struct PermissionsSettings: View {
                     .textSelection(.enabled)
                     .lineLimit(2)
                     .truncationMode(.middle)
-                SettingCaption("macOS gives permissions to one specific copy of the app. If a row shows as missing even though AK Assistant looks switched on in System Settings, that entry belongs to another copy (for example the one Xcode runs versus the one in Applications). Remove AKAssistant there with –, then add this copy again with +.")
+                SettingCaption("macOS gives permissions to one specific copy of the app. If a row shows as missing even though Duck Keyboard looks switched on in System Settings, that entry belongs to another copy (for example the one Xcode runs versus the one in Applications). Remove Duck Keyboard there with –, then add this copy again with +.")
             }
         }
         .formStyle(.grouped)
@@ -475,7 +495,7 @@ struct ReplySettings: View {
                     }
                 }
                 Button("Preview") {
-                    appState.speak("Hi, I'm AK Assistant. Ask me anything.")
+                    appState.speak("Hi, I'm Duck Keyboard. Ask me anything.")
                 }
             }
         }
@@ -488,14 +508,28 @@ struct PermissionRow: View {
     let action: () -> Void
 
     var body: some View {
-        HStack {
-            Image(systemName: granted ? "checkmark.circle.fill" : "xmark.circle")
-                .foregroundStyle(granted ? .green : .orange)
+        HStack(spacing: 10) {
+            IconTile(symbol: granted ? "checkmark" : "exclamationmark", tint: granted ? Duck.good : Duck.warning, size: 24)
             Text(title)
             Spacer()
-            if !granted {
-                Button("Grant…", action: action)
+            if granted {
+                StatusPill(title: "Allowed", tint: Duck.good)
+            } else {
+                Button("Allow…", action: action)
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
             }
+        }
+    }
+}
+
+/// The current shortcut of a writing tool as a keycap (nothing when it has none).
+private struct DuckKeycapShortcut: View {
+    let name: KeyboardShortcuts.Name
+
+    var body: some View {
+        if let shortcut = KeyboardShortcuts.getShortcut(for: name) {
+            DuckKeycap(shortcut.description)
         }
     }
 }

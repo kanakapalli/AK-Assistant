@@ -60,15 +60,14 @@ final class TranscriptionService {
         }
 
         let folder = modelManager.localFolder(for: model)
-        let useNeuralEngine = runtime == .neuralEngine
         let task = Task<TranscriptionEngine, Error> {
-            let engine = try await Self.makeEngine(model: model, runtime: runtime, folder: folder, useNeuralEngine: useNeuralEngine)
+            let engine = try await Self.makeEngine(model: model, runtime: runtime, folder: folder)
             // Warm-up: run one second of silence through the model right after loading. The first
             // real transcription otherwise pays for compiling the GPU / Neural Engine kernels, which
             // can take seconds. (The faster wisperflow-local app does the same.)
             let started = Date()
             _ = try? await engine.transcribe([Float](repeating: 0, count: Int(AudioRecorder.sampleRate)), language: "en")
-            NSLog("AK Assistant: speech model warmed up in %.2fs", Date().timeIntervalSince(started))
+            NSLog("Duck Keyboard: speech model warmed up in %.2fs", Date().timeIntervalSince(started))
             return engine
         }
         loadingTask = task
@@ -89,7 +88,7 @@ final class TranscriptionService {
         }
     }
 
-    private static func makeEngine(model: SpeechModel, runtime: ModelRuntime, folder: URL?, useNeuralEngine: Bool) async throws -> TranscriptionEngine {
+    private static func makeEngine(model: SpeechModel, runtime: ModelRuntime, folder: URL?) async throws -> TranscriptionEngine {
         #if canImport(MLXAudioSTT)
         if runtime == .mlx {
             guard let spec = model.mlx else { throw TranscriptionError.modelNotDownloaded(model.name) }
@@ -100,11 +99,11 @@ final class TranscriptionService {
         switch model.engine {
         case .whisperKit:
             guard let folder else { throw TranscriptionError.modelNotDownloaded(model.name) }
-            return try await WhisperKitEngine(modelFolder: folder, useNeuralEngine: useNeuralEngine)
+            return try await WhisperKitEngine(modelFolder: folder, computeUnits: runtime.computeUnits)
         case .nemotronStreaming:
             return try await NemotronStreamingEngine()
         case .parakeet:
-            return try await ParakeetEngine(version: ParakeetEngine.version(for: model), useNeuralEngine: useNeuralEngine)
+            return try await ParakeetEngine(version: ParakeetEngine.version(for: model), computeUnits: runtime.computeUnits)
         }
     }
 

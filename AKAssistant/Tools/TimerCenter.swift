@@ -20,7 +20,7 @@ struct ActiveTimer: Identifiable, Equatable {
 
 /// Keeps voice timers and reminders. Each one also becomes a macOS notification, so you see it
 /// in Notification Center even if you're in a full-screen app.
-/// Timers live in memory: quitting AK Assistant cancels them (their notifications are removed too).
+/// Timers live in memory: quitting Duck Keyboard cancels them (their notifications are removed too).
 @MainActor
 @Observable
 final class TimerCenter {
@@ -100,7 +100,7 @@ final class TimerCenter {
     }
 }
 
-/// Shows the banner even while AK Assistant's own window is in front.
+/// Shows the banner even while Duck Keyboard's own window is in front.
 final class NotificationPresenter: NSObject, UNUserNotificationCenterDelegate {
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification,
                                 withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {

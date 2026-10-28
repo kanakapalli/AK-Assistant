@@ -58,8 +58,8 @@ struct AnswerCard: View {
         HStack(spacing: 8) {
             Image(systemName: "sparkles")
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(.purple.gradient)
-            Text("AK Assistant")
+                .foregroundStyle(Duck.assistant.gradient)
+            Text("Duck Keyboard")
                 .font(.headline)
             if let command = reply.command {
                 CommandChip(command: command)
@@ -280,7 +280,7 @@ struct DictationCard: View {
     private var subtitle: String {
         switch result.copyReason {
         case .noAccessibility:
-            return "Couldn't paste: Accessibility is off for this copy of AK Assistant. Press ⌘V to paste."
+            return "Couldn't paste: Accessibility is off for this copy of Duck Keyboard. Press ⌘V to paste."
         case .secureInput:
             return "Typing is blocked here (password field or Secure Keyboard Entry). Press ⌘V to paste."
         case nil:
@@ -394,10 +394,10 @@ struct CommandChip: View {
             .font(.caption.weight(.medium))
             .lineLimit(1)
             .truncationMode(.tail)
-            .foregroundStyle(command.needsConfirmation ? Color.orange : Color.purple)
+            .foregroundStyle(command.needsConfirmation ? Color.orange : Duck.assistant)
             .padding(.horizontal, 8)
             .padding(.vertical, 3)
-            .background((command.needsConfirmation ? Color.orange : Color.purple).opacity(0.12), in: Capsule())
+            .background((command.needsConfirmation ? Color.orange : Duck.assistant).opacity(0.12), in: Capsule())
             .frame(maxWidth: 220, alignment: .leading)
     }
 }

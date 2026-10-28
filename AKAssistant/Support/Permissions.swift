@@ -51,7 +51,7 @@ enum Permissions {
     }
 
     /// Meetings use it to record the Mac's audio (the other people on a call). The video is ignored.
-    /// macOS may only report a new grant after AK Assistant restarts.
+    /// macOS may only report a new grant after Duck Keyboard restarts.
     static var screenCaptureGranted: Bool {
         CGPreflightScreenCaptureAccess()
     }

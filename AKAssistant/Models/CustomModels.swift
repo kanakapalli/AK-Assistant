@@ -130,7 +130,7 @@ enum CustomModelInspector {
         switch kind {
         case .speech:
             if files.contains(where: { $0.hasSuffix(".bin") || $0.hasSuffix(".pt") || $0.hasSuffix(".safetensors") }) {
-                throw CustomModelError.message("This looks like a regular Whisper model. AK Assistant needs the WhisperKit Core ML version (a folder with AudioEncoder.mlmodelc, TextDecoder.mlmodelc and MelSpectrogram.mlmodelc). You can convert one with Argmax's whisperkittools.")
+                throw CustomModelError.message("This looks like a regular Whisper model. Duck Keyboard needs the WhisperKit Core ML version (a folder with AudioEncoder.mlmodelc, TextDecoder.mlmodelc and MelSpectrogram.mlmodelc). You can convert one with Argmax's whisperkittools.")
             }
             throw CustomModelError.message("No WhisperKit model found. The folder needs AudioEncoder.mlmodelc, TextDecoder.mlmodelc and MelSpectrogram.mlmodelc.")
         case .chat:

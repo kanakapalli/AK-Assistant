@@ -83,11 +83,11 @@ struct OnboardingView: View {
         switch step {
         case .welcome:
             StepHeader(symbol: "waveform", title: "Dictate anywhere on your Mac",
-                       text: "Hold a key, speak, let go. AK Assistant turns your voice into text and pastes it wherever your cursor is. Hold a second key to ask a local AI anything and hear the answer. Everything runs on this Mac with open-source models; your audio and questions never leave it.")
+                       text: "Hold a key, speak, let go. Duck Keyboard turns your voice into text and pastes it wherever your cursor is. Hold a second key to ask a local AI anything and hear the answer. Everything runs on this Mac with open-source models; your audio and questions never leave it.")
 
         case .microphone:
             StepHeader(symbol: "mic", title: "Allow the microphone",
-                       text: "AK Assistant only listens while you hold the hotkey. Audio stays in memory and is discarded after transcription.")
+                       text: "Duck Keyboard only listens while you hold the hotkey. Audio stays in memory and is discarded after transcription.")
             PermissionStatus(granted: micGranted, button: "Allow Microphone") {
                 Task {
                     micGranted = await Permissions.requestMicrophone()
@@ -97,7 +97,7 @@ struct OnboardingView: View {
 
         case .accessibility:
             StepHeader(symbol: "hand.raised", title: "Allow Accessibility",
-                       text: "This lets AK Assistant notice your push-to-talk key in any app and paste the text into the focused field. Turn on AK Assistant in System Settings > Privacy & Security > Accessibility, then come back.")
+                       text: "This lets Duck Keyboard notice your push-to-talk key in any app and paste the text into the focused field. Turn on Duck Keyboard in System Settings > Privacy & Security > Accessibility, then come back.")
             PermissionStatus(granted: axGranted, button: "Open System Settings") {
                 Permissions.requestAccessibility()
                 Permissions.openAccessibilitySettings()
@@ -160,13 +160,13 @@ struct OnboardingView: View {
                 .font(.body)
                 .frame(height: 140)
                 .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(.secondary.opacity(0.3)))
-            Toggle("Open AK Assistant automatically when I log in", isOn: $launchAtLogin)
+            Toggle("Open Duck Keyboard automatically when I log in", isOn: $launchAtLogin)
                 .toggleStyle(.switch)
                 .padding(.top, 12)
             Text("You can change this later in Settings.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
-            Text("After this, AK Assistant keeps running in the menu bar. Open this window from the Dock or the menu bar to see your history.")
+            Text("After this, Duck Keyboard keeps running in the menu bar. Open this window from the menu bar icon to see your history.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .padding(.top, 8)
@@ -192,7 +192,7 @@ struct OnboardingView: View {
             }
         } catch {
             // Not fatal: the user can turn it on later in Settings (macOS may ask for approval there).
-            NSLog("AK Assistant launch-at-login error: \(error)")
+            NSLog("Duck Keyboard launch-at-login error: \(error)")
         }
         preferences.onboarded = true
     }

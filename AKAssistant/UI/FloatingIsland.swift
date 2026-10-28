@@ -409,7 +409,7 @@ struct CompactPill: View {
     @ViewBuilder private var statusIcon: some View {
         switch state.status {
         case .recording where state.currentAction == .assistant:
-            Image(systemName: "sparkles").foregroundStyle(.purple)
+            Image(systemName: "sparkles").foregroundStyle(Duck.assistant)
         case .recording:
             Circle().fill(.red).frame(width: 10, height: 10)
         case .transcribing:
@@ -436,7 +436,7 @@ struct CompactPill: View {
             return state.currentAction == .assistant ? "Thinking…" : "Transcribing…"
         case .done(let message): return message
         case .error(let message): return message
-        case .idle: return state.isSpeaking ? "Speaking…" : "AK Assistant"
+        case .idle: return state.isSpeaking ? "Speaking…" : "Duck Keyboard"
         }
     }
 

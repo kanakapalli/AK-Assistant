@@ -1,11 +1,13 @@
 import Foundation
 import Observation
+import CoreML
 
 /// Where a model runs. Each model lists the options it supports; the user picks one per model in Settings.
 enum ModelRuntime: String, Codable, CaseIterable, Identifiable {
     case gpu            // Core ML on the GPU
     case neuralEngine   // Core ML on the Neural Engine
     case mlx            // Apple's MLX framework (always on the GPU)
+    case cpu            // Core ML on the CPU only
 
     var id: String { rawValue }
 
@@ -14,6 +16,35 @@ enum ModelRuntime: String, Codable, CaseIterable, Identifiable {
         case .gpu: return "GPU (Core ML)"
         case .neuralEngine: return "Neural Engine"
         case .mlx: return "MLX (GPU)"
+        case .cpu: return "CPU"
+        }
+    }
+
+    /// Short name for chips and menus.
+    var shortTitle: String {
+        switch self {
+        case .gpu: return "GPU"
+        case .neuralEngine: return "Neural Engine"
+        case .mlx: return "MLX"
+        case .cpu: return "CPU"
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .gpu: return "square.stack.3d.up"
+        case .neuralEngine: return "brain"
+        case .mlx: return "bolt"
+        case .cpu: return "cpu"
+        }
+    }
+
+    /// The Core ML compute units for this choice (MLX doesn't use Core ML).
+    var computeUnits: MLComputeUnits {
+        switch self {
+        case .gpu, .mlx: return .cpuAndGPU
+        case .neuralEngine: return .cpuAndNeuralEngine
+        case .cpu: return .cpuOnly
         }
     }
 
@@ -22,6 +53,7 @@ enum ModelRuntime: String, Codable, CaseIterable, Identifiable {
         case .gpu: return "Core ML on the GPU. Loads quickly."
         case .neuralEngine: return "Uses the least power and leaves the GPU free for the AI. The first load can take a while."
         case .mlx: return "Apple's MLX framework on the GPU. Separate download."
+        case .cpu: return "The processor only. Slowest, but keeps the GPU and Neural Engine free for other work."
         }
     }
 }

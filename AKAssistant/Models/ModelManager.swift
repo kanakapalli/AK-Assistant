@@ -385,7 +385,7 @@ extension ModelManager {
                 guard let folder = localFolder(for: record.speechModel) else {
                     throw CustomModelError.message("The model files are missing after download.")
                 }
-                _ = try await WhisperKitEngine(modelFolder: folder, useNeuralEngine: false)
+                _ = try await WhisperKitEngine(modelFolder: folder, computeUnits: .cpuAndGPU)
                 store.update(id) { $0.sizeLabel = ByteCountFormatter.string(fromByteCount: Self.folderSize(folder), countStyle: .file) }
             } else {
                 store.update(id) { [folder = LLMService.cacheFolder(for: record.chatModel)] in
@@ -415,7 +415,7 @@ extension ModelManager {
     ) async throws {
         let root = try CustomModelInspector.modelRoot(in: source, kind: record.kind)
         let destination = Self.customDirectory.appendingPathComponent(record.id, isDirectory: true)
-        status(move ? "Installing…" : "Copying the model into AK Assistant…")
+        status(move ? "Installing…" : "Copying the model into Duck Keyboard…")
         states[stateKey] = .downloading(progress: nil)
         let customDirectory = Self.customDirectory
         try await Task.detached(priority: .userInitiated) {

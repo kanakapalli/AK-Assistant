@@ -241,7 +241,7 @@ enum MeetingStorage {
     }()
 
     /// The meetings database (~/Library/Application Support/AK Assistant/Meetings.store), private to
-    /// AK Assistant so other apps' SwiftData stores can't touch it.
+    /// Duck Keyboard so other apps' SwiftData stores can't touch it.
     static let storeURL: URL = {
         folder.deletingLastPathComponent().appendingPathComponent("Meetings.store")
     }()

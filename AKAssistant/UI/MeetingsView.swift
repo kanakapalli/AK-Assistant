@@ -35,10 +35,9 @@ struct MeetingsView: View {
                     Divider()
                 }
                 if filtered.isEmpty {
-                    ContentUnavailableView(
-                        meetings.isEmpty ? "No meetings yet" : "No matches",
-                        systemImage: meetings.isEmpty ? "person.2.wave.2" : "magnifyingglass"
-                    )
+                    DuckEmptyState(symbol: meetings.isEmpty ? "person.2.wave.2" : "magnifyingglass",
+                                   title: meetings.isEmpty ? "No meetings yet" : "No matches",
+                                   tint: meetings.isEmpty ? Duck.orange : .secondary)
                 } else {
                     List(filtered, selection: $selection) { meeting in
                         MeetingRow(meeting: meeting)
@@ -56,8 +55,8 @@ struct MeetingsView: View {
                 } else if meetings.isEmpty {
                     MeetingsEmptyState()
                 } else {
-                    ContentUnavailableView("Select a meeting", systemImage: "person.2.wave.2",
-                                           description: Text("Pick a meeting on the left to see its summary, to-dos and transcript."))
+                    DuckEmptyState(symbol: "person.2.wave.2", title: "Select a meeting",
+                                   message: "Pick a meeting on the left to see its summary, to-dos and transcript.")
                 }
             }
             .frame(minWidth: 460, maxWidth: .infinity, maxHeight: .infinity)
@@ -198,15 +197,26 @@ private struct MeetingsEmptyState: View {
     @Environment(Preferences.self) private var preferences
 
     var body: some View {
-        ContentUnavailableView {
-            Label("No meetings yet", systemImage: "person.2.wave.2")
-        } description: {
-            Text(preferences.meetingDoubleTap
-                 ? "Double-tap \(preferences.hotkey.title) to start recording a meeting, and press it again when you're done. AK Assistant writes the transcript, a summary and a to-do list — all on this Mac."
-                 : "Start a meeting here or from the menu bar. AK Assistant writes the transcript, a summary and a to-do list — all on this Mac.")
-        } actions: {
-            Button("Start a meeting") { appState.startMeeting() }
+        DuckEmptyState(symbol: "person.2.wave.2", title: "Record your first meeting",
+                       message: "Duck Keyboard writes the transcript, a summary and a to-do list, all on this Mac.") {
+            VStack(spacing: 12) {
+                Button {
+                    appState.startMeeting()
+                } label: {
+                    Label("Start a meeting", systemImage: "record.circle")
+                }
                 .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                if preferences.meetingDoubleTap {
+                    HStack(spacing: 6) {
+                        Text("or double-tap")
+                        DuckKeycap(preferences.hotkey.keycapLabel, size: .regular)
+                        Text("anywhere")
+                    }
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                }
+            }
         }
     }
 }
@@ -226,6 +236,14 @@ private struct MeetingDetailView: View {
         case todos = "To-dos"
         case transcript = "Transcript"
         var id: String { rawValue }
+
+        var symbol: String {
+            switch self {
+            case .summary: return "text.badge.star"
+            case .todos: return "checklist"
+            case .transcript: return "text.quote"
+            }
+        }
     }
 
     var body: some View {
@@ -259,16 +277,11 @@ private struct MeetingDetailView: View {
                     .task(id: url) { player.load(url) }
             }
 
-            Picker("Show", selection: $tab) {
-                ForEach(DetailTab.allCases) { item in
-                    Text(item == .todos && todoCount > 0 ? "To-dos (\(todoCount))" : item.rawValue).tag(item)
-                }
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .frame(maxWidth: 380)
-            .padding(.horizontal, 20)
-            .padding(.bottom, 12)
+            DuckTabBar(tabs: DetailTab.allCases, selection: $tab, style: .pills,
+                       title: { $0.rawValue }, symbol: { $0.symbol },
+                       badge: { $0 == .todos && todoCount > 0 ? "\(todoCount)" : nil })
+                .padding(.horizontal, 20)
+                .padding(.bottom, 12)
 
             Divider()
 
@@ -388,7 +401,7 @@ private struct SummaryTab: View {
             }
         } else {
             ScrollView {
-                VStack(alignment: .leading, spacing: 22) {
+                VStack(alignment: .leading, spacing: 14) {
                     if let status {
                         HStack(spacing: 8) {
                             ProgressView().controlSize(.small)
@@ -442,11 +455,15 @@ private struct NotesSection<Content: View>: View {
     @ViewBuilder let content: Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label(title, systemImage: symbol)
-                .font(.headline)
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                IconTile(symbol: symbol, size: 24)
+                Text(title).font(.system(.headline, design: .rounded))
+            }
             content
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .duckCard(padding: 16)
     }
 }
 
@@ -457,7 +474,7 @@ private struct BulletList: View {
         VStack(alignment: .leading, spacing: 6) {
             ForEach(Array(items.enumerated()), id: \.offset) { _, item in
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    Text("•").foregroundStyle(.secondary)
+                    Circle().fill(Duck.orange).frame(width: 5, height: 5).alignmentGuide(.firstTextBaseline) { $0[.bottom] + 1 }
                     Text(item).textSelection(.enabled)
                 }
             }

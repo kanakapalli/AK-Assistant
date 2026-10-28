@@ -1,4 +1,4 @@
-# AK Assistant website
+# Duck Keyboard website
 
 A static landing page: plain HTML, CSS and JavaScript, with no build step.
 

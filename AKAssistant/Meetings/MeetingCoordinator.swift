@@ -247,13 +247,13 @@ final class MeetingCoordinator {
     /// Writes (or rewrites) the summary, key points, decisions and to-dos.
     func summarize(_ meeting: Meeting) async {
         guard summaryTasks[meeting.id] == nil else { return }
-        // The notes model picked in Settings › Meetings if it's downloaded, else the assistant's.
+        // The notes model picked in Settings › Models if it's downloaded, else the assistant's.
         let chat = preferences.meetingNotesModel.flatMap { modelManager.isDownloaded($0) ? $0 : nil }
             ?? preferences.chatModel
         let detail = preferences.meetingNotesDetail
         guard modelManager.isDownloaded(chat) else {
             meeting.state = .done
-            meeting.note = "Download an AI model in Settings › AI Assistant to get a summary and to-dos for this meeting."
+            meeting.note = "Download an AI model in Settings › Models to get a summary and to-dos for this meeting."
             progress[meeting.id] = nil
             save()
             onFlash?(.done("Meeting transcript saved"))
@@ -395,7 +395,7 @@ final class MeetingCoordinator {
         for meeting in all where meeting.state != .done {
             meeting.state = .done
             if let last = meeting.segments.last { meeting.duration = max(meeting.duration, last.end) }
-            meeting.note = "The recording was interrupted (AK Assistant quit). What was transcribed is kept."
+            meeting.note = "The recording was interrupted (Duck Keyboard quit). What was transcribed is kept."
         }
         save()
     }

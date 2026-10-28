@@ -164,7 +164,7 @@ struct AddCustomModelSheet: View {
                 Text("Drop the model folder here").font(.headline)
             }
             Button(folder == nil ? "Choose Folder…" : "Choose Another…", action: chooseFolder)
-            Text("The folder is copied into AK Assistant, so you can delete or move the original afterwards.")
+            Text("The folder is copied into Duck Keyboard, so you can delete or move the original afterwards.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)

@@ -30,6 +30,7 @@ final class Preferences {
         static let aiCommandsEnabled = "aiCommandsEnabled"
         static let grammarFixEnabled = "grammarFixEnabled"
         static let textActions = "textActions"
+        static let writingModelID = "writingModelID"
         static let confirmRiskyCommands = "confirmRiskyCommands"
         static let seenLearn = "seenLearn"
         static let meetingDoubleTap = "meetingDoubleTap"
@@ -94,6 +95,8 @@ final class Preferences {
     var grammarFixEnabled: Bool { didSet { defaults.set(grammarFixEnabled, forKey: Key.grammarFixEnabled) } }
     /// The writing tools (fix grammar, write as email, …), each with its prompt. Shortcuts are kept by KeyboardShortcuts.
     var textActions: [TextAction] { didSet { defaults.set(TextActionCatalog.encode(textActions), forKey: Key.textActions) } }
+    /// AI model for the writing tools. "" = the AI assistant's model.
+    var writingModelID: String { didSet { defaults.set(writingModelID, forKey: Key.writingModelID) } }
     /// Learn has been opened at least once (hides its "New" badge).
     var seenLearn: Bool { didSet { defaults.set(seenLearn, forKey: Key.seenLearn) } }
 
@@ -162,6 +165,7 @@ final class Preferences {
             Key.macCommandsEnabled: true,
             Key.aiCommandsEnabled: true,
             Key.grammarFixEnabled: true,
+            Key.writingModelID: "",
             Key.confirmRiskyCommands: false,
             Key.seenLearn: false,
             Key.meetingDoubleTap: true,
@@ -213,6 +217,7 @@ final class Preferences {
         aiCommandsEnabled = defaults.bool(forKey: Key.aiCommandsEnabled)
         grammarFixEnabled = defaults.bool(forKey: Key.grammarFixEnabled)
         textActions = TextActionCatalog.load(from: defaults.data(forKey: Key.textActions))
+        writingModelID = defaults.string(forKey: Key.writingModelID) ?? ""
         confirmRiskyCommands = defaults.bool(forKey: Key.confirmRiskyCommands)
         seenLearn = defaults.bool(forKey: Key.seenLearn)
         meetingDoubleTap = defaults.bool(forKey: Key.meetingDoubleTap)
@@ -259,6 +264,11 @@ final class Preferences {
     /// The AI model for meeting notes, if one other than the assistant's is picked.
     var meetingNotesModel: ChatModel? {
         meetingNotesModelID.isEmpty ? nil : AssistantCatalog.chatModel(id: meetingNotesModelID)
+    }
+
+    /// The AI model for the writing tools, if one other than the assistant's is picked.
+    var writingModel: ChatModel? {
+        writingModelID.isEmpty ? nil : AssistantCatalog.chatModel(id: writingModelID)
     }
 
     /// Language for meetings; nil means auto-detect.

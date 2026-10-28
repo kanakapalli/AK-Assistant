@@ -1,15 +1,16 @@
 #!/bin/bash
-# Builds AK Assistant in Release mode and packages it as a drag-to-Applications DMG.
+# Builds Duck Keyboard in Release mode and packages it as a drag-to-Applications DMG.
 #
 #   ./make-dmg.sh                         build + DMG (signed with whatever Xcode uses)
 #   NOTARY_PROFILE=ak ./make-dmg.sh       also notarize, so other Macs open it without warnings
 #
-# Output: dist/AK-Assistant-<version>.dmg
+# Output: dist/Duck-Keyboard-<version>.dmg
 set -euo pipefail
 cd "$(dirname "$0")"
 
-APP_NAME="AKAssistant"
-VOLUME_NAME="AK Assistant"
+APP_NAME="AKAssistant"          # Xcode project / scheme
+PRODUCT="Duck Keyboard"         # the .app name
+VOLUME_NAME="Duck Keyboard"
 BUILD_DIR="build"
 DIST_DIR="dist"
 ARCHIVE="$BUILD_DIR/$APP_NAME.xcarchive"
@@ -17,9 +18,9 @@ ARCHIVE="$BUILD_DIR/$APP_NAME.xcarchive"
 VERSION=$(xcodebuild -project "$APP_NAME.xcodeproj" -scheme "$APP_NAME" -configuration Release \
   -showBuildSettings 2>/dev/null | awk -F' = ' '/ MARKETING_VERSION /{print $2; exit}')
 VERSION=${VERSION:-0.1.0}
-DMG="$DIST_DIR/AK-Assistant-$VERSION.dmg"
+DMG="$DIST_DIR/Duck-Keyboard-$VERSION.dmg"
 
-echo "▸ Building AK Assistant $VERSION (Release)…"
+echo "▸ Building Duck Keyboard $VERSION (Release)…"
 rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR" "$DIST_DIR"
 xcodebuild -project "$APP_NAME.xcodeproj" -scheme "$APP_NAME" -configuration Release \
@@ -40,10 +41,10 @@ if security find-identity -v -p codesigning | grep -q "Developer ID Application"
 PLIST
   xcodebuild -exportArchive -archivePath "$ARCHIVE" -exportPath "$BUILD_DIR/export" \
     -exportOptionsPlist "$BUILD_DIR/ExportOptions.plist" -quiet
-  APP_PATH="$BUILD_DIR/export/$APP_NAME.app"
+  APP_PATH="$BUILD_DIR/export/$PRODUCT.app"
 else
   echo "▸ No Developer ID certificate found; using the development-signed app (fine for this Mac)."
-  APP_PATH="$ARCHIVE/Products/Applications/$APP_NAME.app"
+  APP_PATH="$ARCHIVE/Products/Applications/$PRODUCT.app"
 fi
 
 echo "▸ Creating DMG…"
@@ -52,10 +53,10 @@ rm -rf "$STAGING" && mkdir -p "$STAGING"
 cp -R "$APP_PATH" "$STAGING/"
 ln -s /Applications "$STAGING/Applications"
 cat > "$STAGING/How to open on another Mac.txt" <<'TXT'
-AK Assistant — installing on another Mac
+Duck Keyboard — installing on another Mac
 (Needs a Mac with Apple silicon: M1 or newer, macOS 15 or later.)
 
-1. Drag AK Assistant into the Applications folder.
+1. Drag Duck Keyboard into the Applications folder.
 2. Open it from Applications. If macOS says it "can't be opened" or "can't verify" it:
    open System Settings › Privacy & Security, scroll down and click "Open Anyway",
    then confirm. (Or right-click the app › Open › Open.) You only do this once.

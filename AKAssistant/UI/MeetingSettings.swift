@@ -63,7 +63,7 @@ struct MeetingSettingsSections: View {
             Caption("Re-transcribes your mic and the Mac's audio separately, cut at natural pauses, skipping silence and noise. Takes a minute or two for an hour of audio.")
 
             if preferences.meetingCleanupPass {
-                MeetingModelPicker()
+                ModelLinkRow(feature: .meetingTranscript)
 
                 Picker("Speech detection", selection: $preferences.meetingSpeechSensitivity) {
                     ForEach(SpeechSensitivity.allCases) { level in
@@ -96,7 +96,7 @@ struct MeetingSettingsSections: View {
             Toggle("Write a summary and to-dos when a meeting ends", isOn: $preferences.meetingWriteNotes)
             Caption("Off: you get the transcript only, and can still write notes from a meeting's ⋯ menu.")
 
-            NotesModelPicker()
+            ModelLinkRow(feature: .meetingNotes)
 
             Picker("Notes detail", selection: $preferences.meetingNotesDetail) {
                 ForEach(NotesDetail.allCases) { detail in
@@ -144,50 +144,5 @@ private struct Caption: View {
         Text(text)
             .font(.caption)
             .foregroundStyle(.secondary)
-    }
-}
-
-/// Which speech model redoes the transcript after a meeting. Only downloaded models are offered.
-struct MeetingModelPicker: View {
-    @Environment(Preferences.self) private var preferences
-    @Environment(ModelManager.self) private var modelManager
-
-    var body: some View {
-        @Bindable var preferences = preferences
-        let downloaded = ModelCatalog.all.filter { modelManager.isDownloaded($0) && $0.id != preferences.selectedModelID }
-        Picker("Speech model for the clean-up", selection: $preferences.meetingFinalModelID) {
-            Text("Same as dictation (\(preferences.selectedModel.name))").tag("")
-            if !downloaded.isEmpty { Divider() }
-            ForEach(downloaded) { model in
-                Text(model.name).tag(model.id)
-            }
-            // A picked model that was since deleted stays selectable so the picker has a matching tag.
-            if !preferences.meetingFinalModelID.isEmpty, !downloaded.contains(where: { $0.id == preferences.meetingFinalModelID }) {
-                Text("\(preferences.meetingFinalModel?.name ?? "Missing model") (not downloaded)").tag(preferences.meetingFinalModelID)
-            }
-        }
-        Caption("A larger model (e.g. Whisper Large v3 Turbo) is slower but more accurate on noisy audio. Download more in Settings › Dictation.")
-    }
-}
-
-/// Which AI model writes meeting notes. Only downloaded models are offered.
-struct NotesModelPicker: View {
-    @Environment(Preferences.self) private var preferences
-    @Environment(ModelManager.self) private var modelManager
-
-    var body: some View {
-        @Bindable var preferences = preferences
-        let downloaded = AssistantCatalog.chatModels.filter { modelManager.isDownloaded($0) && $0.id != preferences.chatModelID }
-        Picker("AI model for notes", selection: $preferences.meetingNotesModelID) {
-            Text("Same as AI assistant (\(preferences.chatModel.name))").tag("")
-            if !downloaded.isEmpty { Divider() }
-            ForEach(downloaded) { model in
-                Text(model.name).tag(model.id)
-            }
-            if !preferences.meetingNotesModelID.isEmpty, !downloaded.contains(where: { $0.id == preferences.meetingNotesModelID }) {
-                Text("\(preferences.meetingNotesModel?.name ?? "Missing model") (not downloaded)").tag(preferences.meetingNotesModelID)
-            }
-        }
-        Caption("A bigger model writes better notes and catches more to-dos, but takes longer. If the picked one isn't downloaded, the assistant's model is used. Download more in Settings › AI Assistant.")
     }
 }

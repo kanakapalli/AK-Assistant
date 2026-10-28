@@ -70,7 +70,7 @@ enum HistoryPruner {
             }
             try context.save()
         } catch {
-            NSLog("AK Assistant: history prune failed: \(error)")
+            NSLog("Duck Keyboard: history prune failed: \(error)")
         }
     }
 }

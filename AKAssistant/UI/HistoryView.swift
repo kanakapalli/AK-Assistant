@@ -21,6 +21,24 @@ struct HistoryView: View {
             case .writing: return HistoryKind.rewrite.symbol
             }
         }
+
+        var tint: Color {
+            switch self {
+            case .all: return Duck.orange
+            case .dictation: return HistoryKind.dictation.tint
+            case .assistant: return HistoryKind.assistant.tint
+            case .writing: return HistoryKind.rewrite.tint
+            }
+        }
+    }
+
+    private func count(_ filter: KindFilter) -> Int {
+        switch filter {
+        case .all: return records.count
+        case .dictation: return records.filter(\.isDictation).count
+        case .assistant: return records.filter(\.isAssistant).count
+        case .writing: return records.filter(\.isRewrite).count
+        }
     }
 
     private var filtered: [DictationRecord] {
@@ -41,39 +59,56 @@ struct HistoryView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            StatsHeader(records: records)
-            Picker("Show", selection: $kind) {
-                ForEach(KindFilter.allCases) { filter in
-                    Label(filter.rawValue, systemImage: filter.symbol).tag(filter)
+            VStack(alignment: .leading, spacing: 14) {
+                StatsHeader(records: records)
+                HStack(spacing: 6) {
+                    ForEach(KindFilter.allCases) { filter in
+                        DuckChip(title: filter.rawValue, symbol: filter.symbol, count: count(filter),
+                                 tint: filter.tint, selected: kind == filter) {
+                            withAnimation(.snappy(duration: 0.2)) { kind = filter }
+                        }
+                    }
+                    Spacer(minLength: 0)
                 }
             }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .frame(maxWidth: 460)
-            .padding(.horizontal, 16)
+            .padding(.horizontal, 20)
+            .padding(.top, 16)
             .padding(.bottom, 12)
-            .frame(maxWidth: .infinity, alignment: .leading)
+
             Divider()
+
             if filtered.isEmpty {
-                ContentUnavailableView(
-                    records.isEmpty ? "Nothing here yet" : "No matches",
-                    systemImage: "waveform",
-                    description: Text(records.isEmpty ? "Hold your hotkey in any text field and speak, hold the AI key and ask a question, or press a writing tool's shortcut (like ⌘G) in a text field." : "Try a different search or filter.")
-                )
+                if records.isEmpty {
+                    HistoryEmptyState()
+                } else {
+                    DuckEmptyState(symbol: "magnifyingglass", title: "No matches",
+                                   message: "Try a different search or filter.", tint: .secondary)
+                }
             } else {
                 List {
                     ForEach(groupedByDay, id: \.day) { group in
                         Section {
                             ForEach(group.records) { record in
                                 row(record)
+                                    .listRowSeparator(.hidden)
+                                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                             }
                         } header: {
-                            Text(dayTitle(group.day))
-                                .font(.subheadline.weight(.semibold))
+                            HStack(spacing: 6) {
+                                Text(dayTitle(group.day))
+                                    .font(.system(.subheadline, design: .rounded).weight(.bold))
+                                    .foregroundStyle(.primary)
+                                Text("\(group.records.count)")
+                                    .font(.caption.weight(.semibold))
+                                    .monospacedDigit()
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(.top, 6)
                         }
                     }
                 }
-                .listStyle(.inset)
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
             }
         }
         .navigationTitle("History")
@@ -157,7 +192,7 @@ struct HistoryView: View {
 
     private func export(csv: Bool) {
         let panel = NSSavePanel()
-        panel.nameFieldStringValue = csv ? "AK Assistant history.csv" : "AK Assistant history.txt"
+        panel.nameFieldStringValue = csv ? "Duck Keyboard history.csv" : "Duck Keyboard history.txt"
         panel.allowedContentTypes = [csv ? .commaSeparatedText : .plainText]
         guard panel.runModal() == .OK, let url = panel.url else { return }
         let body = csv ? HistoryExporter.csv(records) : HistoryExporter.plainText(records)
@@ -197,9 +232,9 @@ enum HistoryKind {
 
     var tint: Color {
         switch self {
-        case .dictation: return .blue
-        case .assistant: return .purple
-        case .rewrite: return .mint
+        case .dictation: return Duck.dictation
+        case .assistant: return Duck.assistant
+        case .rewrite: return Duck.writing
         }
     }
 }
@@ -229,11 +264,12 @@ struct HistoryRow: View {
             .frame(maxWidth: .infinity, alignment: .leading)
 
             copyButton
-                .opacity(hovering || copied ? 1 : 0.35)
+                .opacity(hovering || copied ? 1 : 0)
         }
-        .padding(.vertical, 8)
+        .duckCard(padding: 12, highlighted: hovering)
         .contentShape(Rectangle())
         .onHover { hovering = $0 }
+        .animation(.easeOut(duration: 0.12), value: hovering)
     }
 
     // MARK: Parts
@@ -327,8 +363,8 @@ private struct KindIcon: View {
         Image(systemName: kind.symbol)
             .font(.system(size: 13, weight: .semibold))
             .foregroundStyle(kind.tint)
-            .frame(width: 28, height: 28)
-            .background(kind.tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+            .frame(width: 30, height: 30)
+            .background(kind.tint.opacity(0.15), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             .help(kind.title)
     }
 }
@@ -392,28 +428,50 @@ struct StatsHeader: View {
     }
 
     var body: some View {
-        HStack(spacing: 32) {
-            stat("Today", "\(today.count)")
-            stat("Words today", "\(today.reduce(0) { $0 + $1.wordCount })")
-            stat("Dictations", "\(records.filter(\.isDictation).count)", kind: .dictation)
-            stat("AI questions", "\(records.filter(\.isAssistant).count)", kind: .assistant)
-            stat("Rewrites", "\(records.filter(\.isRewrite).count)", kind: .rewrite)
-            stat("Total words", "\(records.reduce(0) { $0 + $1.wordCount })")
-            Spacer()
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 140), spacing: 10)], spacing: 10) {
+            DuckStatTile(value: "\(today.count)", title: "Today", symbol: "sun.max.fill")
+            DuckStatTile(value: "\(today.reduce(0) { $0 + $1.wordCount })", title: "Words today", symbol: "text.word.spacing")
+            DuckStatTile(value: "\(records.filter(\.isDictation).count)", title: "Dictations",
+                     symbol: HistoryKind.dictation.symbol, tint: HistoryKind.dictation.tint)
+            DuckStatTile(value: "\(records.filter(\.isAssistant).count)", title: "AI questions",
+                     symbol: HistoryKind.assistant.symbol, tint: HistoryKind.assistant.tint)
+            DuckStatTile(value: "\(records.filter(\.isRewrite).count)", title: "Rewrites",
+                     symbol: HistoryKind.rewrite.symbol, tint: HistoryKind.rewrite.tint)
+            DuckStatTile(value: "\(records.reduce(0) { $0 + $1.wordCount })", title: "Total words",
+                     symbol: "character.cursor.ibeam", tint: .secondary)
         }
-        .padding(16)
+    }
+}
+
+/// First run: show the three ways to fill History, with the user's actual keys.
+private struct HistoryEmptyState: View {
+    @Environment(Preferences.self) private var preferences
+
+    var body: some View {
+        DuckEmptyState(symbol: "waveform", title: "Your words will show up here",
+                       message: "Everything you dictate, ask or rewrite is kept on this Mac.") {
+            VStack(alignment: .leading, spacing: 10) {
+                hint(HistoryKind.dictation) {
+                    Text("Hold"); DuckKeycap(preferences.hotkey.keycapLabel, size: .regular); Text("in any text field and speak")
+                }
+                if preferences.assistantEnabled, preferences.assistantHotkey != .off {
+                    hint(HistoryKind.assistant) {
+                        Text("Hold"); DuckKeycap(preferences.assistantHotkey.keycapLabel, size: .regular); Text("and ask a question")
+                    }
+                }
+                hint(HistoryKind.rewrite) {
+                    Text("Press"); DuckKeycap("⌘G", size: .regular); Text("in a text field to fix the grammar")
+                }
+            }
+            .font(.callout)
+            .duckCard()
+        }
     }
 
-    private func stat(_ title: String, _ value: String, kind: HistoryKind? = nil) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(value).font(.title2.weight(.semibold)).monospacedDigit()
-            HStack(spacing: 4) {
-                if let kind {
-                    Image(systemName: kind.symbol).foregroundStyle(kind.tint)
-                }
-                Text(title).foregroundStyle(.secondary)
-            }
-            .font(.caption)
+    private func hint<Content: View>(_ kind: HistoryKind, @ViewBuilder _ content: () -> Content) -> some View {
+        HStack(spacing: 8) {
+            IconTile(symbol: kind.symbol, tint: kind.tint, size: 24)
+            content()
         }
     }
 }

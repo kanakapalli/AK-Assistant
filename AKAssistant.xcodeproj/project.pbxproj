@@ -20,7 +20,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		AC0000000000000000000001 /* AKAssistant.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AKAssistant.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AC0000000000000000000001 /* Duck Keyboard.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Duck Keyboard.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -63,7 +63,7 @@
 		AC0000000000000000000005 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				AC0000000000000000000001 /* AKAssistant.app */,
+				AC0000000000000000000001 /* Duck Keyboard.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -100,7 +100,7 @@
 				AC0000000000000000000210 /* MLXEmbedders */,
 			);
 			productName = AKAssistant;
-			productReference = AC0000000000000000000001 /* AKAssistant.app */;
+			productReference = AC0000000000000000000001 /* Duck Keyboard.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -303,11 +303,12 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "AK Assistant";
+				INFOPLIST_KEY_CFBundleDisplayName = "Duck Keyboard";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
-				INFOPLIST_KEY_NSAppleEventsUsageDescription = "AK Assistant controls System Events, Finder or loginwindow only when you ask it to, for example to switch dark mode, empty the Trash or restart.";
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Duck Keyboard controls System Events, Finder or loginwindow only when you ask it to, for example to switch dark mode, empty the Trash or restart.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 NatFirst";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "AK Assistant listens only while you hold a hotkey or record a meeting you started, and transcribes on this Mac.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Duck Keyboard listens only while you hold a hotkey or record a meeting you started, and transcribes on this Mac.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -315,7 +316,8 @@
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 0.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.natfirst.akassistant;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_MODULE_NAME = AKAssistant;
+				PRODUCT_NAME = "Duck Keyboard";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -334,11 +336,12 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "AK Assistant";
+				INFOPLIST_KEY_CFBundleDisplayName = "Duck Keyboard";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
-				INFOPLIST_KEY_NSAppleEventsUsageDescription = "AK Assistant controls System Events, Finder or loginwindow only when you ask it to, for example to switch dark mode, empty the Trash or restart.";
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Duck Keyboard controls System Events, Finder or loginwindow only when you ask it to, for example to switch dark mode, empty the Trash or restart.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 NatFirst";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "AK Assistant listens only while you hold a hotkey or record a meeting you started, and transcribes on this Mac.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Duck Keyboard listens only while you hold a hotkey or record a meeting you started, and transcribes on this Mac.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -346,7 +349,8 @@
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 0.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.natfirst.akassistant;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_MODULE_NAME = AKAssistant;
+				PRODUCT_NAME = "Duck Keyboard";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};

@@ -2,7 +2,7 @@ import SwiftUI
 import UserNotifications
 import KeyboardShortcuts
 
-// Learn: a hands-on guide to AK Assistant.
+// Learn: a hands-on guide to Duck Keyboard.
 //
 //  • Get started   – a checklist you complete by actually using the app (permissions, models,
 //                    a practice dictation, a first question, a first command, a first rewrite).
@@ -39,16 +39,11 @@ struct LearnView: View {
     var body: some View {
         VStack(spacing: 0) {
             if search.isEmpty {
-                Picker("Section", selection: $tab) {
-                    ForEach(LearnTab.allCases) { tab in
-                        Label(tab.rawValue, systemImage: tab.symbol).tag(tab)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                .frame(maxWidth: 560)
-                .padding(.horizontal, 24)
-                .padding(.vertical, 12)
+                DuckTabBar(tabs: LearnTab.allCases, selection: $tab, style: .pills,
+                           title: { $0.rawValue }, symbol: { $0.symbol })
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity)
                 Divider()
             }
 
@@ -195,7 +190,7 @@ private struct GetStartedTab: View {
                         .font(.headline.monospacedDigit())
                 )
             VStack(alignment: .leading, spacing: 4) {
-                Text(doneCount == LearnStep.allCases.count ? "You know the basics" : "Learn AK Assistant in a minute")
+                Text(doneCount == LearnStep.allCases.count ? "You know the basics" : "Learn Duck Keyboard in a minute")
                     .font(.largeTitle.weight(.bold))
                 Text("Each step ticks itself off when you do it, so just follow along.")
                     .font(.title3)
@@ -228,7 +223,7 @@ private struct GetStartedTab: View {
         switch step {
         case .permissions:
             VStack(alignment: .leading, spacing: 8) {
-                Text("AK Assistant needs to hear you, and to type into other apps.")
+                Text("Duck Keyboard needs to hear you, and to type into other apps.")
                     .foregroundStyle(.secondary)
                 StatusRow(title: "Microphone", detail: "Only used while you hold a hotkey", ok: micGranted, fixTitle: "Allow") {
                     Task {
@@ -245,11 +240,11 @@ private struct GetStartedTab: View {
             VStack(alignment: .leading, spacing: 8) {
                 StatusRow(title: "Speech to text: \(preferences.selectedModel.name)", detail: "Needed for everything",
                           ok: modelManager.isDownloaded(preferences.selectedModel), fixTitle: "Choose a model") {
-                    appState.openSettings(.dictation)
+                    appState.openSettings(.models)
                 }
                 StatusRow(title: "AI: \(preferences.chatModel.name)", detail: "Needed for questions (Mac commands work without it)",
                           ok: modelManager.isDownloaded(preferences.chatModel), fixTitle: "Choose a model") {
-                    appState.openSettings(.assistant)
+                    appState.openSettings(.models)
                 }
             }
         case .dictate:
@@ -273,7 +268,7 @@ private struct GetStartedTab: View {
                             .font(.callout)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
-                            .background(Color.purple.opacity(0.1), in: Capsule())
+                            .background(Duck.assistant.opacity(0.1), in: Capsule())
                     }
                 }
                 if !preferences.assistantEnabled {
@@ -313,7 +308,7 @@ private struct GetStartedTab: View {
                         }
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(Color.mint.opacity(0.1), in: Capsule())
+                        .background(Duck.writing.opacity(0.1), in: Capsule())
                     }
                 }
                 HStack(spacing: 10) {
@@ -383,7 +378,7 @@ private struct WritingPracticeBox: View {
             .background(Color(nsColor: .textBackgroundColor), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .strokeBorder(focused ? Color.mint : Color.primary.opacity(0.15), lineWidth: focused ? 2 : 1)
+                    .strokeBorder(focused ? Duck.writing : Color.primary.opacity(0.15), lineWidth: focused ? 2 : 1)
             )
     }
 }
@@ -488,7 +483,7 @@ private struct HowItWorks: View {
             Text("How the keys work").font(.title2.weight(.semibold))
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 340), spacing: 14, alignment: .top)], spacing: 14) {
                 FlowCard(
-                    color: .blue, title: "Dictation key",
+                    color: Duck.dictation, title: "Dictation key",
                     stages: [
                         FlowStage(symbol: keyName(preferences.hotkey), caption: "Hold"),
                         FlowStage(symbol: "mic.fill", caption: "Speak"),
@@ -497,7 +492,7 @@ private struct HowItWorks: View {
                     ]
                 )
                 FlowCard(
-                    color: .purple, title: "AI key",
+                    color: Duck.assistant, title: "AI key",
                     stages: [
                         FlowStage(symbol: keyName(preferences.assistantHotkey), caption: "Hold"),
                         FlowStage(symbol: "mic.fill", caption: "Ask or command"),
@@ -515,7 +510,7 @@ private struct HowItWorks: View {
                     ]
                 )
                 FlowCard(
-                    color: .mint, title: "Writing tools",
+                    color: Duck.writing, title: "Writing tools",
                     stages: [
                         FlowStage(symbol: writingShortcut(for: "grammar"), caption: "Press in a text field"),
                         FlowStage(symbol: "doc.on.doc", caption: "Text copied"),
@@ -672,7 +667,7 @@ private struct CommandGroupCard: View {
             HStack(spacing: 10) {
                 Image(systemName: group.symbol)
                     .font(.title3)
-                    .foregroundStyle(Color.purple.gradient)
+                    .foregroundStyle(Duck.orange.gradient)
                     .frame(width: 26)
                 Text(group.title).font(.headline)
                 Spacer()
@@ -856,7 +851,7 @@ private enum LearnContent {
     /// `writing` lists the writing tools' current shortcuts: "⌘G fixes grammar, ⌘E writes it as an email…".
     static func topics(dictate: String, ask: String, writing: String) -> [LearnTopic] {
         let dictation = LearnTopic(
-            id: "dictation", title: "Dictation", symbol: "waveform", color: .blue,
+            id: "dictation", title: "Dictation", symbol: "waveform", color: Duck.dictation,
             summary: "Type anywhere just by talking.",
             points: [
                 "Click into any text field, in any app. Hold \(dictate), speak, then let go. Your words are typed at the cursor.",
@@ -868,7 +863,7 @@ private enum LearnContent {
             ],
             linkTitle: "Dictation settings", linkPage: .settings, settingsTab: .dictation)
         let assistant = LearnTopic(
-            id: "assistant", title: "Ask the AI", symbol: "sparkles", color: .purple,
+            id: "assistant", title: "Ask the AI", symbol: "sparkles", color: Duck.assistant,
             summary: "A private AI that answers out loud.",
             points: [
                 "Hold \(ask) and ask anything. Let go and a local AI model answers in the popup, and reads it aloud.",
@@ -879,7 +874,7 @@ private enum LearnContent {
             ],
             linkTitle: "AI settings", linkPage: .settings, settingsTab: .assistant)
         let commands = LearnTopic(
-            id: "commands", title: "Mac commands", symbol: "command", color: .pink,
+            id: "commands", title: "Mac commands", symbol: "command", color: .blue,
             summary: "Tell your Mac what to do with the same AI key.",
             points: [
                 "Open apps, search the web, set timers, change the volume, take screenshots, lock the screen and more.",
@@ -890,28 +885,28 @@ private enum LearnContent {
             ],
             linkTitle: "Mac command settings", linkPage: .settings, settingsTab: .assistant)
         let grammar = LearnTopic(
-            id: "grammar", title: "Writing tools", symbol: "wand.and.stars", color: .mint, isNew: true,
+            id: "grammar", title: "Writing tools", symbol: "wand.and.stars", color: Duck.writing, isNew: true,
             summary: "Fix or rewrite the text in any field with one key.",
             points: [
                 "Click into a text field and press a shortcut: \(writing).",
-                "AK Assistant selects all the text, copies it, rewrites it with the local AI model and pastes the result back. The popup shows which action is running.",
+                "Duck Keyboard selects all the text, copies it, rewrites it with the local AI model and pastes the result back. The popup shows which action is running.",
                 "Change any prompt or shortcut in Settings › Grammar, or add your own actions, like “Translate to Hindi” or “Make it shorter”.",
-                "While an action is on, its shortcut belongs to AK Assistant, so the app's own command (⌘P Print, ⌘R Reload) won't run. Change it or turn the action off if you need it.",
+                "While an action is on, its shortcut belongs to Duck Keyboard, so the app's own command (⌘P Print, ⌘R Reload) won't run. Change it or turn the action off if you need it.",
                 "Your clipboard is put back afterwards, and every rewrite is in History with the before and after.",
                 "Works on up to 8,000 characters at a time. Nothing leaves your Mac.",
             ],
             linkTitle: "Writing tool settings", linkPage: .settings, settingsTab: .grammar)
         let timers = LearnTopic(
-            id: "timers", title: "Timers & reminders", symbol: "timer", color: .orange,
+            id: "timers", title: "Timers & reminders", symbol: "timer", color: .pink,
             summary: "Countdowns, reminders and alarms by voice.",
             points: [
                 "“Set a timer for 25 minutes”, “Remind me in an hour to stretch”, “Remind me at 5 pm to call mom”, “Set an alarm for 7 am”.",
                 "When one goes off you hear a chime, get a notification, and the popup tells you.",
                 "Ask “How much time is left?” or say “Cancel all timers”. Running ones are also in the menu bar.",
-                "Quitting AK Assistant cancels its timers.",
+                "Quitting Duck Keyboard cancels its timers.",
             ])
         let models = LearnTopic(
-            id: "models", title: "Settings & models", symbol: "slider.horizontal.3", color: .teal, isNew: true,
+            id: "models", title: "Settings & models", symbol: "slider.horizontal.3", color: .gray, isNew: true,
             summary: "One page per feature, with its models right there.",
             points: [
                 "Settings has a page for each feature: Dictation, AI Assistant, Meetings, Grammar, General and Permissions.",
@@ -922,7 +917,7 @@ private enum LearnContent {
             ],
             linkTitle: "Open Settings", linkPage: .settings, settingsTab: .dictation)
         let history = LearnTopic(
-            id: "history", title: "History", symbol: "clock.arrow.circlepath", color: .green, isNew: true,
+            id: "history", title: "History", symbol: "clock.arrow.circlepath", color: Duck.orange, isNew: true,
             summary: "Everything you said, asked and rewrote, searchable.",
             points: [
                 "Dictations, AI questions and rewrites are saved on this Mac, grouped by day, each with its own icon.",
@@ -933,7 +928,7 @@ private enum LearnContent {
             ],
             linkTitle: "Open History", linkPage: .history)
         let privacy = LearnTopic(
-            id: "privacy", title: "Privacy", symbol: "lock.shield", color: .indigo,
+            id: "privacy", title: "Privacy", symbol: "lock.shield", color: .green,
             summary: "Nothing you say leaves this Mac.",
             points: [
                 "Every model runs locally. Your voice, questions, meetings and rewritten text are never uploaded.",
@@ -944,7 +939,7 @@ private enum LearnContent {
             id: "background", title: "Always ready", symbol: "menubar.rectangle", color: .gray,
             summary: "Runs quietly in the menu bar.",
             points: [
-                "Closing this window keeps AK Assistant running; the hotkeys keep working.",
+                "Closing this window keeps Duck Keyboard running; the hotkeys keep working.",
                 "The menu bar icon shows status, recent dictations and running timers.",
                 "It can start at login (Settings › General).",
             ],
@@ -971,7 +966,7 @@ private struct FeaturesTab: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("What AK Assistant can do").font(.largeTitle.weight(.bold))
+            Text("What Duck Keyboard can do").font(.largeTitle.weight(.bold))
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 360), spacing: 14, alignment: .top)], alignment: .leading, spacing: 14) {
                 ForEach(LearnContent.topics(dictate: keyName(preferences.hotkey), ask: keyName(preferences.assistantHotkey), writing: writingSummary(preferences.textActions))) { topic in
                     FeatureCard(topic: topic)
@@ -1050,36 +1045,36 @@ private struct HelpItem: Identifiable {
 
     static let all: [HelpItem] = [
         HelpItem(question: "⌘P doesn't print (or ⌘R doesn't reload) any more",
-                 answer: "A writing tool is using that shortcut, and while it's on it works only for AK Assistant. Record a different shortcut for it, like ⌃⌥P, or turn that action off in Settings › Grammar.",
+                 answer: "A writing tool is using that shortcut, and while it's on it works only for Duck Keyboard. Record a different shortcut for it, like ⌃⌥P, or turn that action off in Settings › Grammar.",
                  fixTitle: "Open Settings", fix: .settings(.grammar)),
         HelpItem(question: "A writing tool says “No text found”",
                  answer: "Click inside the text field first so the cursor is in it, then press the shortcut. Empty fields, password fields and apps with Secure Keyboard Entry can't be read. Accessibility must be allowed too.",
                  fixTitle: "Open Accessibility", fix: .accessibility),
         HelpItem(question: "The rewrite isn't what I wanted",
-                 answer: "Each action follows its prompt. Make the prompt more specific in Settings › Grammar (for example “Keep it under 3 sentences” or “Use British spelling”), or pick a bigger AI model on the same page. Most apps let you undo a rewrite with ⌘Z.",
+                 answer: "Each action follows its prompt. Make the prompt more specific in Settings › Grammar (for example “Keep it under 3 sentences” or “Use British spelling”), or pick a bigger AI model for writing tools in Settings › Models. Most apps let you undo a rewrite with ⌘Z.",
                  fixTitle: "Open Settings", fix: .settings(.grammar)),
         HelpItem(question: "My words don't appear in the app I'm typing in",
-                 answer: "Check Accessibility above. macOS gives permissions to one specific copy of the app, so after rebuilding or moving it, remove AK Assistant in System Settings › Privacy & Security › Accessibility with –, then add this copy with +. In password fields, and in Terminal with Secure Keyboard Entry, typing is blocked: the text is on your clipboard, press ⌘V.",
+                 answer: "Check Accessibility above. macOS gives permissions to one specific copy of the app, so after rebuilding or moving it, remove Duck Keyboard in System Settings › Privacy & Security › Accessibility with –, then add this copy with +. In password fields, and in Terminal with Secure Keyboard Entry, typing is blocked: the text is on your clipboard, press ⌘V.",
                  fixTitle: "Open Accessibility", fix: .accessibility),
         HelpItem(question: "Nothing happens when I hold the key",
                  answer: "The hotkey only works with Accessibility allowed. Also check the key in Settings: if another app uses the same key, pick a different one. With Fn, set System Settings › Keyboard › “Press 🌐 key to” to “Do Nothing”.",
                  fixTitle: "Open Settings", fix: .settings(.dictation)),
         HelpItem(question: "It heard me wrong",
-                 answer: "Speak a little closer to the mic, set your language in Settings › Dictation instead of auto-detect, or switch to a larger speech model there.",
+                 answer: "Speak a little closer to the mic, set your language in Settings › Dictation instead of auto-detect, or switch to a larger speech model in Settings › Models.",
                  fixTitle: "Open Settings", fix: .settings(.dictation)),
         HelpItem(question: "“Open …” opened the wrong app, or couldn't find it",
                  answer: "Say the app's name as it appears in your Applications folder (“Visual Studio Code”, “Google Chrome”). Common short names like “VS Code” and “Chrome” work too. If it isn't found, the popup suggests close matches."),
         HelpItem(question: "Dark mode or Empty Trash says macOS blocked it",
-                 answer: "These control System Events and Finder. The first time, macOS asks: click OK. If you clicked Don't Allow, turn AK Assistant back on in System Settings › Privacy & Security › Automation.",
+                 answer: "These control System Events and Finder. The first time, macOS asks: click OK. If you clicked Don't Allow, turn Duck Keyboard back on in System Settings › Privacy & Security › Automation.",
                  fixTitle: "Open Automation", fix: .automation),
         HelpItem(question: "I didn't get a notification when my timer finished",
-                 answer: "Allow notifications for AK Assistant. You'll still hear the chime and see the popup either way.",
+                 answer: "Allow notifications for Duck Keyboard. You'll still hear the chime and see the popup either way.",
                  fixTitle: "Open Notifications", fix: .notifications),
         HelpItem(question: "My meeting only has my voice, not the other people",
-                 answer: "Recording the Mac's audio needs Screen & System Audio Recording. Allow AK Assistant in System Settings › Privacy & Security › Screen & System Audio Recording, then quit and reopen AK Assistant. Check Settings › Meetings › Also record the Mac's audio is on.",
+                 answer: "Recording the Mac's audio needs Screen & System Audio Recording. Allow Duck Keyboard in System Settings › Privacy & Security › Screen & System Audio Recording, then quit and reopen Duck Keyboard. Check Settings › Meetings › Also record the Mac's audio is on.",
                  fixTitle: "Open Settings", fix: .settings(.meetings)),
         HelpItem(question: "The AI is slow the first time",
-                 answer: "The model loads into memory once (a few seconds), then stays ready. On 8 GB Macs pick a smaller AI model in Settings › AI Assistant.",
+                 answer: "The model loads into memory once (a few seconds), then stays ready. On 8 GB Macs pick a smaller AI model in Settings › Models.",
                  fixTitle: "Open Settings", fix: .settings(.assistant)),
         HelpItem(question: "I don't want risky commands to run straight away",
                  answer: "Turn on Settings › AI Assistant › Ask before risky actions. Quitting apps, locking, sleeping, emptying the Trash and similar actions then wait for Run, or for you to say “yes”.",
@@ -1280,7 +1275,7 @@ private struct ResultSection<Content: View>: View {
 
 // MARK: - Shared pieces
 
-private let learnCardShape = RoundedRectangle(cornerRadius: 14, style: .continuous)
+private let learnCardShape = Duck.cardShape
 
 /// A writing tool's current shortcut for a keycap ("⌘G"), or "no shortcut".
 @MainActor
@@ -1310,7 +1305,7 @@ private func keyName(_ choice: HotkeyChoice) -> String {
     }
 }
 
-/// A key drawn like a keyboard key.
+/// A key drawn like the keys in the app icon.
 private struct KeyCap: View {
     let name: String
     var compact = false
@@ -1321,18 +1316,7 @@ private struct KeyCap: View {
     }
 
     var body: some View {
-        Text(name)
-            .font((compact ? Font.callout : Font.title3).weight(.semibold))
-            .foregroundStyle(.primary)
-            .padding(.horizontal, compact ? 8 : 12)
-            .padding(.vertical, compact ? 3 : 6)
-            .background(
-                RoundedRectangle(cornerRadius: 7, style: .continuous)
-                    .fill(Color(nsColor: .controlBackgroundColor))
-                    .shadow(color: .black.opacity(0.25), radius: 0, x: 0, y: 1.5)
-            )
-            .overlay(RoundedRectangle(cornerRadius: 7, style: .continuous).strokeBorder(Color.primary.opacity(0.18)))
-            .fixedSize()
+        DuckKeycap(name, size: compact ? .regular : .large)
     }
 }
 
@@ -1408,7 +1392,7 @@ private struct TipCard: View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: symbol)
                 .font(.title2)
-                .foregroundStyle(Color.purple.gradient)
+                .foregroundStyle(Duck.orange.gradient)
             VStack(alignment: .leading, spacing: 3) {
                 Text(title).font(.headline)
                 Text(text).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
@@ -1416,7 +1400,7 @@ private struct TipCard: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.purple.opacity(0.07), in: learnCardShape)
+        .background(Duck.orange.opacity(0.07), in: learnCardShape)
     }
 }
 
@@ -1427,7 +1411,7 @@ private struct NewBadge: View {
             .foregroundStyle(.white)
             .padding(.horizontal, 6)
             .padding(.vertical, 2)
-            .background(Color.pink.gradient, in: Capsule())
+            .background(Duck.orange.gradient, in: Capsule())
     }
 }
 

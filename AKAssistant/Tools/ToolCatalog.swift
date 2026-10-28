@@ -4,7 +4,7 @@ import Foundation
 struct ToolExample: Identifiable, Hashable {
     let phrase: String
     /// Learn shows a "Try" button for safe examples. Risky ones and ones that act on the
-    /// window in front (which would be AK Assistant itself) are say-only.
+    /// window in front (which would be Duck Keyboard itself) are say-only.
     var tryable = true
     var id: String { phrase }
 }
@@ -111,7 +111,7 @@ enum ToolCatalog {
                 ToolExample(phrase: "How much time is left"),
                 ToolExample(phrase: "Cancel all timers"),
             ],
-            note: "Timers live inside AK Assistant: quitting the app cancels them. Running ones are listed in the menu bar."
+            note: "Timers live inside Duck Keyboard: quitting the app cancels them. Running ones are listed in the menu bar."
         ),
         ToolGroup(
             id: "info", title: "Quick info", symbol: "info.circle",
@@ -158,7 +158,7 @@ enum ToolCatalog {
         Besides answering questions, I can work your Mac. Open or quit apps, open websites and search the web, \
         find files, set timers and reminders, change the volume, brightness and dark mode, control music, \
         take screenshots, lock or sleep your Mac, and tell you the time, your battery or free space. \
-        Try “open Xcode” or “set a timer for 10 minutes”. The Learn section in AK Assistant lists everything.
+        Try “open Xcode” or “set a timer for 10 minutes”. The Learn section in Duck Keyboard lists everything.
         """
 
     /// Command phrases the AI model may hand back with "ACTION:" when you phrase something unusually.

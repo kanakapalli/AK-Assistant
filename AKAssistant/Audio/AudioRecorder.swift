@@ -91,7 +91,7 @@ final class AudioRecorder {
             } catch {
                 // Some devices (or a device switching right now) can't do voice processing:
                 // record the plain microphone rather than nothing.
-                NSLog("AK Assistant: echo cancellation unavailable (\(error.localizedDescription)); using the plain microphone")
+                NSLog("Duck Keyboard: echo cancellation unavailable (\(error.localizedDescription)); using the plain microphone")
                 rebuildEngine()
             }
         }

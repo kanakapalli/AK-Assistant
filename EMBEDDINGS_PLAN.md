@@ -1,8 +1,8 @@
-# AK Assistant — Smart Search & Memory: Implementation Plan
+# Duck Keyboard — Smart Search & Memory: Implementation Plan
 
 **Feature set:** on-device text embeddings (EmbeddingGemma 2) powering search, “ask your meetings”, multilingual commands and personal memory.
 **Status:** Phase 0 and Phase 1 implemented (not yet built) · **Written:** 9 Oct 2026 · **Owner:** Anurag
-**Applies to:** AK Assistant 0.1.0 (Swift 5 mode, macOS 15+, mlx-swift-lm 3.31.4 / mlx-swift 0.31.6, FluidAudio 0.17.4)
+**Applies to:** Duck Keyboard 0.1.0 (Swift 5 mode, macOS 15+, mlx-swift-lm 3.31.4 / mlx-swift 0.31.6, FluidAudio 0.17.4)
 
 ---
 
@@ -17,7 +17,7 @@
 
 ## 1. Goal
 
-Give AK Assistant a private, on-device “memory” of everything it has heard and written, so it can:
+Give Duck Keyboard a private, on-device “memory” of everything it has heard and written, so it can:
 
 - find things by **meaning**, not exact words (meetings, history, notes, files);
 - **answer questions** about past meetings and notes with sources;
@@ -374,4 +374,4 @@ Ship after each phase; every phase is useful on its own.
 - MLX conversions: https://huggingface.co/mlx-community/embeddinggemma-2-4bit (also 5-bit, 6-bit)
 - EmbeddingGemma 2 on MLX Swift: https://github.com/Obscyra-app/EmbeddingGemma2Swift
 - `MLXEmbedders` (EmbeddingGemma v1 support) in mlx-swift-lm: https://github.com/ml-explore/mlx-swift-lm/tree/main/Libraries/MLXEmbedders
-- Current architecture: `docs/index.html` (AK Assistant Handbook)
+- Current architecture: `docs/index.html` (Duck Keyboard Handbook)

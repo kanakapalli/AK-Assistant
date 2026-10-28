@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="docs/assets/icon.png" width="128" height="128" alt="AK Assistant icon">
+<img src="docs/assets/icon.png" width="128" height="128" alt="Duck Keyboard icon">
 
-# AK Assistant
+# Duck Keyboard
 
 **Hold a key. Talk. It's typed.**
 
@@ -56,7 +56,7 @@ Every key can be changed in **Settings**.
 - Summary, key points, decisions and a to-do list written by the local AI. Play the audio from any line or export as Markdown.
 
 ### ✍️ Writing tools
-- Click into a text field and press a shortcut. AK Assistant selects the text, copies it, rewrites it with the local AI and pastes it back.
+- Click into a text field and press a shortcut. Duck Keyboard selects the text, copies it, rewrites it with the local AI and pastes it back.
 
   | Action | Shortcut | Default prompt |
   | --- | --- | --- |
@@ -67,7 +67,7 @@ Every key can be changed in **Settings**.
   | Your own | any | Add as many as you like, e.g. "Translate to Hindi" |
 
 - Every prompt and shortcut is editable in **Settings › Grammar**.
-- While an action is on, its shortcut belongs to AK Assistant (⌘P won't print). Change it or switch the action off if you need it.
+- While an action is on, its shortcut belongs to Duck Keyboard (⌘P won't print). Change it or switch the action off if you need it.
 
 ### 🕘 History, search and Learn
 - Dictations, AI questions and rewrites are saved on your Mac, grouped by day, with before/after for rewrites. Search, filter, copy or export as CSV or text.
@@ -86,8 +86,8 @@ Speech-to-text, the AI, the voice, meeting notes, rewrites and search all run on
 
 ## Install
 
-1. Download the latest **AK-Assistant-x.y.z.dmg** from [Releases](https://github.com/kanakapalli/AK-Assistant/releases/latest).
-2. Drag **AK Assistant** into Applications and open it.
+1. Download the latest **Duck-Keyboard-x.y.z.dmg** from [Releases](https://github.com/kanakapalli/AK-Assistant/releases/latest).
+2. Drag **Duck Keyboard** into Applications and open it.
 3. The first time, macOS blocks it because it isn't notarized: open **System Settings › Privacy & Security** and click **Open Anyway**.
 4. Follow onboarding: allow the Microphone and Accessibility, pick your keys and download a speech model.
 
@@ -154,11 +154,11 @@ open AKAssistant.xcodeproj
 To make a DMG to share:
 
 ```bash
-./make-dmg.sh                    # → dist/AK-Assistant-<version>.dmg
+./make-dmg.sh                    # → dist/Duck-Keyboard-<version>.dmg
 NOTARY_PROFILE=ak ./make-dmg.sh  # also notarize (needs a Developer ID certificate)
 ```
 
-> **Accessibility after rebuilds:** macOS ties the permission to the app's signature. If the hotkey stops working after a rebuild, remove AK Assistant from System Settings › Privacy & Security › Accessibility and add it again.
+> **Accessibility after rebuilds:** macOS ties the permission to the app's signature. If the hotkey stops working after a rebuild, remove Duck Keyboard from System Settings › Privacy & Security › Accessibility and add it again.
 
 <details>
 <summary><b>How it works</b></summary>

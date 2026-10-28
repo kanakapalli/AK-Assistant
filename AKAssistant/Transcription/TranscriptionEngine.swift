@@ -35,13 +35,22 @@ enum TranscriptionError: LocalizedError {
 final class WhisperKitEngine: TranscriptionEngine {
     private let pipe: WhisperKit
 
-    /// - Parameter useNeuralEngine: false runs on the GPU, which loads in seconds and is fast on Apple Silicon.
-    ///   true uses the Neural Engine: lower power, but the first load compiles ("specializes") the model for this
+    /// For the log: where Core ML was asked to run the model.
+    static func describe(_ units: MLComputeUnits) -> String {
+        switch units {
+        case .cpuOnly: return "CPU"
+        case .cpuAndNeuralEngine: return "Neural Engine"
+        default: return "GPU"
+        }
+    }
+
+    /// - Parameter computeUnits: `.cpuAndGPU` loads in seconds and is fast on Apple Silicon.
+    ///   `.cpuAndNeuralEngine` uses less power, but the first load compiles ("specializes") the model for this
     ///   Mac, which can take many minutes for the large models. macOS caches that result, so later loads are quick.
-    init(modelFolder: URL, useNeuralEngine: Bool) async throws {
-        let units: MLComputeUnits = useNeuralEngine ? .cpuAndNeuralEngine : .cpuAndGPU
+    ///   `.cpuOnly` keeps the GPU and Neural Engine free and is the slowest.
+    init(modelFolder: URL, computeUnits units: MLComputeUnits) async throws {
         let compute = ModelComputeOptions(
-            melCompute: .cpuAndGPU,
+            melCompute: units == .cpuOnly ? .cpuOnly : .cpuAndGPU,
             audioEncoderCompute: units,
             textDecoderCompute: units
         )
@@ -56,7 +65,7 @@ final class WhisperKitEngine: TranscriptionEngine {
             download: false
         )
         let log = Logger(subsystem: "com.natfirst.akassistant", category: "Transcription")
-        log.info("WhisperKit: loading model on \(useNeuralEngine ? "Neural Engine" : "GPU", privacy: .public) from \(modelFolder.path, privacy: .public)")
+        log.info("WhisperKit: loading model on \(Self.describe(units), privacy: .public) from \(modelFolder.path, privacy: .public)")
         let started = Date()
         pipe = try await WhisperKit(config)
         log.info("WhisperKit: model ready in \(Date().timeIntervalSince(started), format: .fixed(precision: 1))s")
@@ -94,12 +103,11 @@ final class ParakeetEngine: TranscriptionEngine {
         }
     }
 
-    /// - Parameter useNeuralEngine: false (default) runs every part of the model on the GPU.
-    init(version: AsrModelVersion, useNeuralEngine: Bool) async throws {
+    /// - Parameter computeUnits: where every part of the model runs (GPU, Neural Engine or CPU).
+    init(version: AsrModelVersion, computeUnits units: MLComputeUnits) async throws {
         self.version = version
         let log = Logger(subsystem: "com.natfirst.akassistant", category: "Transcription")
         let started = Date()
-        let units: MLComputeUnits = useNeuralEngine ? .cpuAndNeuralEngine : .cpuAndGPU
         let configuration = MLModelConfiguration()
         configuration.computeUnits = units
         let folder = AsrModels.defaultCacheDirectory(for: version)
@@ -107,7 +115,7 @@ final class ParakeetEngine: TranscriptionEngine {
         let models = AsrModels.modelsExist(at: folder, version: version)
             ? try await AsrModels.load(from: folder, configuration: configuration, version: version, encoderComputeUnits: units)
             : try await AsrModels.downloadAndLoad(configuration: configuration, version: version, encoderComputeUnits: units)
-        log.info("Parakeet: loading on \(useNeuralEngine ? "Neural Engine" : "GPU", privacy: .public)")
+        log.info("Parakeet: loading on \(WhisperKitEngine.describe(units), privacy: .public)")
         manager = AsrManager(config: .default)
         try await manager.loadModels(models)
         log.info("Parakeet: model ready in \(Date().timeIntervalSince(started), format: .fixed(precision: 1))s")

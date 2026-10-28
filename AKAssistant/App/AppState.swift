@@ -90,6 +90,8 @@ final class AppState {
     var sidebarSelection: SidebarItem? = .history
     /// Which page Settings shows (Learn and Meetings open it on the matching page).
     var settingsTab: SettingsTab = .dictation
+    /// A feature to scroll to and highlight when Settings › Models opens (from a "Change…" link).
+    var modelsFocus: ModelFeature?
     /// Timers and reminders set by voice.
     var timers: TimerCenter { commands.timers }
     /// The last Mac command that ran, with when (Learn's "Get started" checks this off).
@@ -134,9 +136,9 @@ final class AppState {
 
     private init() {
         do {
-            // Meetings live in their own file inside AK Assistant's folder. SwiftData's default file
+            // Meetings live in their own file inside Duck Keyboard's folder. SwiftData's default file
             // (~/Library/Application Support/default.store) is shared by every non-sandboxed app that
-            // uses the defaults, including older AK Assistant copies: one without meetings migrates the
+            // uses the defaults, including older Duck Keyboard copies: one without meetings migrates the
             // file back to its own layout and the meetings table is dropped.
             // History stays in the default file so existing dictations are kept.
             Self.moveMeetingsToOwnStore()
@@ -211,15 +213,15 @@ final class AppState {
         watchIslandAutoClose()
 
         if preferences.onboarded {
-            flash(.done("AK Assistant is ready"))   // quiet launch: a brief sign it's running
+            flash(.done("Duck Keyboard is ready"))   // quiet launch: a brief sign it's running
         }
         // Two copies (e.g. an older one in Applications that starts at login) both react to the
         // same keys and fight over the microphone.
         if !Self.otherCopiesRunning.isEmpty {
-            log.error("Another copy of AK Assistant is running: \(Self.otherCopiesRunning.map(\.path).joined(separator: ", "), privacy: .public)")
+            log.error("Another copy of Duck Keyboard is running: \(Self.otherCopiesRunning.map(\.path).joined(separator: ", "), privacy: .public)")
             Task { @MainActor [weak self] in
                 try? await Task.sleep(for: .seconds(1.5))
-                self?.flash(.error("Another copy of AK Assistant is running · quit it"))
+                self?.flash(.error("Another copy of Duck Keyboard is running · quit it"))
             }
         }
 
@@ -382,7 +384,7 @@ final class AppState {
         meetings.stop()
     }
 
-    /// Copies of AK Assistant other than this one that are running right now.
+    /// Copies of Duck Keyboard other than this one that are running right now.
     static var otherCopiesRunning: [URL] {
         guard let id = Bundle.main.bundleIdentifier else { return [] }
         let me = ProcessInfo.processInfo.processIdentifier
@@ -676,7 +678,7 @@ final class AppState {
                 }
             } catch {
                 flash(.error("Transcription failed"))
-                NSLog("AK Assistant transcription error: \(error)")
+                NSLog("Duck Keyboard transcription error: \(error)")
             }
         }
     }
@@ -753,7 +755,9 @@ final class AppState {
             flash(.error("“\(action.title)” has no prompt · add one in Settings › Grammar"))
             return
         }
-        let chat = preferences.chatModel
+        // The writing-tools model picked in Settings › Models if it's downloaded, else the assistant's.
+        let chat = preferences.writingModel.flatMap { modelManager.isDownloaded($0) ? $0 : nil }
+            ?? preferences.chatModel
         guard modelManager.isDownloaded(chat) else {
             flash(.error("Download \(chat.name) to use writing tools"))
             return
@@ -794,7 +798,7 @@ final class AppState {
             flash(.error("That isn't text · click into a text field first"))
             return
         case .noPermission:
-            flash(.error("Allow Accessibility for AK Assistant to use writing tools"))
+            flash(.error("Allow Accessibility for Duck Keyboard to use writing tools"))
             return
         case .secureInput:
             flash(.error("Can't read this field (secure input is on)"))
@@ -1085,7 +1089,7 @@ final class AppState {
                         perform(command, question: question, duration: duration, fallBackToAI: false)
                     } else {
                         reply?.isStreaming = false
-                        reply?.error = "I can't do that on this Mac yet. Open AK Assistant › Learn to see what I can do."
+                        reply?.error = "I can't do that on this Mac yet. Open Duck Keyboard › Learn to see what I can do."
                         if !style.shows { flash(.error("Can't do that yet")) }
                     }
                     return
@@ -1115,7 +1119,7 @@ final class AppState {
                 reply?.isStreaming = false
                 reply?.error = "The AI couldn't answer: \(error.localizedDescription)"
                 if !style.shows { flash(.error("AI error")) }
-                NSLog("AK Assistant AI error: \(error)")
+                NSLog("Duck Keyboard AI error: \(error)")
             }
         }
     }
@@ -1125,7 +1129,7 @@ final class AppState {
         let voiceModel = preferences.voiceModel
         guard let folder = modelManager.localFolder(for: voiceModel) else {
             if reply != nil, reply?.error == nil {
-                reply?.error = "Download a voice in Settings › AI Assistant to hear answers aloud."
+                reply?.error = "Download a voice in Settings › Models to hear answers aloud."
             }
             return false
         }
@@ -1329,9 +1333,9 @@ final class AppState {
             let target = ModelContext(try ModelContainer(for: Meeting.self, configurations: config))
             for meeting in meetings { target.insert(meeting.detachedCopy()) }
             try target.save()
-            NSLog("AK Assistant: moved %d meetings to their own store", meetings.count)
+            NSLog("Duck Keyboard: moved %d meetings to their own store", meetings.count)
         } catch {
-            NSLog("AK Assistant: moving meetings to their own store failed: \(error)")
+            NSLog("Duck Keyboard: moving meetings to their own store failed: \(error)")
         }
     }
 

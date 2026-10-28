@@ -120,7 +120,7 @@ final class MeetingRecorder {
                     systemActive = true
                 }
             } catch {
-                systemAudioError = "Only your microphone was recorded. Allow AK Assistant in System Settings › Privacy & Security › Screen & System Audio Recording to also record the other people."
+                systemAudioError = "Only your microphone was recorded. Allow Duck Keyboard in System Settings › Privacy & Security › Screen & System Audio Recording to also record the other people."
                 log.error("System audio capture failed: \(error.localizedDescription, privacy: .public)")
             }
         }
@@ -360,7 +360,7 @@ final class MonoResampler {
 
 // MARK: - The Mac's own audio
 
-/// Captures everything the Mac plays (except AK Assistant itself) with ScreenCaptureKit.
+/// Captures everything the Mac plays (except Duck Keyboard itself) with ScreenCaptureKit.
 /// Needs the "Screen & System Audio Recording" permission; macOS asks the first time.
 final class SystemAudioCapture: NSObject, SCStreamOutput, SCStreamDelegate {
     /// Sample-handler queue. 16 kHz mono audio.
@@ -380,7 +380,7 @@ final class SystemAudioCapture: NSObject, SCStreamOutput, SCStreamDelegate {
 
         let configuration = SCStreamConfiguration()
         configuration.capturesAudio = true
-        configuration.excludesCurrentProcessAudio = true   // don't record AK Assistant's own voice
+        configuration.excludesCurrentProcessAudio = true   // don't record Duck Keyboard's own voice
         configuration.sampleRate = 48_000
         configuration.channelCount = 2
         // ScreenCaptureKit always captures video too; keep it as small and slow as possible.

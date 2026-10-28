@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Duck Keyboard</title>
+<meta name="description" content="Hold a key, talk, and it's typed. Duck Keyboard is a private voice assistant for the Mac: dictation, a local AI, meetings and writing tools, all on-device.">
+<meta property="og:title" content="Duck Keyboard">
+<meta property="og:description" content="Hold a key, talk, and it's typed. A private voice assistant for the Mac: dictation, a local AI, meetings and writing tools, all on-device.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#6440ec">
+<link rel="icon" type="image/png" href="assets/icon.png">
+<link rel="apple-touch-icon" href="assets/icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+
+</head>
+<body>
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top"><img src="assets/icon.png" alt="">Duck Keyboard</a>
+    <nav class="nav-links" aria-label="Sections">
+      <a href="#keys">Keys</a>
+      <a href="#writing">Writing tools</a>
+      <a href="#meetings">Meetings</a>
+      <a href="#privacy">Privacy</a>
+      <a href="https://github.com/kanakapalli/AK-Assistant">GitHub</a>
+    </nav>
+    <a class="btn btn-primary" href="https://github.com/kanakapalli/AK-Assistant/releases/latest">Download</a>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow">Private voice assistant for the Mac</p>
+        <h1 style="margin-top:16px">Hold a key. Talk. It's typed.<span class="caret" aria-hidden="true"></span></h1>
+        <p class="lede">Duck Keyboard turns your voice into text in any app, answers questions, runs your Mac, takes meeting notes and rewrites what you've written. Every model runs on your Mac, so nothing you say is uploaded.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="https://github.com/kanakapalli/AK-Assistant/releases/latest">Download for Mac</a>
+          <a class="btn btn-ghost" href="https://github.com/kanakapalli/AK-Assistant">View the source</a>
+        </div>
+        <p class="hero-meta">Apple silicon · macOS 15 or later · runs offline</p>
+      </div>
+
+      <div class="stage" aria-label="Example: dictating a Slack message">
+        <div class="menubar"><span>Slack</span><span>10:42</span></div>
+        <div class="island" id="island">
+          <div class="island-row">
+            <span class="dot" id="islandDot"></span>
+            <span class="bars" id="islandBars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="island-label" id="islandLabel">Listening…</span>
+            <span class="island-time" id="islandTime">0:03</span>
+          </div>
+          <p class="island-text" id="islandText">can you push the release notes to the channel before the standup</p>
+        </div>
+        <div class="hold"><span>Holding</span><span class="kbd">right ⌥</span></div>
+        <div class="doc">
+          <div class="doc-head"><i></i><i></i><i></i></div>
+          <div class="doc-to"># product-launch</div>
+          <p class="doc-body"><span class="typed" id="typed">Can you push the release notes to the channel before the standup?</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="keys">
+    <div class="wrap keys">
+      <p class="eyebrow">Four ways in</p>
+      <h2 style="margin-top:12px">Everything starts from the keyboard</h2>
+      <div class="key-grid">
+        <article class="key-card">
+          <span class="tag t-dictate">Dictate</span>
+          <div class="combo"><span class="kbd">right ⌥</span><small>hold</small></div>
+          <h3>Speak into any app</h3>
+          <p>Hold, talk, let go. Your words are typed at the cursor in Slack, Mail, Xcode, the browser, anywhere.</p>
+        </article>
+        <article class="key-card">
+          <span class="tag t-ai">Ask</span>
+          <div class="combo"><span class="kbd">right ⌘</span><small>hold</small></div>
+          <h3>Ask the local AI</h3>
+          <p>Ask a question and the answer appears in the popup and is read aloud. Or tell your Mac what to do.</p>
+        </article>
+        <article class="key-card">
+          <span class="tag t-meet">Meet</span>
+          <div class="combo"><span class="kbd">⌥</span><span class="kbd">⌥</span><small>double-tap</small></div>
+          <h3>Record a meeting</h3>
+          <p>Get the transcript with who said what, a summary, decisions and a to-do list when it ends.</p>
+        </article>
+        <article class="key-card">
+          <span class="tag t-write">Rewrite</span>
+          <div class="combo"><span class="kbd">⌘G</span><span class="kbd">⌘E</span><span class="kbd">⌘P</span><span class="kbd">⌘R</span></div>
+          <h3>Fix or rewrite text</h3>
+          <p>Fix grammar, turn a note into an email, make it professional, or add your own actions with your own prompts.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <section class="feature" id="dictation">
+      <div>
+        <p class="eyebrow">Dictation</p>
+        <h2>Faster than typing, and it fixes the ums</h2>
+        <p class="lede">Words appear in the popup as you speak. When you let go, the final text is pasted where your cursor is, and your clipboard is put back.</p>
+        <ul class="points">
+          <li>Parakeet models on the Neural Engine add punctuation and capitals for you</li>
+          <li>25 languages, plus Whisper for Hindi, Telugu, Tamil and 90+ more</li>
+          <li>Filler words like “um” and “uh” are removed</li>
+          <li>Your speakers are muted while you talk, so videos and calls don't end up in the text</li>
+          <li>Every dictation is saved in a searchable History on your Mac</li>
+        </ul>
+      </div>
+      <div class="panel" aria-label="Example history entries">
+        <div class="qa">
+          <div class="a"><span class="who" style="color:var(--dictate)">Dictation · Mail</span>Hi Priya, thanks for the quick turnaround. The numbers look right to me, so let's send it to finance today.</div>
+          <div class="a"><span class="who" style="color:var(--dictate)">Dictation · Xcode</span>TODO: retry the download once if the first attempt times out.</div>
+          <div class="a"><span class="who" style="color:var(--dictate)">Dictation · Notes</span>Groceries for Sunday: tomatoes, curd, coriander, two packets of idli rava.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="feature flip" id="assistant">
+      <div>
+        <p class="eyebrow">AI assistant</p>
+        <h2>A private AI that answers out loud and runs your Mac</h2>
+        <p class="lede">Hold the AI key and ask anything. A chat model on your Mac answers in a few seconds and a natural voice reads it out. Follow-up questions keep the context.</p>
+        <div class="chips" aria-label="Things you can say">
+          <span class="chip">open Xcode</span>
+          <span class="chip">set a timer for 25 minutes</span>
+          <span class="chip">remind me at 5 pm to call mom</span>
+          <span class="chip">volume 30</span>
+          <span class="chip">search YouTube for lofi</span>
+          <span class="chip">what's my battery?</span>
+          <span class="chip">xcode kholo</span>
+        </div>
+        <ul class="points">
+          <li>Common commands run instantly, even before the AI model loads</li>
+          <li>Say it any way, in any language: the model works out which command you mean</li>
+          <li>Risky actions like quitting apps or shutting down can ask before running</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <div class="qa">
+          <div class="q">What's a good way to say no to a meeting politely?</div>
+          <div class="a"><span class="who">Duck Keyboard</span>Thank them, say you can't make it, and offer something useful instead: “Thanks for including me. I can't join this one, but I'll read the notes and reply by tomorrow.”</div>
+          <div class="q">open Calendar</div>
+          <div class="a"><span class="who">Mac command</span>Opened Calendar.</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="band" id="writing">
+    <div class="wrap feature">
+      <div>
+        <p class="eyebrow">Writing tools</p>
+        <h2>Select nothing. Press a key. It's rewritten.</h2>
+        <p class="lede">Click into a text field and press a shortcut. Duck Keyboard copies the text, rewrites it with the local AI and pastes the result back in place.</p>
+        <ul class="points">
+          <li>Four built in: fix grammar, write as email, professional, and rude</li>
+          <li>Every prompt and shortcut can be changed</li>
+          <li>Add your own actions, like “Translate to Hindi” or “Make it shorter”</li>
+          <li>Before and after are kept in History</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <div class="tabs" role="tablist" aria-label="Writing tools">
+          <button class="tab" role="tab" id="tab-grammar" aria-selected="true" data-k="grammar">Fix grammar <span class="kbd">⌘G</span></button>
+          <button class="tab" role="tab" id="tab-email" aria-selected="false" data-k="email">Email <span class="kbd">⌘E</span></button>
+          <button class="tab" role="tab" id="tab-pro" aria-selected="false" data-k="pro">Professional <span class="kbd">⌘P</span></button>
+          <button class="tab" role="tab" id="tab-rude" aria-selected="false" data-k="rude">Rude <span class="kbd">⌘R</span></button>
+        </div>
+        <div class="rewrite" role="tabpanel" aria-live="polite">
+          <span class="label">Before</span>
+          <p class="before">hey can u send me the report by friday, need it for the client meeting thx</p>
+          <span class="label">After</span>
+          <p class="after" id="after">Hey, can you send me the report by Friday? I need it for the client meeting. Thanks!</p>
+        </div>
+        <p class="example-note">Example output. Results depend on the AI model you pick.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <section class="feature" id="meetings">
+      <div>
+        <p class="eyebrow">Meetings</p>
+        <h2>Notes, to-dos and who said what</h2>
+        <p class="lede">Double-tap the dictation key when a call starts. Your mic and the Mac's audio are recorded, even with headphones on, so Zoom, Meet and Teams calls are covered.</p>
+        <ul class="points">
+          <li>Background noise and speaker echo are reduced</li>
+          <li>Speakers are labelled; name them once and the notes update</li>
+          <li>Summary, key points, decisions and to-dos written by the local AI</li>
+          <li>Play the audio from any line, or export everything as Markdown</li>
+        </ul>
+      </div>
+      <div class="panel" aria-label="Example meeting">
+        <div class="meet-head"><span class="rec">Meeting</span><strong>Launch sync</strong><span>24:18</span></div>
+        <div class="lines">
+          <div><b class="you">You</b><span>Can we move the beta to Thursday so QA has two full days?</span></div>
+          <div><b>Ravi</b><span>Thursday works. I'll update the release checklist tonight.</span></div>
+          <div><b>Meera</b><span>Then I'll send the invite list to support by Wednesday.</span></div>
+        </div>
+        <div class="todo">
+          <h4>To-dos</h4>
+          <label><input type="checkbox" id="todo1" checked> Move beta to Thursday · You</label>
+          <label><input type="checkbox" id="todo2"> Update the release checklist · Ravi</label>
+          <label><input type="checkbox" id="todo3"> Send the invite list to support · Meera</label>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="band" id="privacy">
+    <div class="wrap privacy">
+      <div class="privacy-grid">
+        <div>
+          <p class="eyebrow">Privacy</p>
+          <h2 style="margin-top:12px">Nothing you say leaves this Mac</h2>
+          <p class="lede" style="margin-top:18px">Speech-to-text, the AI, the voice, meeting notes and search all run on your Mac's Neural Engine and GPU. There's no account, no server and no subscription.</p>
+        </div>
+        <div class="net" aria-label="What uses the internet">
+          <div><span>Your voice and recordings</span><span class="no">stays on Mac</span></div>
+          <div><span>Questions and AI answers</span><span class="no">stays on Mac</span></div>
+          <div><span>Meeting transcripts and notes</span><span class="no">stays on Mac</span></div>
+          <div><span>Text you rewrite</span><span class="no">stays on Mac</span></div>
+          <div><span>Downloading models from Hugging Face</span><span class="yes">uses internet</span></div>
+          <div><span>Websites and searches you ask to open</span><span class="yes">uses internet</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <section class="models" id="models">
+      <p class="eyebrow">Open-source models</p>
+      <h2 style="margin-top:12px">Pick the models that suit your Mac</h2>
+      <p class="lede" style="margin-top:14px">Download, switch and delete them in Settings, next to the feature that uses them. Smaller ones work well on 8 GB Macs.</p>
+      <div class="model-cols">
+        <div class="model-col">
+          <h3>Speech to text</h3>
+          <p>For dictation, questions and meetings</p>
+          <ul>
+            <li><span>Parakeet Ultra</span><span>~650 MB</span></li>
+            <li><span>Nemotron Streaming</span><span>~600 MB</span></li>
+            <li><span>Parakeet v2 (English)</span><span>~600 MB</span></li>
+            <li><span>Parakeet Redux</span><span>~220 MB</span></li>
+            <li><span>Whisper Large v3 Turbo</span><span>632 MB</span></li>
+          </ul>
+        </div>
+        <div class="model-col">
+          <h3>AI</h3>
+          <p>Answers, commands, rewrites and notes, on MLX</p>
+          <ul>
+            <li><span>Qwen3 4B</span><span>2.3 GB</span></li>
+            <li><span>Gemma 4 E4B</span><span>5.2 GB</span></li>
+            <li><span>Gemma 4 E2B</span><span>3.6 GB</span></li>
+            <li><span>Llama 3.2 3B</span><span>1.8 GB</span></li>
+            <li><span>Qwen3 1.7B</span><span>1.0 GB</span></li>
+          </ul>
+        </div>
+        <div class="model-col">
+          <h3>Voice and search</h3>
+          <p>Reading answers aloud, and search by meaning</p>
+          <ul>
+            <li><span>Qwen3 TTS 0.6B</span><span>~1 GB</span></li>
+            <li><span>Qwen3 TTS 1.7B</span><span>~2.2 GB</span></li>
+            <li><span>EmbeddingGemma 300M</span><span>~330 MB</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="band" id="install">
+    <div class="wrap install">
+      <div class="install-grid">
+        <div>
+          <p class="eyebrow">Get started</p>
+          <h2 style="margin-top:12px">Install in a minute</h2>
+          <ol class="steps">
+            <li><div><b>Download the DMG</b><span>From the latest release on GitHub.</span></div></li>
+            <li><div><b>Drag it to Applications and open it</b><span>The first time, macOS asks: open System Settings › Privacy &amp; Security and click Open Anyway.</span></div></li>
+            <li><div><b>Follow the short setup</b><span>Allow the microphone and Accessibility, pick your keys, and download a speech model.</span></div></li>
+            <li><div><b>Hold <span class="kbd">right ⌥</span> and talk</b><span>The Learn screen in the app shows everything else you can do.</span></div></li>
+          </ol>
+        </div>
+        <div>
+          <div class="req">
+            <div><b>Mac</b><span>Apple silicon (M1 or newer)</span></div>
+            <div><b>macOS</b><span>15 Sequoia or later</span></div>
+            <div><b>Memory</b><span>16 GB recommended with the AI on; 8 GB works with the small models</span></div>
+            <div><b>Disk</b><span>About 1 to 5 GB, depending on the models you choose</span></div>
+          </div>
+          <p style="margin-top:22px;color:var(--muted);font-size:15px">Building from source? Open the project in Xcode 26 and press ⌘R, or make your own DMG:</p>
+          <div class="code">git clone https://github.com/kanakapalli/AK-Assistant.git
+cd AK-Assistant &amp;&amp; ./make-dmg.sh</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="#top"><img src="assets/icon.png" alt="">Duck Keyboard</a>
+    <span>Built with WhisperKit, FluidAudio, MLX and open models from Hugging Face.</span>
+    <nav aria-label="Footer">
+      <a href="https://github.com/kanakapalli/AK-Assistant">GitHub</a>
+      <a href="https://github.com/kanakapalli/AK-Assistant/releases/latest">Releases</a>
+      <a href="https://github.com/kanakapalli/AK-Assistant/issues">Report an issue</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="script.js" defer></script>
+
+</body>
+</html>
