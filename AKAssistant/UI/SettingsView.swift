@@ -365,31 +365,52 @@ private struct GeneralSettings: View {
 // MARK: - Permissions
 
 private struct PermissionsSettings: View {
-    @State private var micGranted = Permissions.microphoneGranted
-    @State private var axGranted = Permissions.accessibilityGranted
-    @State private var sendKeysGranted = Permissions.canSendKeystrokes
-    @State private var screenGranted = Permissions.screenCaptureGranted
+    @State private var permissions = PermissionSnapshot()
 
     var body: some View {
         Form {
-            Section("Permissions") {
-                PermissionRow(title: "Microphone", granted: micGranted) {
+            Section("Needed for dictation") {
+                PermissionRow(title: "Microphone", granted: permissions.microphone) {
                     Task {
-                        micGranted = await Permissions.requestMicrophone()
-                        if !micGranted { Permissions.openMicrophoneSettings() }
+                        if !(await Permissions.requestMicrophone()) { Permissions.openMicrophoneSettings() }
                     }
                 }
-                PermissionRow(title: "Accessibility (hotkey + paste)", granted: axGranted) {
+                PermissionRow(title: "Accessibility (hotkey + paste)", granted: permissions.accessibility) {
                     Permissions.requestAccessibility()
                     Permissions.openAccessibilitySettings()
                 }
-                PermissionRow(title: "Send keystrokes (paste into other apps)", granted: sendKeysGranted) {
+                PermissionRow(title: "Send keystrokes (paste into other apps)", granted: permissions.sendKeystrokes) {
                     Permissions.requestSendKeystrokes()
                     Permissions.openAccessibilitySettings()
                 }
-                PermissionRow(title: "Screen & System Audio Recording (meeting audio)", granted: screenGranted) {
+            }
+
+            Section("For hotkeys, the AI and meetings") {
+                PermissionRow(title: "Input Monitoring (hotkeys on some Macs)", granted: permissions.inputMonitoring) {
+                    Permissions.requestInputMonitoring()
+                    Permissions.openInputMonitoringSettings()
+                }
+                PermissionRow(title: "Automation (Mac commands)", granted: permissions.automation == .granted) {
+                    Task {
+                        if permissions.automation == .denied {
+                            Permissions.openAutomationSettings()
+                        } else {
+                            _ = await Permissions.automationStatus(ask: true)
+                        }
+                    }
+                }
+                PermissionRow(title: "Notifications (timers and reminders)", granted: permissions.notifications == .granted) {
+                    Task { _ = await Permissions.requestNotifications() }
+                }
+                PermissionRow(title: "Screen & System Audio Recording (meeting audio)", granted: permissions.screenCapture) {
                     Permissions.requestScreenCapture()
                     Permissions.openScreenCaptureSettings()
+                }
+                HStack {
+                    SettingCaption("Turned one on in System Settings but it still shows as missing? macOS applies some of them only after Duck Keyboard restarts.")
+                    Spacer()
+                    Button("Restart") { Permissions.relaunch() }
+                        .controlSize(.small)
                 }
             }
 
@@ -411,10 +432,7 @@ private struct PermissionsSettings: View {
         .task {
             // Re-check while this page is visible (the user may grant them in System Settings).
             while !Task.isCancelled {
-                micGranted = Permissions.microphoneGranted
-                axGranted = Permissions.accessibilityGranted
-                sendKeysGranted = Permissions.canSendKeystrokes
-                screenGranted = Permissions.screenCaptureGranted
+                permissions = await .current()
                 try? await Task.sleep(for: .seconds(1.5))
             }
         }

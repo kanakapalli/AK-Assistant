@@ -288,6 +288,7 @@ private struct FeatureAssignmentRow: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             .opacity(active ? 1 : 0.6)
+            .layoutPriority(1)
 
             Spacer(minLength: 12)
 
@@ -334,7 +335,7 @@ private struct FeatureAssignmentRow: View {
             }
             .labelsHidden()
             .pickerStyle(.menu)
-            .fixedSize()
+            .frame(maxWidth: 260)
         }
     }
 }
@@ -362,23 +363,27 @@ private struct LibraryRow: View {
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-                HStack(spacing: 14) {
+                // Wraps onto a second line instead of squeezing each fact into a one-letter column.
+                FlowLayout(spacing: 12) {
                     ForEach(entry.facts) { fact in
                         Label(fact.text, systemImage: fact.symbol)
+                            .lineLimit(1)
+                            .fixedSize()
                     }
                 }
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 usedByRow
             }
-
-            Spacer(minLength: 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .layoutPriority(1)
 
             VStack(alignment: .trailing, spacing: 8) {
                 StateControl(state: entry.state, compact: false, onDownload: entry.download, onDelete: onDelete)
                 runtimeControl
                 if !assignable.isEmpty { useForMenu }
             }
+            .fixedSize()
         }
         .padding(.vertical, 4)
     }
@@ -389,17 +394,22 @@ private struct LibraryRow: View {
                 .font(.caption)
                 .foregroundStyle(.tertiary)
         } else {
-            HStack(spacing: 6) {
+            HStack(alignment: .center, spacing: 6) {
                 Text("Used by")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                ForEach(usedBy) { feature in
-                    Label(feature.shortTitle, systemImage: feature.symbol)
-                        .font(.caption2.weight(.medium))
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 3)
-                        .background(entry.kind.tint.opacity(0.14), in: Capsule())
-                        .foregroundStyle(entry.kind.tint)
+                    .fixedSize()
+                FlowLayout(spacing: 6) {
+                    ForEach(usedBy) { feature in
+                        Label(feature.shortTitle, systemImage: feature.symbol)
+                            .font(.caption2.weight(.medium))
+                            .lineLimit(1)
+                            .fixedSize()
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 3)
+                            .background(entry.kind.tint.opacity(0.14), in: Capsule())
+                            .foregroundStyle(entry.kind.tint)
+                    }
                 }
             }
         }
@@ -407,14 +417,22 @@ private struct LibraryRow: View {
 
     @ViewBuilder private var runtimeControl: some View {
         if entry.runtimes.count > 1, let setRuntime = entry.setRuntime {
-            Picker("Runs on", selection: Binding(get: { entry.runtime }, set: setRuntime)) {
-                ForEach(entry.runtimes) { runtime in
-                    Label(runtime.shortTitle, systemImage: runtime.symbol).tag(runtime)
+            // Inside a Form a labelled Picker gets its own label column, which pushed "Runs on" into
+            // the middle of the row and the controls off the right edge. Hide it and draw it here.
+            HStack(spacing: 6) {
+                Text("Runs on")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Picker("Runs on", selection: Binding(get: { entry.runtime }, set: setRuntime)) {
+                    ForEach(entry.runtimes) { runtime in
+                        Label(runtime.shortTitle, systemImage: runtime.symbol).tag(runtime)
+                    }
                 }
+                .labelsHidden()
+                .pickerStyle(.menu)
+                .controlSize(.small)
+                .fixedSize()
             }
-            .pickerStyle(.menu)
-            .controlSize(.small)
-            .fixedSize()
             .help(entry.runtime.detail + (entry.runtimes.contains(.mlx) ? " Switching to or from MLX needs its own download." : ""))
         } else {
             Label("Runs on \(entry.runtime.shortTitle)", systemImage: entry.runtime.symbol)

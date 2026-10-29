@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 import SwiftData
 
 @main
@@ -33,7 +34,13 @@ struct AKAssistantApp: App {
                 .environment(appState.modelManager)
                 .modelContainer(appState.container)
         } label: {
-            Image(systemName: appState.menuBarSymbol)
+            if appState.meetings.isRecording {
+                // Red and softly glowing, so a long meeting recording is noticeable but out of the way.
+                Image(nsImage: MenuBarIcon.recording(bright: appState.menuBarGlowBright))
+                    .help("Duck Keyboard is recording a meeting")
+            } else {
+                Image(systemName: appState.menuBarSymbol)
+            }
         }
         // A real panel (not a plain menu) so it can show status, keycaps and click-to-copy rows.
         .menuBarExtraStyle(.window)
@@ -117,5 +124,37 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             && window.styleMask.contains(.titled)
             && window.sheetParent == nil
             && window.canBecomeMain
+    }
+}
+
+/// The menu bar icon while a meeting records: a red dot with a soft red glow. Menu bar labels
+/// are drawn as monochrome templates, so the colour has to be baked into a non-template image.
+@MainActor
+enum MenuBarIcon {
+    private static var cache: [Bool: NSImage] = [:]
+
+    static func recording(bright: Bool) -> NSImage {
+        if let image = cache[bright] { return image }
+        let image = NSImage(size: NSSize(width: 20, height: 18), flipped: false) { rect in
+            let config = NSImage.SymbolConfiguration(pointSize: 13, weight: .semibold)
+                .applying(NSImage.SymbolConfiguration(paletteColors: [.systemRed]))
+            guard let symbol = NSImage(systemSymbolName: "record.circle.fill",
+                                       accessibilityDescription: "Recording a meeting")?
+                .withSymbolConfiguration(config) else { return false }
+            let glow = NSShadow()
+            glow.shadowColor = NSColor.systemRed.withAlphaComponent(bright ? 0.85 : 0.3)
+            glow.shadowBlurRadius = bright ? 4 : 1.5
+            glow.shadowOffset = .zero
+            glow.set()
+            let size = symbol.size
+            let frame = NSRect(x: (rect.width - size.width) / 2, y: (rect.height - size.height) / 2,
+                               width: size.width, height: size.height)
+            symbol.draw(in: frame, from: .zero, operation: .sourceOver, fraction: bright ? 1 : 0.75)
+            return true
+        }
+        image.isTemplate = false
+        image.accessibilityDescription = "Recording a meeting"
+        cache[bright] = image
+        return image
     }
 }

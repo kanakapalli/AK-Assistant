@@ -1,16 +1,15 @@
 import SwiftUI
 import ServiceManagement
 
-/// First-launch flow: welcome -> microphone -> accessibility -> speech model -> AI assistant -> hotkeys -> try it.
+/// First-launch flow: welcome -> permissions (all of them, in one place) -> speech model -> AI assistant -> hotkeys -> try it.
 struct OnboardingView: View {
     enum Step: Int, CaseIterable {
-        case welcome, microphone, accessibility, model, assistant, hotkey, tryIt
+        case welcome, permissions, model, assistant, hotkey, tryIt
 
         var title: String {
             switch self {
             case .welcome: return "Welcome"
-            case .microphone: return "Microphone"
-            case .accessibility: return "Accessibility"
+            case .permissions: return "Permissions"
             case .model: return "Model"
             case .assistant: return "AI"
             case .hotkey: return "Hotkey"
@@ -24,8 +23,10 @@ struct OnboardingView: View {
     @Environment(ModelManager.self) private var modelManager
 
     @State private var step: Step = .welcome
-    @State private var micGranted = Permissions.microphoneGranted
-    @State private var axGranted = Permissions.accessibilityGranted
+    /// Where onboarding was when the app quit, so "Restart Duck Keyboard" (needed for some
+    /// permissions to take effect) comes back to the same step.
+    @AppStorage("onboardingStep") private var savedStep = 0
+    @State private var permissions = PermissionSnapshot()
     @State private var warmingUp = false
     @State private var warmUpStarted: Date?
     @State private var warmUpError: String?
@@ -52,6 +53,11 @@ struct OnboardingView: View {
                     Button("Back") { move(-1) }
                 }
                 Spacer()
+                if step == .permissions && permissions.requiredReady && !permissions.allReady {
+                    Text("You can turn the rest on later in Settings › Permissions.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
                 Button(step == .tryIt ? "Finish" : "Continue") {
                     if step == .tryIt { finish() } else { move(1) }
                 }
@@ -60,6 +66,12 @@ struct OnboardingView: View {
             }
             .padding(20)
         }
+        .onAppear {
+            if let saved = Step(rawValue: savedStep), saved != .welcome {
+                step = saved
+            }
+        }
+        .onChange(of: step) { savedStep = step.rawValue }
         .onChange(of: modelManager.states) {
             // Downloaded a model other than the highlighted one? Select it, so Continue unlocks.
             guard step == .model, !modelManager.isDownloaded(preferences.selectedModel),
@@ -67,11 +79,15 @@ struct OnboardingView: View {
             else { return }
             preferences.selectedModelID = ready.id
         }
+        .onChange(of: permissions.hotkeyRelevant) {
+            // Accessibility, Input Monitoring or Send keystrokes just turned on: re-arm the key
+            // monitors now, so the Try it step works without restarting.
+            appState.permissionsChanged()
+        }
         .task {
             // Poll permission status so the steps unlock as soon as the user grants access.
             while !Task.isCancelled {
-                micGranted = Permissions.microphoneGranted
-                axGranted = Permissions.accessibilityGranted
+                permissions = await .current()
                 try? await Task.sleep(for: .seconds(1))
             }
         }
@@ -85,23 +101,8 @@ struct OnboardingView: View {
             StepHeader(symbol: "waveform", title: "Dictate anywhere on your Mac",
                        text: "Hold a key, speak, let go. Duck Keyboard turns your voice into text and pastes it wherever your cursor is. Hold a second key to ask a local AI anything and hear the answer. Everything runs on this Mac with open-source models; your audio and questions never leave it.")
 
-        case .microphone:
-            StepHeader(symbol: "mic", title: "Allow the microphone",
-                       text: "Duck Keyboard only listens while you hold the hotkey. Audio stays in memory and is discarded after transcription.")
-            PermissionStatus(granted: micGranted, button: "Allow Microphone") {
-                Task {
-                    micGranted = await Permissions.requestMicrophone()
-                    if !micGranted { Permissions.openMicrophoneSettings() }
-                }
-            }
-
-        case .accessibility:
-            StepHeader(symbol: "hand.raised", title: "Allow Accessibility",
-                       text: "This lets Duck Keyboard notice your push-to-talk key in any app and paste the text into the focused field. Turn on Duck Keyboard in System Settings > Privacy & Security > Accessibility, then come back.")
-            PermissionStatus(granted: axGranted, button: "Open System Settings") {
-                Permissions.requestAccessibility()
-                Permissions.openAccessibilitySettings()
-            }
+        case .permissions:
+            PermissionsStep(permissions: $permissions)
 
         case .model:
             StepHeader(symbol: "cpu", title: "Choose a speech model",
@@ -156,6 +157,18 @@ struct OnboardingView: View {
                        text: preferences.assistantEnabled
                         ? "Click in the box, hold \(preferences.hotkey.title), say something, and let go. Then hold \(preferences.assistantHotkey.title) and ask the AI a question."
                         : "Click in the box, hold \(preferences.hotkey.title), say something, and let go.")
+            if !permissions.requiredReady {
+                // Something was switched off since the Permissions step; dictation would only copy.
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
+                    Text("Duck Keyboard can't paste yet: \(permissions.missingRequired.joined(separator: ", ")) is off.")
+                    Spacer()
+                    Button("Fix") { step = .permissions }
+                }
+                .font(.callout)
+                .padding(10)
+                .background(Color.orange.opacity(0.1), in: RoundedRectangle(cornerRadius: 8))
+            }
             TextEditor(text: $tryText)
                 .font(.body)
                 .frame(height: 140)
@@ -175,8 +188,7 @@ struct OnboardingView: View {
 
     private var canContinue: Bool {
         switch step {
-        case .microphone: return micGranted
-        case .accessibility: return axGranted
+        case .permissions: return permissions.requiredReady
         case .model: return modelManager.isDownloaded(preferences.selectedModel) && !warmingUp
         default: return true
         }
@@ -194,6 +206,8 @@ struct OnboardingView: View {
             // Not fatal: the user can turn it on later in Settings (macOS may ask for approval there).
             NSLog("Duck Keyboard launch-at-login error: \(error)")
         }
+        savedStep = 0
+        appState.permissionsChanged()
         preferences.onboarded = true
     }
 
@@ -218,6 +232,230 @@ struct OnboardingView: View {
             return
         }
         step = next
+    }
+}
+
+// MARK: - Permissions
+
+/// Every permission Duck Keyboard uses, read in one go.
+struct PermissionSnapshot: Equatable {
+    var microphone = Permissions.microphoneGranted
+    var accessibility = Permissions.accessibilityGranted
+    var sendKeystrokes = Permissions.canSendKeystrokes
+    var inputMonitoring = Permissions.inputMonitoringGranted
+    var screenCapture = Permissions.screenCaptureGranted
+    var notifications: Permissions.Grant = .notAsked
+    var automation: Permissions.Grant = .notAsked
+
+    /// Dictation can't paste without these three.
+    var requiredReady: Bool { microphone && accessibility && sendKeystrokes }
+
+    var allReady: Bool {
+        requiredReady && inputMonitoring && screenCapture && notifications == .granted && automation == .granted
+    }
+
+    var missingRequired: [String] {
+        var names: [String] = []
+        if !microphone { names.append("Microphone") }
+        if !accessibility { names.append("Accessibility") }
+        if !sendKeystrokes { names.append("Paste into other apps") }
+        return names
+    }
+
+    /// The ones that decide whether the key monitors and paste work.
+    var hotkeyRelevant: [Bool] { [accessibility, inputMonitoring, sendKeystrokes] }
+
+    /// Reads everything again; macOS has no change notifications for most of these.
+    static func current() async -> PermissionSnapshot {
+        var snapshot = PermissionSnapshot()
+        snapshot.notifications = await Permissions.notificationStatus()
+        snapshot.automation = await Permissions.automationStatus(ask: false)
+        return snapshot
+    }
+}
+
+/// Onboarding step that asks for every permission on one page, so nothing is missing later.
+private struct PermissionsStep: View {
+    @Binding var permissions: PermissionSnapshot
+    /// Set once the user has been sent to System Settings; then a restart may be needed.
+    @State private var visitedSettings = false
+    @State private var askingAll = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            StepHeader(symbol: "lock.shield", title: "Allow permissions",
+                       text: "Duck Keyboard needs a few macOS permissions to hear you, see your hotkeys and paste the text. Grant them all here so every feature works from the start. Nothing leaves your Mac.")
+
+            HStack {
+                Button {
+                    Task { await allowAll() }
+                } label: {
+                    Label(askingAll ? "Asking…" : "Allow all", systemImage: "checkmark.shield")
+                }
+                .controlSize(.large)
+                .buttonStyle(.borderedProminent)
+                .disabled(askingAll || permissions.allReady)
+                Text(permissions.allReady ? "Everything is allowed." : "macOS shows a prompt or opens System Settings for each one. Switch on Duck Keyboard there, then come back.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(.bottom, 4)
+
+            Text("Required for dictation").font(.headline).padding(.top, 4)
+            PermissionCard(symbol: "mic", title: "Microphone",
+                           detail: "Hear you while you hold a key or record a meeting you start.",
+                           state: permissions.microphone ? .granted : .missing, button: "Allow") {
+                Task {
+                    if !(await Permissions.requestMicrophone()) { Permissions.openMicrophoneSettings() }
+                    permissions = await .current()
+                }
+            }
+            PermissionCard(symbol: "hand.raised", title: "Accessibility",
+                           detail: "See your hotkeys in any app and type into the focused text field.",
+                           state: permissions.accessibility ? .granted : .missing, button: "Open Settings") {
+                Permissions.requestAccessibility()
+                Permissions.openAccessibilitySettings()
+                visitedSettings = true
+            }
+            PermissionCard(symbol: "doc.on.clipboard", title: "Paste into other apps",
+                           detail: "Lets Duck Keyboard press ⌘V for you. It's listed under Accessibility too; it may only show as on after a restart.",
+                           state: permissions.sendKeystrokes ? .granted : .missing, button: "Allow") {
+                Permissions.requestSendKeystrokes()
+                Permissions.openAccessibilitySettings()
+                visitedSettings = true
+            }
+
+            Text("For hotkeys, the AI and meetings").font(.headline).padding(.top, 8)
+            PermissionCard(symbol: "keyboard", title: "Input Monitoring",
+                           detail: "Some Macs need this as well to notice your hotkeys while other apps are in front.",
+                           state: permissions.inputMonitoring ? .granted : .missing, button: "Allow") {
+                Permissions.requestInputMonitoring()
+                Permissions.openInputMonitoringSettings()
+                visitedSettings = true
+            }
+            PermissionCard(symbol: "gearshape.2", title: "Automation",
+                           detail: "Run Mac commands you ask for, like dark mode, Empty Trash or restart (System Events and Finder).",
+                           state: permissions.automation.cardState, button: "Allow") {
+                Task {
+                    if permissions.automation == .denied {
+                        Permissions.openAutomationSettings()
+                        visitedSettings = true
+                    } else {
+                        _ = await Permissions.automationStatus(ask: true)
+                    }
+                    permissions = await .current()
+                }
+            }
+            PermissionCard(symbol: "bell.badge", title: "Notifications",
+                           detail: "Tell you when a timer or reminder you set goes off.",
+                           state: permissions.notifications.cardState, button: "Allow") {
+                Task {
+                    _ = await Permissions.requestNotifications()
+                    permissions = await .current()
+                }
+            }
+            PermissionCard(symbol: "rectangle.dashed.badge.record", title: "Screen & System Audio Recording",
+                           detail: "Record the other people on a Zoom, Meet or Teams call. Only the sound is used, never the picture.",
+                           state: permissions.screenCapture ? .granted : .missing, button: "Allow") {
+                Permissions.requestScreenCapture()
+                Permissions.openScreenCaptureSettings()
+                visitedSettings = true
+            }
+
+            if visitedSettings && !permissions.allReady {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Switched them on but they still show as missing?")
+                        .font(.callout.weight(.semibold))
+                    Text("macOS applies Paste, Input Monitoring and Screen Recording to Duck Keyboard only after it restarts. Setup continues right here.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Button("Restart Duck Keyboard") { Permissions.relaunch() }
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+                .padding(.top, 4)
+            }
+        }
+    }
+
+    /// Prompts that appear inside the app come first (they wait for an answer); the ones that
+    /// live in System Settings are all registered at once, so the user only has to flip switches.
+    private func allowAll() async {
+        askingAll = true
+        defer { askingAll = false }
+
+        if !permissions.microphone, !(await Permissions.requestMicrophone()) {
+            Permissions.openMicrophoneSettings()
+        }
+        if permissions.notifications != .granted { _ = await Permissions.requestNotifications() }
+        if permissions.automation == .notAsked { _ = await Permissions.automationStatus(ask: true) }
+
+        // These add Duck Keyboard to each System Settings list (switched off), ready to turn on.
+        if !permissions.screenCapture { Permissions.requestScreenCapture() }
+        if !permissions.inputMonitoring { Permissions.requestInputMonitoring() }
+        if !permissions.sendKeystrokes { Permissions.requestSendKeystrokes() }
+        if !permissions.accessibility {
+            Permissions.requestAccessibility()
+            Permissions.openAccessibilitySettings()
+        } else if !permissions.sendKeystrokes {
+            Permissions.openAccessibilitySettings()
+        } else if !permissions.inputMonitoring {
+            Permissions.openInputMonitoringSettings()
+        } else if !permissions.screenCapture {
+            Permissions.openScreenCaptureSettings()
+        }
+        visitedSettings = true
+        permissions = await .current()
+    }
+}
+
+private extension Permissions.Grant {
+    var cardState: PermissionCard.Status {
+        switch self {
+        case .granted: return .granted
+        case .denied: return .missing
+        case .notAsked: return .notAsked
+        }
+    }
+}
+
+private struct PermissionCard: View {
+    enum Status { case granted, missing, notAsked }
+
+    let symbol: String
+    let title: String
+    let detail: String
+    let state: Status
+    let button: String
+    let action: () -> Void
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 12) {
+            Image(systemName: symbol)
+                .font(.title3)
+                .foregroundStyle(Color.accentColor)
+                .frame(width: 28)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).font(.body.weight(.medium))
+                Text(detail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 12)
+            if state == .granted {
+                Label("Allowed", systemImage: "checkmark.circle.fill")
+                    .foregroundStyle(.green)
+                    .font(.callout.weight(.medium))
+            } else {
+                Button(button, action: action)
+            }
+        }
+        .padding(12)
+        .background(Color.primary.opacity(0.035), in: RoundedRectangle(cornerRadius: 10))
     }
 }
 
@@ -348,25 +586,5 @@ private struct StepHeader: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.bottom, 12)
-    }
-}
-
-private struct PermissionStatus: View {
-    let granted: Bool
-    let button: String
-    let action: () -> Void
-
-    var body: some View {
-        HStack {
-            if granted {
-                Label("Granted", systemImage: "checkmark.circle.fill")
-                    .foregroundStyle(.green)
-                    .font(.headline)
-            } else {
-                Button(button, action: action)
-                    .controlSize(.large)
-            }
-            Spacer()
-        }
     }
 }

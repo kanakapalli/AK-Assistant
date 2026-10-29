@@ -1,7 +1,9 @@
 import AVFoundation
 import AppKit
 import ApplicationServices
+import Carbon
 import Carbon.HIToolbox
+import UserNotifications
 
 enum Permissions {
     static var microphoneGranted: Bool {
@@ -41,7 +43,7 @@ enum Permissions {
 
     /// One line for the log so a paste problem can be traced to the right permission.
     static var summary: String {
-        "mic=\(microphoneGranted) accessibility=\(accessibilityGranted) sendKeys=\(canSendKeystrokes) app=\(runningAppPath)"
+        "mic=\(microphoneGranted) accessibility=\(accessibilityGranted) sendKeys=\(canSendKeystrokes) inputMonitoring=\(inputMonitoringGranted) screen=\(screenCaptureGranted) app=\(runningAppPath)"
     }
 
     static func openAccessibilitySettings() {
@@ -92,6 +94,106 @@ enum Permissions {
             return app.localizedName ?? "another app"
         }
         return "another app"
+    }
+
+    // MARK: - Notifications (timers and reminders)
+
+    enum Grant: Equatable {
+        case granted, denied, notAsked
+    }
+
+    static func notificationStatus() async -> Grant {
+        let settings = await UNUserNotificationCenter.current().notificationSettings()
+        switch settings.authorizationStatus {
+        case .authorized, .provisional: return .granted
+        case .denied: return .denied
+        default: return .notAsked
+        }
+    }
+
+    /// Shows the macOS "Allow notifications?" prompt the first time; afterwards opens System Settings.
+    static func requestNotifications() async -> Bool {
+        if await notificationStatus() == .denied {
+            openNotificationSettings()
+            return false
+        }
+        return (try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])) ?? false
+    }
+
+    static func openNotificationSettings() {
+        if let url = URL(string: "x-apple.systempreferences:com.apple.Notifications-Settings.extension") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
+    // MARK: - Automation (Mac commands: dark mode, Empty Trash, restart…)
+
+    /// The apps Mac commands talk to through AppleScript.
+    static let automationTargets = ["com.apple.systemevents", "com.apple.finder"]
+
+    /// Whether Duck Keyboard may control the apps Mac commands use. With `ask`, macOS shows its
+    /// "Duck Keyboard wants to control…" prompt for each app not decided yet. Blocks while the
+    /// prompt is up, so this runs off the main thread.
+    static func automationStatus(ask: Bool) async -> Grant {
+        await Task.detached(priority: .userInitiated) {
+            var result: Grant = .granted
+            for bundleID in Permissions.automationTargets {
+                var status = Permissions.automationStatus(bundleID: bundleID, ask: ask)
+                if status == OSStatus(procNotFound), ask {
+                    // System Events only runs on demand; start it so macOS can ask.
+                    Permissions.launchSystemEvents()
+                    try? await Task.sleep(for: .seconds(1))
+                    status = Permissions.automationStatus(bundleID: bundleID, ask: ask)
+                }
+                switch status {
+                case OSStatus(noErr): continue
+                case OSStatus(errAEEventNotPermitted): return .denied
+                default: result = .notAsked   // not asked yet, or the app isn't running
+                }
+            }
+            return result
+        }.value
+    }
+
+    private static func automationStatus(bundleID: String, ask: Bool) -> OSStatus {
+        var target = AEAddressDesc()
+        let bytes = Array(bundleID.utf8)
+        let created = bytes.withUnsafeBytes { buffer in
+            AECreateDesc(DescType(typeApplicationBundleID), buffer.baseAddress, buffer.count, &target)
+        }
+        guard created == OSErr(noErr) else { return OSStatus(created) }
+        defer { AEDisposeDesc(&target) }
+        return AEDeterminePermissionToAutomateTarget(&target, AEEventClass(typeWildCard), AEEventID(typeWildCard), ask)
+    }
+
+    private static func launchSystemEvents() {
+        let url = URL(fileURLWithPath: "/System/Library/CoreServices/System Events.app")
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.activates = false
+        NSWorkspace.shared.openApplication(at: url, configuration: configuration, completionHandler: nil)
+    }
+
+    static func openAutomationSettings() {
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Automation") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
+    // MARK: - Everything dictation needs
+
+    /// Microphone, Accessibility and Send keystrokes: without all three, dictation can't paste.
+    static var dictationReady: Bool {
+        microphoneGranted && accessibilityGranted && canSendKeystrokes
+    }
+
+    /// macOS often reports Send keystrokes, Input Monitoring and Screen Recording to a running app
+    /// only after it restarts. Quits and reopens this copy (onboarding resumes on the same step).
+    static func relaunch() {
+        let task = Process()
+        task.executableURL = URL(fileURLWithPath: "/bin/sh")
+        task.arguments = ["-c", "sleep 1; /usr/bin/open \"$0\"", Bundle.main.bundlePath]
+        try? task.run()
+        NSApp.terminate(nil)
     }
 
     static func openMicrophoneSettings() {

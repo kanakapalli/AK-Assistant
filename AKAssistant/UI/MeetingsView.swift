@@ -261,7 +261,11 @@ private struct MeetingDetailView: View {
                 .padding(.top, 18)
                 .padding(.bottom, 12)
 
-            if let note = meeting.note {
+            if MeetingCoordinator.isMissingModelNote(meeting.note), !isLive {
+                NotesModelBanner(meeting: meeting)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 12)
+            } else if let note = meeting.note {
                 Label(note, systemImage: "info.circle")
                     .font(.callout)
                     .foregroundStyle(.orange)
@@ -976,5 +980,107 @@ private enum MeetingActions {
         panel.allowedContentTypes = [UTType(filenameExtension: "md") ?? .plainText]
         guard panel.runModal() == .OK, let url = panel.url else { return }
         try? meeting.markdown.write(to: url, atomically: true, encoding: .utf8)
+    }
+}
+
+// MARK: - Notes model missing
+
+/// Shown when a meeting ended before an AI model was downloaded: download it right here, watch the
+/// progress, and the summary and to-dos are written as soon as it's ready.
+private struct NotesModelBanner: View {
+    let meeting: Meeting
+
+    @Environment(AppState.self) private var appState
+    @Environment(ModelManager.self) private var modelManager
+
+    var body: some View {
+        let coordinator = appState.meetings
+        let model = coordinator.notesModelToDownload
+        let state = modelManager.state(of: model)
+        let writing = coordinator.progress[meeting.id]
+
+        HStack(alignment: .center, spacing: 12) {
+            Image(systemName: "sparkles")
+                .font(.title2)
+                .foregroundStyle(Duck.assistant)
+                .frame(width: 30)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title(state: state, writing: writing, model: model))
+                    .font(.callout.weight(.semibold))
+                Text(detail(state: state, writing: writing, model: model))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                if case .downloading(let progress) = state {
+                    if let progress {
+                        ProgressView(value: progress).frame(maxWidth: 260)
+                    } else {
+                        ProgressView().progressViewStyle(.linear).frame(maxWidth: 260)
+                    }
+                } else if writing != nil {
+                    ProgressView().progressViewStyle(.linear).frame(maxWidth: 260)
+                }
+            }
+
+            Spacer(minLength: 12)
+
+            HStack(spacing: 8) {
+                switch state {
+                case .notDownloaded, .failed:
+                    Button("Choose model…") {
+                        appState.modelsFocus = .meetingNotes
+                        appState.openSettings(.models)
+                    }
+                    .help("Pick a different AI model for meeting notes in Settings › Models")
+                    Button(stateIsFailed(state) ? "Try again" : "Download") {
+                        coordinator.downloadNotesModelAndSummarize(meeting)
+                    }
+                    .buttonStyle(.borderedProminent)
+                case .downloading:
+                    EmptyView()
+                case .downloaded:
+                    if writing == nil {
+                        Button("Write notes") { coordinator.regenerate(meeting) }
+                            .buttonStyle(.borderedProminent)
+                    }
+                }
+            }
+            .controlSize(.regular)
+            .fixedSize()
+        }
+        .padding(12)
+        .background(Duck.assistant.opacity(0.08), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+    }
+
+    private func stateIsFailed(_ state: ModelManager.State) -> Bool {
+        if case .failed = state { return true }
+        return false
+    }
+
+    private func title(state: ModelManager.State, writing: String?, model: ChatModel) -> String {
+        if writing != nil { return "Writing the summary and to-dos…" }
+        switch state {
+        case .notDownloaded: return "No summary yet: an AI model is needed"
+        case .downloading(let progress):
+            if let progress { return "Downloading \(model.name)… \(Int(progress * 100))%" }
+            return "Downloading \(model.name)…"
+        case .downloaded: return "\(model.name) is ready"
+        case .failed: return "Download failed"
+        }
+    }
+
+    private func detail(state: ModelManager.State, writing: String?, model: ChatModel) -> String {
+        if let writing { return writing }
+        switch state {
+        case .notDownloaded:
+            return "Download \(model.name) (\(model.sizeLabel)) once and Duck Keyboard writes the summary, key points, decisions and to-dos for this meeting. It runs on this Mac."
+        case .downloading:
+            return "The notes are written as soon as the download finishes. You can leave this page."
+        case .downloaded:
+            return "Write the summary and to-dos for this meeting now."
+        case .failed(let message):
+            return message
+        }
     }
 }

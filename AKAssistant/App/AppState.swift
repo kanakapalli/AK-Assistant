@@ -78,6 +78,8 @@ final class AppState {
     /// The latest AI question and answer.
     private(set) var reply: AssistantReply?
     private(set) var isSpeaking = false
+    /// Flips while a meeting records, so the red menu bar icon gently glows on and off.
+    private(set) var menuBarGlowBright = true
     /// The latest dictation's transcript, while its card is showing.
     private(set) var dictation: DictationResult?
     /// Rough transcript shown in the popup while you're still talking (the final one replaces it).
@@ -175,7 +177,7 @@ final class AppState {
 
         // Already set up (e.g. the window was closed on the last onboarding step): don't show
         // onboarding again. Done here, before the window decides whether to open at launch.
-        if !preferences.onboarded, Permissions.microphoneGranted, Permissions.accessibilityGranted,
+        if !preferences.onboarded, Permissions.dictationReady,
            modelManager.isDownloaded(preferences.selectedModel) {
             preferences.onboarded = true
         }
@@ -227,6 +229,7 @@ final class AppState {
 
         observePreferences()
         watchAccessibility()
+        pulseMenuBarWhileRecording()
         log.info("Permissions at launch: \(Permissions.summary, privacy: .public)")
 
         HistoryPruner.prune(context: container.mainContext, retentionDays: preferences.historyRetentionDays)
@@ -301,18 +304,41 @@ final class AppState {
         }
     }
 
-    /// Global key monitors only deliver events once Accessibility is granted; re-arm them when it flips on.
+    /// Global key monitors only deliver events once Accessibility (and on some Macs Input Monitoring)
+    /// is granted; re-arm them when either flips on.
     private func watchAccessibility() {
         Task { [weak self] in
-            var wasTrusted = Permissions.accessibilityGranted
+            var was = (Permissions.accessibilityGranted, Permissions.inputMonitoringGranted)
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(2))
                 guard let self else { return }
-                let trusted = Permissions.accessibilityGranted
-                if trusted && !wasTrusted { self.configureHotkeys() }
-                wasTrusted = trusted
+                let now = (Permissions.accessibilityGranted, Permissions.inputMonitoringGranted)
+                if (now.0 && !was.0) || (now.1 && !was.1) { self.configureHotkeys() }
+                was = now
             }
         }
+    }
+
+    /// Slow on/off glow of the red menu bar icon during a meeting. Idles (no redraws) otherwise.
+    private func pulseMenuBarWhileRecording() {
+        Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .milliseconds(1200))
+                guard let self else { return }
+                if self.meetings.isRecording {
+                    self.menuBarGlowBright.toggle()
+                } else if !self.menuBarGlowBright {
+                    self.menuBarGlowBright = true
+                }
+            }
+        }
+    }
+
+    /// Onboarding calls this when a permission changes and when it finishes, so the hotkeys and
+    /// paste work straight away instead of after the next launch.
+    func permissionsChanged() {
+        log.info("Permissions changed: \(Permissions.summary, privacy: .public)")
+        if Permissions.accessibilityGranted { hotkeys.reset() }
     }
 
     var menuBarSymbol: String {
@@ -330,7 +356,9 @@ final class AppState {
         case .recording, .transcribing, .done, .error: return .compact   // short messages win for a moment
         case .idle: break
         }
-        if meetings.isRecording { return .compact }   // small "Meeting 12:34" capsule
+        // Meetings can run for hours: no popup while one records. The menu bar icon turns red and
+        // glows instead, and the menu bar panel shows the timer. Only the short start/stop
+        // messages above appear for a moment.
         if dictation != nil { return .dictation }
         if reply != nil, preferences.replyStyle.shows || reply?.command?.needsConfirmation == true
             || reply?.suggestions.isEmpty == false { return .answer }

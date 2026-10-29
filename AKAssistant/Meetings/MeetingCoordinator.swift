@@ -253,7 +253,7 @@ final class MeetingCoordinator {
         let detail = preferences.meetingNotesDetail
         guard modelManager.isDownloaded(chat) else {
             meeting.state = .done
-            meeting.note = "Download an AI model in Settings › Models to get a summary and to-dos for this meeting."
+            meeting.note = Self.missingModelNote
             progress[meeting.id] = nil
             save()
             onFlash?(.done("Meeting transcript saved"))
@@ -280,7 +280,7 @@ final class MeetingCoordinator {
                 let kept = meeting.actionItems.filter { $0.done }
                 meeting.actionItems = kept + notes.actionItems.filter { new in !kept.contains { $0.text == new.text } }
                 meeting.summaryModelName = chat.name
-                if meeting.note?.hasPrefix("Couldn't write notes") == true || meeting.note?.hasPrefix("Download an AI model") == true {
+                if meeting.note?.hasPrefix("Couldn't write notes") == true || Self.isMissingModelNote(meeting.note) {
                     meeting.note = nil
                 }
                 self.log.info("Meeting notes written in \(Date().timeIntervalSince(started), format: .fixed(precision: 1))s")
@@ -367,6 +367,34 @@ final class MeetingCoordinator {
                 return
             }
             await summarize(meeting)
+        }
+    }
+
+    // MARK: - Missing notes model
+
+    /// Stored on a meeting that ended before any AI model was downloaded. The meeting page shows a
+    /// Download button in its place (see NotesModelBanner).
+    static let missingModelNote = "Download an AI model to get a summary and to-dos for this meeting."
+
+    static func isMissingModelNote(_ note: String?) -> Bool {
+        note?.hasPrefix("Download an AI model") == true   // also matches the older wording
+    }
+
+    /// The model meeting notes will use: the one picked for notes in Settings › Models, else the assistant's.
+    var notesModelToDownload: ChatModel {
+        preferences.meetingNotesModel ?? preferences.chatModel
+    }
+
+    /// Downloads the notes model, then writes this meeting's summary and to-dos.
+    func downloadNotesModelAndSummarize(_ meeting: Meeting) {
+        let model = notesModelToDownload
+        Task { [weak self] in
+            guard let self else { return }
+            if !self.modelManager.isDownloaded(model) {
+                await self.modelManager.download(model)
+            }
+            guard self.modelManager.isDownloaded(model), meeting.state == .done else { return }
+            await self.summarize(meeting)
         }
     }
 

@@ -8,12 +8,12 @@
 <meta property="og:title" content="Duck Keyboard">
 <meta property="og:description" content="Hold a key, talk, and it's typed. A private voice assistant for the Mac: dictation, a local AI, meetings and writing tools, all on-device.">
 <meta property="og:type" content="website">
-<meta name="theme-color" content="#6440ec">
+<meta name="theme-color" content="#f28019">
 <link rel="icon" type="image/png" href="assets/icon.png">
 <link rel="apple-touch-icon" href="assets/icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap">
 <link rel="stylesheet" href="styles.css">
 
 </head>
@@ -36,14 +36,14 @@
   <section class="hero">
     <div class="wrap hero-grid">
       <div>
-        <p class="eyebrow">Private voice assistant for the Mac</p>
-        <h1 style="margin-top:16px">Hold a key. Talk. It's typed.<span class="caret" aria-hidden="true"></span></h1>
+        <span class="hero-badge"><img src="assets/icon.png" alt="">Private voice assistant for the Mac</span>
+        <h1><span class="nowrap">Hold <span class="kbd" aria-label="a key">⌥</span>.</span> Talk. It's typed.<span class="caret" aria-hidden="true"></span></h1>
         <p class="lede">Duck Keyboard turns your voice into text in any app, answers questions, runs your Mac, takes meeting notes and rewrites what you've written. Every model runs on your Mac, so nothing you say is uploaded.</p>
         <div class="hero-cta">
           <a class="btn btn-primary" href="https://github.com/kanakapalli/AK-Assistant/releases/latest">Download for Mac</a>
           <a class="btn btn-ghost" href="https://github.com/kanakapalli/AK-Assistant">View the source</a>
         </div>
-        <p class="hero-meta">Apple silicon · macOS 15 or later · runs offline</p>
+        <p class="hero-meta"><span>Apple silicon</span><span>macOS 15 or later</span><span>Runs offline</span></p>
       </div>
 
       <div class="stage" aria-label="Example: dictating a Slack message">
@@ -70,7 +70,7 @@
   <section class="band" id="keys">
     <div class="wrap keys">
       <p class="eyebrow">Four ways in</p>
-      <h2 style="margin-top:12px">Everything starts from the keyboard</h2>
+      <h2>Everything starts from the keyboard</h2>
       <div class="key-grid">
         <article class="key-card">
           <span class="tag t-dictate">Dictate</span>
@@ -238,11 +238,11 @@
   <div class="wrap">
     <section class="models" id="models">
       <p class="eyebrow">Open-source models</p>
-      <h2 style="margin-top:12px">Pick the models that suit your Mac</h2>
+      <h2>Pick the models that suit your Mac</h2>
       <p class="lede" style="margin-top:14px">Download, switch and delete them in Settings, next to the feature that uses them. Smaller ones work well on 8 GB Macs.</p>
       <div class="model-cols">
         <div class="model-col">
-          <h3>Speech to text</h3>
+          <h3><i aria-hidden="true">◉</i>Speech to text</h3>
           <p>For dictation, questions and meetings</p>
           <ul>
             <li><span>Parakeet Ultra</span><span>~650 MB</span></li>
@@ -253,7 +253,7 @@
           </ul>
         </div>
         <div class="model-col">
-          <h3>AI</h3>
+          <h3><i aria-hidden="true">✦</i>AI</h3>
           <p>Answers, commands, rewrites and notes, on MLX</p>
           <ul>
             <li><span>Qwen3 4B</span><span>2.3 GB</span></li>
@@ -264,7 +264,7 @@
           </ul>
         </div>
         <div class="model-col">
-          <h3>Voice and search</h3>
+          <h3><i aria-hidden="true">♪</i>Voice and search</h3>
           <p>Reading answers aloud, and search by meaning</p>
           <ul>
             <li><span>Qwen3 TTS 0.6B</span><span>~1 GB</span></li>
@@ -281,7 +281,7 @@
       <div class="install-grid">
         <div>
           <p class="eyebrow">Get started</p>
-          <h2 style="margin-top:12px">Install in a minute</h2>
+          <h2>Install in a minute</h2>
           <ol class="steps">
             <li><div><b>Download the DMG</b><span>From the latest release on GitHub.</span></div></li>
             <li><div><b>Drag it to Applications and open it</b><span>The first time, macOS asks: open System Settings › Privacy &amp; Security and click Open Anyway.</span></div></li>
@@ -300,6 +300,18 @@
           <div class="code">git clone https://github.com/kanakapalli/AK-Assistant.git
 cd AK-Assistant &amp;&amp; ./make-dmg.sh</div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta" id="download">
+    <div class="wrap">
+      <img src="assets/icon.png" alt="Duck Keyboard app icon" width="148" height="148">
+      <h2>Give your keyboard a voice</h2>
+      <p class="lede">Hold a key and start talking. Everything runs on your Mac, with no account and no subscription.</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="https://github.com/kanakapalli/AK-Assistant/releases/latest">Download for Mac</a>
+        <a class="btn btn-ghost" href="https://github.com/kanakapalli/AK-Assistant">View the source</a>
       </div>
     </div>
   </section>
