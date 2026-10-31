@@ -324,6 +324,147 @@ struct DictationCard: View {
     }
 }
 
+// MARK: - Translation card
+
+struct TranslationCard: View {
+    @Environment(AppState.self) private var state
+    let result: TranslationResult
+
+    @State private var copied = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            header
+                .padding(.horizontal, 16)
+                .padding(.top, 14)
+                .padding(.bottom, 10)
+
+            original
+                .padding(.horizontal, 16)
+                .padding(.bottom, 10)
+
+            Divider().opacity(0.6)
+
+            FittedScrollView(maxHeight: maxTextHeight(fraction: 0.45, cap: 380)) {
+                translatedText.padding(16)
+            }
+
+            Divider().opacity(0.6)
+
+            footer
+                .padding(.horizontal, 10)
+                .padding(.vertical, 7)
+        }
+        .frame(width: 460)
+    }
+
+    private var header: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "character.bubble.fill")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(.cyan)
+            Text("Translation")
+                .font(.headline)
+            Text("→ \(result.targetLanguage)")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            translationStatusBadge
+            Spacer()
+            CloseButton { state.dismissTranslation() }
+        }
+    }
+
+    @ViewBuilder private var translationStatusBadge: some View {
+        if result.isStreaming {
+            StatusBadge(title: "Translating", systemImage: "ellipsis")
+        } else if state.isSpeaking {
+            StatusBadge(title: "Speaking", systemImage: "speaker.wave.2.fill")
+        }
+    }
+
+    private var original: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Label("Original", systemImage: "text.quote")
+                .font(.caption.weight(.medium))
+                .foregroundStyle(.secondary)
+            Text(result.original)
+                .font(.callout)
+                .foregroundStyle(.primary.opacity(0.75))
+                .textSelection(.enabled)
+                .lineLimit(4)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+    }
+
+    @ViewBuilder private var translatedText: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            if result.translated.isEmpty && result.isStreaming {
+                HStack(spacing: 8) {
+                    ProgressView().controlSize(.small)
+                    Text("Translating…").foregroundStyle(.secondary)
+                }
+            } else if !result.translated.isEmpty {
+                Text(result.translated)
+                    .font(.body)
+                    .lineSpacing(3)
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            if let error = result.error {
+                Label(error, systemImage: "exclamationmark.triangle.fill")
+                    .font(.callout)
+                    .foregroundStyle(.orange)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var footer: some View {
+        HStack(spacing: 2) {
+            Button {
+                state.copyTranslation()
+                showCopied()
+            } label: {
+                Label(copied ? "Copied" : "Copy", systemImage: copied ? "checkmark" : "doc.on.doc")
+            }
+            .disabled(result.translated.isEmpty)
+
+            if state.isSpeaking {
+                Button { state.stopSpeaking() } label: {
+                    Label("Stop", systemImage: "stop.fill")
+                }
+            } else {
+                Button { state.speakTranslation() } label: {
+                    Label("Read aloud", systemImage: "speaker.wave.2")
+                }
+                .disabled(result.translated.isEmpty || result.isStreaming)
+            }
+
+            Spacer()
+
+            if !result.translated.isEmpty, !result.isStreaming {
+                Text("\(wordCount(result.translated)) words")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+                    .padding(.trailing, 6)
+            }
+        }
+        .buttonStyle(IslandButtonStyle())
+    }
+
+    private func showCopied() {
+        copied = true
+        Task {
+            try? await Task.sleep(for: .seconds(1.5))
+            copied = false
+        }
+    }
+}
+
 // MARK: - Building blocks
 
 /// A scroll view that is exactly as tall as its content, up to `maxHeight`, then scrolls.

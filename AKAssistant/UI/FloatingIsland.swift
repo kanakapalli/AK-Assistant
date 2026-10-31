@@ -217,11 +217,12 @@ struct NotchShape: Shape {
 /// What the popup is showing right now.
 enum IslandMode: Equatable {
     case hidden
-    case compact     // capsule: listening / transcribing / thinking / short messages
-    case dictation   // transcript card
-    case answer      // question + AI answer card
+    case compact       // capsule: listening / transcribing / thinking / short messages
+    case dictation     // transcript card
+    case answer        // question + AI answer card
+    case translation   // original + translated text card
 
-    var isInteractive: Bool { self == .dictation || self == .answer }
+    var isInteractive: Bool { self == .dictation || self == .answer || self == .translation }
 }
 
 // MARK: - Root view
@@ -269,6 +270,10 @@ struct IslandView: View {
         case .answer:
             if let reply = state.reply {
                 AnswerCard(reply: reply).id(reply.question).transition(.opacity)   // new question, fresh card state
+            }
+        case .translation:
+            if let result = state.translationResult {
+                TranslationCard(result: result).transition(.opacity)
             }
         case .compact, .hidden:
             CompactPill().transition(.opacity)
@@ -396,10 +401,19 @@ struct CompactPill: View {
         state.meetings.isRecording && state.status == .idle
     }
 
+    /// Live audio translation is running and nothing else needs the capsule.
+    private var inLiveTranslation: Bool {
+        state.isLiveTranslating && state.status == .idle && !state.isSpeaking
+    }
+
     @ViewBuilder private var icon: some View {
         if inMeeting {
             Image(systemName: "record.circle.fill")
                 .foregroundStyle(.red)
+                .symbolEffect(.pulse)
+        } else if inLiveTranslation {
+            Image(systemName: "character.bubble.fill")
+                .foregroundStyle(.cyan)
                 .symbolEffect(.pulse)
         } else {
             statusIcon
@@ -429,8 +443,13 @@ struct CompactPill: View {
 
     private var label: String {
         if inMeeting { return "Meeting · press \(state.preferences.hotkey.shortTitle) to stop" }
+        if inLiveTranslation { return "Live Translation → \(state.preferences.translationTargetLanguageName)" }
         switch state.status {
-        case .recording: return state.currentAction == .assistant ? "Ask me anything…" : "Listening…"
+        case .recording:
+            if state.preferences.translationEnabled && state.currentAction == .dictate {
+                return "Listening to translate…"
+            }
+            return state.currentAction == .assistant ? "Ask me anything…" : "Listening…"
         case .transcribing:
             if let rewriting = state.rewriteLabel { return rewriting }
             return state.currentAction == .assistant ? "Thinking…" : "Transcribing…"

@@ -32,6 +32,15 @@ struct CommandBadge: Equatable {
     var needsConfirmation = false
 }
 
+/// The original text and its translation, shown in the translation card.
+struct TranslationResult: Equatable {
+    var original: String
+    var translated: String = ""
+    var isStreaming: Bool = true
+    var targetLanguage: String
+    var error: String?
+}
+
 /// The latest dictation, shown as a transcript card in the floating popup.
 struct DictationResult: Equatable {
     var text: String
@@ -102,6 +111,10 @@ final class AppState {
     private(set) var rewriteLabel: String?
     /// When a writing tool last pasted its result (Learn's "Get started" checks this off).
     private(set) var lastRewriteAt: Date?
+    /// The current text selection translation shown in the Translation card.
+    private(set) var translationResult: TranslationResult?
+    /// Live audio translation (extended feature) is actively capturing system audio.
+    private(set) var isLiveTranslating: Bool = false
 
     // Internal plumbing: not UI state, so SwiftUI doesn't need to track it.
     private let recorder = AudioRecorder()
@@ -117,6 +130,9 @@ final class AppState {
     private let commands = CommandRunner()
     @ObservationIgnored private var commandTask: Task<Void, Never>?
     @ObservationIgnored private var grammarTask: Task<Void, Never>?
+    @ObservationIgnored private var translationTask: Task<Void, Never>?
+    @ObservationIgnored private var translationHotkeyRegistered = false
+    @ObservationIgnored private var liveTranslator = LiveAudioTranslator()
     /// Writing tools whose shortcut handler is installed (each is installed once).
     @ObservationIgnored private var registeredTextActions: Set<String> = []
     /// A risky command waiting for Run / Cancel.
@@ -209,7 +225,10 @@ final class AppState {
         hotkeys.onRelease = { [weak self] action in self?.endRecording(action) }
         hotkeys.onCancel = { [weak self] in self?.cancelRecording() }
         configureHotkeys()
-        speech.onFinished = { [weak self] in self?.isSpeaking = false }
+        speech.onFinished = { [weak self] in
+            self?.isSpeaking = false
+            self?.liveTranslator.unsuppress()   // resume system-audio capture after TTS
+        }
         commands.timers.onFire = { [weak self] timer in self?.timerFired(timer) }
         island.attach(self)
         watchIslandAutoClose()
@@ -240,6 +259,10 @@ final class AppState {
             await self?.warmUpModels()
             // Then the search index (off unless turned on in Settings › Search & memory).
             self?.memory.start()
+            // Start live audio translation if it was left enabled.
+            if self?.preferences.liveAudioTranslationEnabled == true {
+                await self?.startLiveAudioTranslation()
+            }
         }
     }
 
@@ -264,6 +287,21 @@ final class AppState {
         hotkeys.configure(dictate: preferences.hotkey, assistant: preferences.assistantHotkey)
         hotkeys.doubleTapActions = preferences.meetingDoubleTap ? [.dictate] : []
         configureTextActions()
+        configureTranslationHotkey()
+    }
+
+    private func configureTranslationHotkey() {
+        if !translationHotkeyRegistered {
+            translationHotkeyRegistered = true
+            KeyboardShortcuts.onKeyUp(for: .translateSelection) {
+                Task { @MainActor in AppState.shared.runTranslationOnSelection() }
+            }
+        }
+        if preferences.translationEnabled {
+            KeyboardShortcuts.enable(.translateSelection)
+        } else {
+            KeyboardShortcuts.disable(.translateSelection)
+        }
     }
 
     /// Reacts when hotkeys or models change anywhere in the UI (Settings, Onboarding, Models).
@@ -277,6 +315,8 @@ final class AppState {
         let meetingDoubleTap = preferences.meetingDoubleTap
         let grammarFixEnabled = preferences.grammarFixEnabled
         let textActionStates = preferences.textActions.map { "\($0.id):\($0.enabled)" }
+        let translationEnabled = preferences.translationEnabled
+        let liveAudioTranslationEnabled = preferences.liveAudioTranslationEnabled
         withObservationTracking {
             _ = preferences.meetingDoubleTap
             _ = preferences.grammarFixEnabled
@@ -286,6 +326,8 @@ final class AppState {
             _ = preferences.selectedModelID
             _ = preferences.chatModelID
             _ = preferences.voiceModelID
+            _ = preferences.translationEnabled
+            _ = preferences.liveAudioTranslationEnabled
         } onChange: { [weak self] in
             // onChange runs just before the new value is stored, so hop to the next main-actor turn to read it.
             Task { @MainActor in
@@ -293,12 +335,20 @@ final class AppState {
                 let p = self.preferences
                 if p.hotkey != hotkey || p.assistantHotkey != assistantHotkey || p.meetingDoubleTap != meetingDoubleTap
                     || p.grammarFixEnabled != grammarFixEnabled
-                    || p.textActions.map({ "\($0.id):\($0.enabled)" }) != textActionStates {
+                    || p.textActions.map({ "\($0.id):\($0.enabled)" }) != textActionStates
+                    || p.translationEnabled != translationEnabled {
                     self.configureHotkeys()
                 }
                 if p.selectedModelID != modelID { self.transcriber.unload() }
                 if p.chatModelID != chatModelID { self.llm.unload() }
                 if p.voiceModelID != voiceModelID { self.speech.unload() }
+                if p.liveAudioTranslationEnabled != liveAudioTranslationEnabled {
+                    if p.liveAudioTranslationEnabled {
+                        await self.startLiveAudioTranslation()
+                    } else {
+                        await self.stopLiveAudioTranslation()
+                    }
+                }
                 self.observePreferences()
             }
         }
@@ -343,6 +393,7 @@ final class AppState {
 
     var menuBarSymbol: String {
         if meetings.isRecording { return "record.circle" }
+        if isLiveTranslating { return "character.bubble" }
         switch status {
         case .recording: return currentAction == .assistant ? "sparkles" : "waveform.circle.fill"
         case .transcribing: return "ellipsis.circle"
@@ -360,9 +411,10 @@ final class AppState {
         // glows instead, and the menu bar panel shows the timer. Only the short start/stop
         // messages above appear for a moment.
         if dictation != nil { return .dictation }
+        if translationResult != nil { return .translation }
         if reply != nil, preferences.replyStyle.shows || reply?.command?.needsConfirmation == true
             || reply?.suggestions.isEmpty == false { return .answer }
-        return isSpeaking ? .compact : .hidden
+        return (isSpeaking || isLiveTranslating) ? .compact : .hidden
     }
 
     var isBusy: Bool {
@@ -701,7 +753,12 @@ final class AppState {
                     return
                 }
                 switch action {
-                case .dictate: await paste(text, duration: duration, model: model)
+                case .dictate:
+                    if preferences.translationEnabled {
+                        await translateAndShow(text, duration: duration, model: model)
+                    } else {
+                        await paste(text, duration: duration, model: model)
+                    }
                 case .assistant: ask(text, duration: duration)
                 }
             } catch {
@@ -902,6 +959,183 @@ final class AppState {
         ))
     }
 
+    // MARK: - Translation
+
+    /// Translates `text` to the user's target language and shows the result in the Dynamic Island.
+    /// Used when translation mode is on and the user finishes a dictation push-to-talk.
+    private func translateAndShow(_ text: String, duration: Double, model: SpeechModel) async {
+        let targetLanguage = preferences.translationTargetLanguageName
+        let chat = preferences.chatModel
+        guard modelManager.isDownloaded(chat) else {
+            flash(.error("Download \(chat.name) for translation"))
+            return
+        }
+        translationResult = TranslationResult(original: text, targetLanguage: targetLanguage)
+        status = .idle
+
+        translationTask?.cancel()
+        translationTask = Task {
+            let instructions = Self.translationInstructions(to: targetLanguage)
+            do {
+                let translated = try await llm.generate(text, instructions: instructions, model: chat,
+                                                        maxTokens: 600, temperature: 0.2)
+                guard !Task.isCancelled else { return }
+                self.translationResult?.translated = translated
+                self.translationResult?.isStreaming = false
+                if self.preferences.translationReadAloud { self.speak(translated) }
+            } catch {
+                guard !Task.isCancelled else { return }
+                self.translationResult?.isStreaming = false
+                self.translationResult?.error = error.localizedDescription
+            }
+        }
+    }
+
+    /// Text-selection translation: triggered by the ⌘⌥T hotkey.
+    /// Copies the focused field's text, translates it and shows the result in the Dynamic Island.
+    func runTranslationOnSelection() {
+        guard preferences.translationEnabled else { return }
+        guard !isBusy, !meetings.isRecording else {
+            flash(.error("Busy · try again in a moment"))
+            return
+        }
+        let chat = preferences.chatModel
+        guard modelManager.isDownloaded(chat) else {
+            flash(.error("Download \(chat.name) for translation"))
+            return
+        }
+        if isSpeaking { stopSpeaking() }
+        dismissTranslation()
+        let targetLanguage = preferences.translationTargetLanguageName
+        rewriteLabel = "Translating to \(targetLanguage)…"
+        status = .transcribing
+
+        translationTask?.cancel()
+        translationTask = Task {
+            let original: String
+            switch await GrammarFixer.copyAllFromFocusedField() {
+            case .text(let text): original = text
+            case .empty:
+                rewriteLabel = nil
+                flash(.error("No text selected · select text first"))
+                return
+            case .notText:
+                rewriteLabel = nil
+                flash(.error("That isn't text · click into a text field first"))
+                return
+            case .noPermission:
+                rewriteLabel = nil
+                flash(.error("Allow Accessibility for Duck Keyboard to translate text"))
+                return
+            case .secureInput:
+                rewriteLabel = nil
+                flash(.error("Can't read this field (secure input is on)"))
+                return
+            }
+
+            rewriteLabel = nil
+            translationResult = TranslationResult(original: original, targetLanguage: targetLanguage)
+            status = .idle
+
+            let instructions = Self.translationInstructions(to: targetLanguage)
+            do {
+                let translated = try await llm.generate(original, instructions: instructions, model: chat,
+                                                        maxTokens: 600, temperature: 0.2)
+                guard !Task.isCancelled else { return }
+                self.translationResult?.translated = translated
+                self.translationResult?.isStreaming = false
+                if self.preferences.translationReadAloud { self.speak(translated) }
+            } catch {
+                guard !Task.isCancelled else { return }
+                self.translationResult?.isStreaming = false
+                self.translationResult?.error = error.localizedDescription
+            }
+        }
+    }
+
+    func dismissTranslation() {
+        translationTask?.cancel()
+        translationResult = nil
+    }
+
+    func copyTranslation() {
+        guard let text = translationResult?.translated, !text.isEmpty else { return }
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
+    }
+
+    func speakTranslation() {
+        guard let text = translationResult?.translated, !text.isEmpty else { return }
+        speak(text)
+    }
+
+    // MARK: - Live audio translation (extended)
+
+    func startLiveAudioTranslation() async {
+        guard !isLiveTranslating else { return }
+        guard Permissions.screenCaptureGranted else {
+            flash(.error("Screen Recording permission needed for Live Translation"))
+            preferences.liveAudioTranslationEnabled = false
+            return
+        }
+        liveTranslator.onSpeechChunk = { [weak self] chunk in
+            self?.handleLiveTranslationChunk(chunk)
+        }
+        do {
+            try await liveTranslator.start()
+            isLiveTranslating = true
+            log.info("Live audio translation started")
+        } catch {
+            flash(.error("Couldn't start live translation: \(error.localizedDescription)"))
+            preferences.liveAudioTranslationEnabled = false
+        }
+    }
+
+    func stopLiveAudioTranslation() async {
+        guard isLiveTranslating else { return }
+        await liveTranslator.stop()
+        isLiveTranslating = false
+        translationResult = nil
+        log.info("Live audio translation stopped")
+    }
+
+    /// Called when the live translator has captured a speech segment from system audio.
+    private func handleLiveTranslationChunk(_ samples: [Float]) {
+        guard isLiveTranslating, !isSpeaking, !isBusy, !meetings.isRecording else { return }
+        let model = preferences.selectedModel
+        let chat = preferences.chatModel
+        guard modelManager.isDownloaded(model), modelManager.isDownloaded(chat) else { return }
+        let targetLanguage = preferences.translationTargetLanguageName
+        let language = preferences.languageCode
+        let removeFillers = preferences.removeFillers
+
+        Task {
+            guard let raw = try? await transcriber.transcribe(samples, model: model, language: language,
+                                                              modelManager: modelManager) else { return }
+            let text = PostProcessor.clean(raw, removeFillers: removeFillers)
+            guard !text.isEmpty, !Task.isCancelled else { return }
+            guard !self.isSpeaking, !self.isBusy else { return }
+
+            let instructions = Self.translationInstructions(to: targetLanguage)
+            guard let translated = try? await self.llm.generate(text, instructions: instructions,
+                                                                model: chat, maxTokens: 300, temperature: 0.2) else { return }
+            let clean = translated.trimmingCharacters(in: .whitespaces)
+            guard !clean.isEmpty, !Task.isCancelled else { return }
+            guard !self.isSpeaking, !self.isBusy else { return }
+
+            self.translationResult = TranslationResult(original: text, translated: clean,
+                                                       isStreaming: false, targetLanguage: targetLanguage)
+            self.liveTranslator.suppress()
+            self.speak(clean)
+        }
+    }
+
+    private static func translationInstructions(to language: String) -> String {
+        "You are a precise translator. Translate the given text to \(language). " +
+        "Output only the translated text with no explanations, no extra commentary. " +
+        "Preserve the original meaning and tone exactly."
+    }
+
     /// Waits (up to about 1.5 seconds) until no modifier key is physically held (e.g. the ⌘ of ⌘E),
     /// so it can't combine with the ⌘A / ⌘C / ⌘V that are sent next.
     private func waitForModifierKeysUp() async {
@@ -925,6 +1159,9 @@ final class AppState {
         switch islandMode {
         case .dictation:
             return true
+        case .translation:
+            guard let result = translationResult else { return false }
+            return !result.isStreaming && !isSpeaking
         case .answer:
             guard let reply else { return false }
             return !reply.isStreaming && !isSpeaking && reply.command?.needsConfirmation != true
@@ -953,6 +1190,7 @@ final class AppState {
             self.islandCloseTask = nil
             guard self.islandCanAutoClose, self.pendingCommand == nil else { return }
             self.dictation = nil
+            self.translationResult = nil
             if self.reply != nil {
                 self.reply = nil
                 self.assistantTask = nil

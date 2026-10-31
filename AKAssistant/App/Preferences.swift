@@ -53,6 +53,10 @@ final class Preferences {
         static let memoryIndexMeetings = "memoryIndexMeetings"
         static let memoryIndexHistory = "memoryIndexHistory"
         static let commandMatching = "commandMatching"
+        static let translationEnabled = "translationEnabled"
+        static let translationTargetLanguage = "translationTargetLanguage"
+        static let translationReadAloud = "translationReadAloud"
+        static let liveAudioTranslationEnabled = "liveAudioTranslationEnabled"
     }
 
     var onboarded: Bool { didSet { defaults.set(onboarded, forKey: Key.onboarded) } }
@@ -141,6 +145,16 @@ final class Preferences {
     /// Understand Mac commands phrased any way, in any language, by meaning.
     var commandMatching: CommandMatching { didSet { defaults.set(commandMatching.rawValue, forKey: Key.commandMatching) } }
 
+    // MARK: Translation
+    /// When on, holding the dictation key translates speech instead of pasting it.
+    var translationEnabled: Bool { didSet { defaults.set(translationEnabled, forKey: Key.translationEnabled) } }
+    /// ISO code of the language to translate into (e.g. "es" for Spanish).
+    var translationTargetLanguage: String { didSet { defaults.set(translationTargetLanguage, forKey: Key.translationTargetLanguage) } }
+    /// Speak the translated text aloud using the voice model.
+    var translationReadAloud: Bool { didSet { defaults.set(translationReadAloud, forKey: Key.translationReadAloud) } }
+    /// Capture the Mac's speaker output, translate it, and read the translation aloud (two-person live translation).
+    var liveAudioTranslationEnabled: Bool { didSet { defaults.set(liveAudioTranslationEnabled, forKey: Key.liveAudioTranslationEnabled) } }
+
     init() {
         // Use a local constant: `self` can't be read until every stored property has a value.
         let defaults = UserDefaults.standard
@@ -188,6 +202,10 @@ final class Preferences {
             Key.memoryIndexMeetings: true,
             Key.memoryIndexHistory: true,
             Key.commandMatching: CommandMatching.run.rawValue,
+            Key.translationEnabled: false,
+            Key.translationTargetLanguage: "es",
+            Key.translationReadAloud: true,
+            Key.liveAudioTranslationEnabled: false,
         ])
         onboarded = defaults.bool(forKey: Key.onboarded)
         selectedModelID = defaults.string(forKey: Key.selectedModelID) ?? ModelCatalog.defaultModel.id
@@ -240,6 +258,10 @@ final class Preferences {
         memoryIndexMeetings = defaults.bool(forKey: Key.memoryIndexMeetings)
         memoryIndexHistory = defaults.bool(forKey: Key.memoryIndexHistory)
         commandMatching = CommandMatching(rawValue: defaults.string(forKey: Key.commandMatching) ?? "") ?? .run
+        translationEnabled = defaults.bool(forKey: Key.translationEnabled)
+        translationTargetLanguage = defaults.string(forKey: Key.translationTargetLanguage) ?? "es"
+        translationReadAloud = defaults.bool(forKey: Key.translationReadAloud)
+        liveAudioTranslationEnabled = defaults.bool(forKey: Key.liveAudioTranslationEnabled)
     }
 
     var selectedModel: SpeechModel {
@@ -289,6 +311,37 @@ final class Preferences {
     var languageCode: String? {
         language == "auto" ? nil : language
     }
+
+    /// Full name of the selected translation target language, e.g. "Spanish".
+    var translationTargetLanguageName: String {
+        Preferences.translationLanguages.first { $0.code == translationTargetLanguage }?.name ?? "Spanish"
+    }
+
+    /// Languages available as translation targets (full names sent to the LLM).
+    static let translationLanguages: [(code: String, name: String)] = [
+        ("en", "English"),
+        ("hi", "Hindi"),
+        ("te", "Telugu"),
+        ("ta", "Tamil"),
+        ("kn", "Kannada"),
+        ("mr", "Marathi"),
+        ("bn", "Bengali"),
+        ("es", "Spanish"),
+        ("fr", "French"),
+        ("de", "German"),
+        ("ja", "Japanese"),
+        ("zh", "Chinese"),
+        ("ko", "Korean"),
+        ("ar", "Arabic"),
+        ("pt", "Portuguese"),
+        ("ru", "Russian"),
+        ("it", "Italian"),
+        ("nl", "Dutch"),
+        ("pl", "Polish"),
+        ("tr", "Turkish"),
+        ("vi", "Vietnamese"),
+        ("th", "Thai"),
+    ]
 
     static let languages: [(code: String, name: String)] = [
         ("auto", "Auto-detect"),

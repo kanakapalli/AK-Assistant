@@ -7,6 +7,8 @@ extension KeyboardShortcuts.Name {
     static let dictate = Self("dictate", default: .init(.space, modifiers: [.option]))
     /// Used only when the user picks "Custom shortcut" for the AI assistant.
     static let askAI = Self("askAI", default: .init(.space, modifiers: [.option, .shift]))
+    /// Translates the selected text and shows the result in the Dynamic Island.
+    static let translateSelection = Self("translateSelection", default: .init(.t, modifiers: [.command, .option]))
 }
 
 /// What a hotkey does while it's held.

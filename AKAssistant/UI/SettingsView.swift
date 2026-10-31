@@ -4,7 +4,7 @@ import KeyboardShortcuts
 
 /// The pages of Settings, picked with the bar at the top.
 enum SettingsTab: String, CaseIterable, Identifiable {
-    case dictation, assistant, meetings, grammar, models, general, permissions
+    case dictation, assistant, translation, meetings, grammar, models, general, permissions
 
     var id: String { rawValue }
 
@@ -12,6 +12,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
         switch self {
         case .dictation: return "Dictation"
         case .assistant: return "AI Assistant"
+        case .translation: return "Translation"
         case .meetings: return "Meetings"
         case .grammar: return "Grammar"
         case .models: return "Models"
@@ -24,6 +25,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
         switch self {
         case .dictation: return "waveform"
         case .assistant: return "sparkles"
+        case .translation: return "character.bubble"
         case .meetings: return "person.2.wave.2"
         case .grammar: return "text.badge.checkmark"
         case .models: return "cpu"
@@ -37,6 +39,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
         switch self {
         case .dictation: return "The push-to-talk key, how your speech becomes text, and how it's pasted."
         case .assistant: return "The AI key, how answers come back, Mac commands, and smart search."
+        case .translation: return "Translate speech and selected text in real time, and live-translate the Mac's audio for two-person conversations."
         case .meetings: return "Recording, the transcript and speakers, notes, and storage for meetings."
         case .grammar: return "Shortcuts that fix or rewrite text in any field (email, professional, rude, your own) and their prompts."
         case .models: return "Which model each feature uses, where it runs (GPU, Neural Engine or CPU), downloads, and custom models."
@@ -87,6 +90,7 @@ struct SettingsView: View {
                 switch appState.settingsTab {
                 case .dictation: DictationSettings()
                 case .assistant: AssistantSettings()
+                case .translation: TranslationSettings()
                 case .meetings: Form { MeetingSettingsSections() }.formStyle(.grouped)
                 case .grammar: GrammarSettings()
                 case .models: ModelsSettings()
